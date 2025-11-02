@@ -312,12 +312,13 @@ class Widom(BaseSimulator):
 
         results = {
             "code_version": VERSION,
+            "random_seed": self.random_seed,
+            "total_insertions": len(self.int_energy_list),
             "temperature_K": self.T,
             "henry_coefficient_mol_kg-1_Pa-1": self.kH,
             "henry_coefficient_std_mol_kg-1_Pa-1": self.kH_std_dv,
             "enthalpy_of_adsorption_kJ_mol-1": self.Qst,
             "enthalpy_of_adsorption_std_kJ_mol-1": self.Qst_std_dv,
-            "total_insertions": len(self.int_energy_list),
         }
 
         with open(os.path.join(self.out_folder, file_name), "w") as f:

@@ -399,6 +399,7 @@ class GCMC(BaseSimulator):
         results = {
             "simulation": {
                 "code_version": VERSION,
+                "random_seed": self.random_seed,
                 "temperature_K": self.T,
                 "pressure_Pa": self.P,
                 "fugacity_coefficient": self.fugacity_coeff,

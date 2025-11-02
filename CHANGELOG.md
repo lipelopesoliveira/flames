@@ -27,6 +27,8 @@
 - Only create the `Trajectory_rejected.traj` file if the `save_rejected` parameter is set to `True` when initializing the `BaseSimulator` class.
 - Abstracted a few methods on the `Widom` class for better code reusability.
 - Refactor the results json to improve the clarity
+- Both `Widom` and `GCMC` classes now saves the random seed on the `results.json` file.
+- Now the use of Left-most Local Minima for pyMSER equilibration can defined on the GCMC class through the `LLM` parameter. By default it is `True`.
 
 ### Documentation 📖
 
