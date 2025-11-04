@@ -4,20 +4,22 @@ from scipy import special  # For erfc
 from typing import Union
 from ase.calculators.calculator import Calculator, all_changes
 
-class EwaldSumCalc(Calculator):
+class EwaldSum(Calculator):
     """
-    A generalized, vectorized Ewald summation calculator.
+    A generalized, vectorized Ewald summation calculator for ASE.
 
     This class calculates the electrostatic energy of a periodic structure
     using the Ewald summation method. It is generalized for any unit cell
     and uses numpy vectorization for speed.
 
+    It calculates per-atom energies, and the total energy is the sum of these.
+
     The energy is E = E_real + E_reciprocal + E_self.
-    """  
+    """
 
     implemented_properties = [
-        'energy', 'free_energy'
-         # 'energies', 'forces', 'stress', # to be inplemented
+        'energy', 'free_energy', 'energies'
+        # 'forces', 'stress', # to be implemented
     ]
 
     def __init__(self,
@@ -29,7 +31,6 @@ class EwaldSumCalc(Calculator):
         Initializes the EwaldSum calculator.
 
         Args:
-            structure: The ase.Atoms object.
             R_cutoff: The cutoff radius for the real-space sum (Angstroms).
             G_cutoff_N: The *integer* cutoff for the reciprocal-space sum.
                         (sum over nx^2 + ny^2 + nz^2 <= G_cutoff_N^2).
@@ -39,7 +40,6 @@ class EwaldSumCalc(Calculator):
 
         Calculator.__init__(self, **kwargs)
 
-        #self.structure = structure
         self.R_cutoff = R_cutoff
         self.G_cutoff_N = G_cutoff_N
         self.alpha = alpha
@@ -61,28 +61,35 @@ class EwaldSumCalc(Calculator):
         cross_ac = np.cross(a, c)
         cross_ab = np.cross(a, b)
         
-        h_a = volume / np.linalg.norm(cross_bc)
-        h_b = volume / np.linalg.norm(cross_ac)
-        h_c = volume / np.linalg.norm(cross_ab)
+        # Add safety checks for 2D/1D systems
+        norm_cross_bc = np.linalg.norm(cross_bc)
+        norm_cross_ac = np.linalg.norm(cross_ac)
+        norm_cross_ab = np.linalg.norm(cross_ab)
+
+        h_a = volume / norm_cross_bc if norm_cross_bc > 1e-9 else np.inf
+        h_b = volume / norm_cross_ac if norm_cross_ac > 1e-9 else np.inf
+        h_c = volume / norm_cross_ab if norm_cross_ab > 1e-9 else np.inf
 
         N_max = np.ceil(self.R_cutoff / np.array([h_a, h_b, h_c])).astype(int).tolist()
 
         return N_max
 
-    def _realspaceEnergy(self, structure: ase.Atoms) -> float:
+    def _realspaceEnergy(self, structure: ase.Atoms) -> np.ndarray:
         """
-        Calculates the real-space energy (vectorized).
-        E_real = 0.5 * sum_i,j sum_n' [ q_i*q_j * erfc(alpha*|r_ij + n|) / |r_ij + n| ]
+        Calculates the real-space energy (vectorized) per atom.
+        E_real_i = 0.5 * sum_j,n' [ q_i*q_j * erfc(alpha*|r_ij + n|) / |r_ij + n| ]
+        
+        Returns:
+            np.ndarray: Array of size (N_atoms) with raw real-space energy 
+                        per atom (in e^2/A).
         """
-
+        n_atoms = len(structure)
         cell = structure.cell.array
         positions = structure.get_positions(wrap=True)
         charges = structure.get_initial_charges()
-
-        real_energy = 0.0
+        real_energies = np.zeros(n_atoms)
 
         # Find max translation vectors (n_x, n_y, n_z) needed
-        # We find the "height" of the cell perpendicular to each pair of vectors
         Nx_max, Ny_max, Nz_max = self._getNMax(cell=cell, volume=structure.cell.volume)
 
         # Create grid of n-vectors [nx, ny, nz]
@@ -100,8 +107,9 @@ class EwaldSumCalc(Calculator):
         # (N_cells) boolean array identifying n=0 vector
         n_is_zero = ~np.any(n_vectors_flat, axis=1)
 
-        for i in range(len(structure)):
-            for j in range(len(structure)):
+        for i in range(n_atoms):
+            i_energy_raw = 0.0
+            for j in range(n_atoms):
                 qi_qj = charges[i] * charges[j]
                 rij_vec = positions[i] - positions[j]
 
@@ -122,21 +130,26 @@ class EwaldSumCalc(Calculator):
                 r_norms_valid = r_norms_inside_cutoff[r_norms_inside_cutoff > 1e-9]
 
                 if r_norms_valid.size > 0:
-                    # RuntimeWarning: divide by zero encountered in divide
-                    # This is OK, we handle it by filtering r_norms_valid
                     with np.errstate(divide='ignore'):
                         terms = special.erfc(self.alpha * r_norms_valid) / r_norms_valid
-                        real_energy += qi_qj * np.sum(terms)
+                        i_energy_raw += qi_qj * np.sum(terms)
+            
+            # The per-atom energy is 1/2 of its sum with all other atoms
+            real_energies[i] = 0.5 * i_energy_raw
 
-        # Divide by 2 to correct for double counting
-        return real_energy / 2.0
+        return real_energies
 
-    def _reciprocalEnergy(self, structure: ase.Atoms) -> float:
+    def _reciprocalEnergy(self, structure: ase.Atoms) -> np.ndarray:
         """
-        Calculates the reciprocal-space energy (vectorized).
-        E_rec = (2*pi / V) * sum_k!=0 [ (1/k^2) * exp(-k^2 / (4*alpha^2)) * |Q(k)|^2 ]
+        Calculates the reciprocal-space energy (vectorized) per atom.
+        E_recip_i = q_i * (2*pi/V) * sum_k!=0 [ A(k) * Re( exp(i*k.r_i) * Q(k)* ) ]
+        
+        Returns:
+            np.ndarray: Array of size (N_atoms) with raw recip. energy 
+                        per atom (in e^2/A).
         """
-
+        n_atoms = len(structure)
+        volume = structure.cell.volume
         reciprocal_cell_matrix = 2.0 * np.pi * np.linalg.inv(structure.cell.array).T
         positions = structure.get_positions(wrap=True)
         charges = structure.get_initial_charges()
@@ -159,74 +172,88 @@ class EwaldSumCalc(Calculator):
         n_vectors_valid = n_vectors_nonzero[n_norm_sq <= G_cutoff_N_sq]
         
         if n_vectors_valid.shape[0] == 0:
-            return 0.0  # No k-vectors in cutoff
+            return np.zeros(n_atoms)  # No k-vectors in cutoff
 
         # --- Calculate k-vectors and A(k) term ---
-        # (N_valid_cells, 3) array of Cartesian k-vectors
+        # (N_k_vectors, 3) array of Cartesian k-vectors
         kv_cartesian = np.dot(n_vectors_valid, reciprocal_cell_matrix)
         
-        # (N_valid_cells) array of k-magnitudes squared
+        # (N_k_vectors) array of k-magnitudes squared
         k_norm_sq = np.sum(kv_cartesian**2, axis=1)
-        k_norms = np.sqrt(k_norm_sq)
 
         # A(k) term = (1/k^2) * exp(-k^2 / (4*alpha^2))
+        # Note: This is A(k) *without* the (2*pi/V) prefactor
         Ak_terms = (1.0 / k_norm_sq) * np.exp(-k_norm_sq / (4.0 * self.alpha**2))
 
-        # --- Calculate Structure Factor Q(k) ---
-        # Q(k) = sum_i q_i * exp(i * k . r_i)
-        # We use the Cartesian dot product: k . r_i
+        # --- Calculate Per-Atom Term ---
+        # We need: q_i * Re( exp(i*k.r_i) * Q(k)* )
         
-        # (N_atoms, N_valid_cells) array of k.r values
+        # (N_atoms, N_k_vectors) array of exp(i * k.r_i)
         k_dot_r_matrix = np.dot(positions, kv_cartesian.T)
-        
-        # (N_atoms, N_valid_cells) array of exp(i * k.r)
         exp_k_dot_r = np.exp(1j * k_dot_r_matrix)
 
-        # (N_valid_cells) array of Q(k) = sum_i q_i * exp(i * k.r_i)
+        # (N_k_vectors) array of Q(k) = sum_j q_j * exp(i * k.r_j)
         Q_vector = np.dot(charges, exp_k_dot_r)
+        
+        # (N_k_vectors) array of Q(k)* (conjugate)
+        Q_conj_vector = np.conjugate(Q_vector)
 
-        # (N_valid_cells) array of |Q(k)|^2
-        Q2_terms = np.absolute(Q_vector)**2
+        # (N_atoms, N_k_vectors) array of exp(i*k.r_i) * Q(k)*
+        term_in_brackets = exp_k_dot_r * Q_conj_vector
+        
+        # (N_atoms, N_k_vectors) array of Re[ ... ]
+        real_term = np.real(term_in_brackets)
 
-        # --- Sum Energy ---
-        # E_rec = (2*pi / V) * sum_k [ A(k) * |Q(k)|^2 ]
-        rec_energy = (2.0 * np.pi / structure.cell.volume) * np.sum(Ak_terms * Q2_terms)
+        # (N_atoms) array: sum_k [ Ak * Re(...) ]
+        sum_over_k = np.dot(real_term, Ak_terms)
+        
+        # (N_atoms) array: q_i * sum_k [ ... ]
+        recip_energies_raw = charges * sum_over_k
+        
+        # Apply prefactor
+        rec_energy_constant = (2 * np.pi / volume)
+        
+        return rec_energy_constant * recip_energies_raw
 
-        return rec_energy
-
-    def _selfEnergy(self, charges) -> float:
+    def _selfEnergy(self, charges: np.ndarray) -> np.ndarray:
         """
-        Calculates the self-energy correction term.
-        E_self = - (alpha / sqrt(pi)) * sum_i q_i^2
+        Calculates the self-energy correction term per atom.
+        E_self_i = - (alpha / sqrt(pi)) * q_i^2
+
+        Returns:
+            np.ndarray: Array of size (N_atoms) with raw self-energy 
+                        per atom (in e^2/A).
         """
-        # E_self = - (alpha / sqrt(pi)) * sum(q_i^2)
-        return -( self.alpha / np.sqrt(np.pi)) * np.sum(charges**2)
+        # E_self_i = - (alpha / sqrt(pi)) * q_i^2
+        return -( self.alpha / np.sqrt(np.pi)) * (charges**2)
 
-    def _get_total_energy(self, structure: ase.Atoms) -> float:
-        """
-        Calculates the total Ewald electrostatic energy.
-        """
-
-        COULOMB_CONSTANT_eV_A = 14.399645353 # This converts energy from (e^2 / A) to (eV)
-
-        # Calculate raw energies in (e^2 / A)
-        real_energy = self._realspaceEnergy(structure)
-        rec_energy = self._reciprocalEnergy(structure)
-        self_energy = self._selfEnergy(structure.get_initial_charges())
-
-        total_energy = real_energy + rec_energy + self_energy
-
-        # Convert it to eV
-        total_energy *= COULOMB_CONSTANT_eV_A
-
-        return total_energy
-    
-    def calculate(self, 
+    def calculate(self,
                   atoms: Union[ase.Atoms, None] = None,
-                  properties: list[str] = ['energy'],
+                  properties: list[str] = ['energy', 'energies'],
                   system_changes=all_changes):
+        
         Calculator.calculate(self, atoms, properties, system_changes)
+        
+        COULOMB_CONSTANT_eV_A = 14.399645353 # This converts energy from (e^2 / A) to (eV)
+        
+        charges = self.atoms.get_initial_charges()  # type: ignore
 
+        # --- Calculate all per-atom components (raw, in e^2/A) ---
+        real_energies_raw = self._realspaceEnergy(self.atoms)  # type: ignore
+        recip_energies_raw = self._reciprocalEnergy(self.atoms)  # type: ignore
+        self_energies_raw = self._selfEnergy(charges)
+
+        # --- Sum them to get the total per-atom array (raw) ---
+        total_energies_raw = real_energies_raw + recip_energies_raw + self_energies_raw
+        
+        # --- Convert to eV ---
+        total_energies_ev = total_energies_raw * COULOMB_CONSTANT_eV_A
+
+        # --- Store results ---
+        if 'energies' in properties:
+            self.results['energies'] = total_energies_ev
+        
         if 'energy' in properties:
-            self.results['energy'] = self._get_total_energy(atoms)  # type: ignore
-            self.results['free_energy'] = self.results['energy']
+            total_energy_ev = np.sum(total_energies_ev)
+            self.results['energy'] = total_energy_ev
+            self.results['free_energy'] = total_energy_ev
