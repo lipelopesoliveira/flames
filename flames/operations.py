@@ -12,10 +12,10 @@ def randon_unit_vector_sphere_marsaglia(rnd_generator: np.random.Generator) -> n
     This function implements the method proposed by George Marsaglia in
     The Annals of Mathematical Statistics, 1972, Vol. 43, No. 2, 645-646
 
-    This is the fastest implementation compared with other approaches, 
+    This is the fastest implementation compared with other approaches,
     such as Gaussian distributions or trigonometric functions.
     This is also faster than simple genaration a vector on a cube.
-    
+
     Timing the generation of 1 vector, repeated 1,000,000 times.
 
     Marsaglia: 4.4012 microseconds
@@ -27,7 +27,7 @@ def randon_unit_vector_sphere_marsaglia(rnd_generator: np.random.Generator) -> n
     ----------
     rnd_generator : np.random.Generator
         Random number generator for reproducibility.
-    
+
     Returns
     -------
     np.ndarray
@@ -44,9 +44,7 @@ def randon_unit_vector_sphere_marsaglia(rnd_generator: np.random.Generator) -> n
 
     scale = np.sqrt(1.0 - S)
     return np.fromiter(
-        (2.0 * z1 * scale, 2.0 * z2 * scale, 1.0 - 2.0 * S),
-        dtype=np.float64,
-        count=3
+        (2.0 * z1 * scale, 2.0 * z2 * scale, 1.0 - 2.0 * S), dtype=np.float64, count=3
     )
 
 
@@ -137,7 +135,7 @@ def random_rotation_limited(
     angle = rnd_generator.uniform(-theta_max, theta_max)
 
     # --- Create rotation object from quaternion representation ---
-    q = np.array([np.cos(angle/2), *np.sin(angle/2) * axis])
+    q = np.array([np.cos(angle / 2), *np.sin(angle / 2) * axis])
 
     rot = Rotation.from_quat(q, scalar_first=True)
 

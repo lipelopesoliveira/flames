@@ -1,6 +1,6 @@
+import os
 import warnings
 
-import os
 import gemmi
 import numpy as np
 from ase import Atoms, units
@@ -307,25 +307,25 @@ def read_cif(path, file_name):
 
     # Read data from CIF file
     cif = gemmi.cif.read_file(cif_filename).sole_block()
-    a = float(cif.find_value('_cell_length_a').split('(')[0])
-    b = float(cif.find_value('_cell_length_b').split('(')[0])
-    c = float(cif.find_value('_cell_length_c').split('(')[0])
-    beta = float(cif.find_value('_cell_angle_beta').split('(')[0])
-    gamma = float(cif.find_value('_cell_angle_gamma').split('(')[0])
-    alpha = float(cif.find_value('_cell_angle_alpha').split('(')[0])
+    a = float(cif.find_value("_cell_length_a").split("(")[0])
+    b = float(cif.find_value("_cell_length_b").split("(")[0])
+    c = float(cif.find_value("_cell_length_c").split("(")[0])
+    beta = float(cif.find_value("_cell_angle_beta").split("(")[0])
+    gamma = float(cif.find_value("_cell_angle_gamma").split("(")[0])
+    alpha = float(cif.find_value("_cell_angle_alpha").split("(")[0])
 
     cellpar = np.array([a, b, c, alpha, beta, gamma])
 
-    atom_site_type_symbol = list(cif.find_values('_atom_site_type_symbol'))
+    atom_site_type_symbol = list(cif.find_values("_atom_site_type_symbol"))
 
-    atom_site_fract_x = np.array(cif.find_values('_atom_site_fract_x')).astype(float)
-    atom_site_fract_y = np.array(cif.find_values('_atom_site_fract_y')).astype(float)
-    atom_site_fract_z = np.array(cif.find_values('_atom_site_fract_z')).astype(float)
+    atom_site_fract_x = np.array(cif.find_values("_atom_site_fract_x")).astype(float)
+    atom_site_fract_y = np.array(cif.find_values("_atom_site_fract_y")).astype(float)
+    atom_site_fract_z = np.array(cif.find_values("_atom_site_fract_z")).astype(float)
 
     atom_site_frac = np.array([atom_site_fract_x, atom_site_fract_y, atom_site_fract_z]).T
 
     try:
-        partial_charges = np.array(cif.find_values('_atom_site_charge')).astype(float)
+        partial_charges = np.array(cif.find_values("_atom_site_charge")).astype(float)
     except Exception:
         partial_charges = np.zeros(len(atom_site_type_symbol))
 

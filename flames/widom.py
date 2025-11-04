@@ -313,7 +313,8 @@ class Widom(BaseSimulator):
         results = {
             "code_version": VERSION,
             "random_seed": self.random_seed,
-            "enlapsed_time_hours": (datetime.datetime.now() - self.start_time).total_seconds() / 3600,
+            "enlapsed_time_hours": (datetime.datetime.now() - self.start_time).total_seconds()
+            / 3600,
             "total_insertions": len(self.int_energy_list),
             "temperature_K": self.T,
             "henry_coefficient_mol_kg-1_Pa-1": self.kH,
