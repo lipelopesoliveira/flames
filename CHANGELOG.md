@@ -29,6 +29,7 @@
 - Refactor the results json to improve the clarity
 - Both `Widom` and `GCMC` classes now saves the random seed on the `results.json` file.
 - Now the use of Left-most Local Minima for pyMSER equilibration can defined on the GCMC class through the `LLM` parameter. By default it is `True`.
+- Now the molecular rotation are based on a unit vector on a sphere, using the method proposed by George Marsaglia in The Annals of Mathematical Statistics, 1972, Vol. 43, No. 2, 645-646.
 
 ### Documentation 📖
 
