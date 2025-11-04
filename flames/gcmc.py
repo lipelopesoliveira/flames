@@ -406,6 +406,7 @@ class GCMC(BaseSimulator):
                 "fugacity_Pa": self.fugacity_coeff * self.P,
                 "move_weights": self.move_weights,
                 "n_steps": len(self.uptake_list),
+                "enlapsed_time_hours": (datetime.datetime.now() - self.start_time).total_seconds() / 3600,
             },
             "equilibration": {
                 "LLM": self.LLM,
