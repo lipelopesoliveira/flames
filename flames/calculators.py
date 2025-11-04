@@ -1,16 +1,16 @@
+import math
 from typing import Union
 
 import ase
-from ase import units
 import numpy as np
+from ase import units
 from ase.calculators.calculator import Calculator, all_changes
+from numba import jit, prange, set_num_threads
 from scipy import special  # For erfc
 
-import math
-from numba import jit, prange, set_num_threads
-
-NUM_THREADS_TO_USE = 4 
+NUM_THREADS_TO_USE = 4
 set_num_threads(NUM_THREADS_TO_USE)
+
 
 @jit(nopython=True, fastmath=True)
 def _getNMax_jit(cell, volume, R_cutoff):
@@ -33,7 +33,7 @@ def _getNMax_jit(cell, volume, R_cutoff):
     # Numba doesn't like np.inf, use a large number instead
     # Can't create a numpy array and then call .astype on it
     N_max_arr = np.array([R_cutoff / h_a, R_cutoff / h_b, R_cutoff / h_c])
-    
+
     # Use np.ceil and manual int casting
     return (
         int(np.ceil(N_max_arr[0])),
@@ -58,13 +58,13 @@ def _realspace_loop_jit(
     The full Numba-compiled N^2 real-space loop.
     """
     real_energies = np.zeros(n_atoms)
-    cell_T = cell.T # Transpose for easier dot product logic
+    cell_T = cell.T  # Transpose for easier dot product logic
 
     # --- Loop over all N*N atom pairs ---
     for i in prange(n_atoms):
         i_energy_raw = 0.0
         pos_i = positions[i]
-        
+
         for j in range(n_atoms):
             qi_qj = charges[i] * charges[j]
             rij_vec = pos_i - positions[j]
@@ -73,7 +73,7 @@ def _realspace_loop_jit(
             for nx in range(-Nx_max, Nx_max + 1):
                 for ny in range(-Ny_max, Ny_max + 1):
                     for nz in range(-Nz_max, Nz_max + 1):
-                        
+
                         # --- Skip n=0 term if i==j ---
                         if i == j and nx == 0 and ny == 0 and nz == 0:
                             continue
@@ -81,37 +81,50 @@ def _realspace_loop_jit(
                         # --- Calculate Cartesian translation vector n ---
                         # nv = n.T @ cell = cell.T @ n
                         n_vec = np.array([float(nx), float(ny), float(nz)])
-                        nv_cart_x = cell_T[0, 0] * n_vec[0] + cell_T[0, 1] * n_vec[1] + cell_T[0, 2] * n_vec[2]
-                        nv_cart_y = cell_T[1, 0] * n_vec[0] + cell_T[1, 1] * n_vec[1] + cell_T[1, 2] * n_vec[2]
-                        nv_cart_z = cell_T[2, 0] * n_vec[0] + cell_T[2, 1] * n_vec[1] + cell_T[2, 2] * n_vec[2]
+                        nv_cart_x = (
+                            cell_T[0, 0] * n_vec[0]
+                            + cell_T[0, 1] * n_vec[1]
+                            + cell_T[0, 2] * n_vec[2]
+                        )
+                        nv_cart_y = (
+                            cell_T[1, 0] * n_vec[0]
+                            + cell_T[1, 1] * n_vec[1]
+                            + cell_T[1, 2] * n_vec[2]
+                        )
+                        nv_cart_z = (
+                            cell_T[2, 0] * n_vec[0]
+                            + cell_T[2, 1] * n_vec[1]
+                            + cell_T[2, 2] * n_vec[2]
+                        )
 
                         # --- Calculate full r_ij + n vector and its norm ---
                         rv_x = rij_vec[0] + nv_cart_x
                         rv_y = rij_vec[1] + nv_cart_y
                         rv_z = rij_vec[2] + nv_cart_z
-                        
+
                         r_norm_sq = rv_x * rv_x + rv_y * rv_y + rv_z * rv_z
                         r_norm = np.sqrt(r_norm_sq)
 
                         # --- Apply cutoff and r>0 check ---
                         if r_norm <= R_cutoff and r_norm > 1e-9:
-                            
+
                             # --- Use math.erfc (Numba knows this one) ---
                             term = math.erfc(alpha * r_norm) / r_norm
                             i_energy_raw += qi_qj * term
 
         # Apply 0.5 prefactor
         real_energies[i] = 0.5 * i_energy_raw
-        
+
     return real_energies
+
 
 @jit(nopython=True, fastmath=True, parallel=True)
 def _reciprocal_loop_jit(
     n_atoms,
     positions,
     charges,
-    kv_cartesian, # (N_k_vectors, 3)
-    Ak_terms,     # (N_k_vectors,)
+    kv_cartesian,  # (N_k_vectors, 3)
+    Ak_terms,  # (N_k_vectors,)
 ):
     """
     Numba-compiled version of the reciprocal space loop.
@@ -122,25 +135,25 @@ def _reciprocal_loop_jit(
 
     # We need to handle complex numbers. Numba can do this.
     Q_vector = np.zeros(n_k_vectors, dtype=np.complex128)
-    
+
     # --- Pass 1: Calculate Q(k) = sum_j q_j * exp(i * k.r_j) ---
     for k_idx in prange(n_k_vectors):
         k_vec = kv_cartesian[k_idx]
-        
+
         Qk_real = 0.0
         Qk_imag = 0.0
-        
+
         for j in range(n_atoms):
             pos_j = positions[j]
             k_dot_r = k_vec[0] * pos_j[0] + k_vec[1] * pos_j[1] + k_vec[2] * pos_j[2]
-            
+
             # exp(i*x) = cos(x) + i*sin(x)
             cos_kr = np.cos(k_dot_r)
             sin_kr = np.sin(k_dot_r)
-            
+
             Qk_real += charges[j] * cos_kr
             Qk_imag += charges[j] * sin_kr
-            
+
         Q_vector[k_idx] = Qk_real + 1j * Qk_imag
 
     Q_conj_vector = np.conjugate(Q_vector)
@@ -151,22 +164,22 @@ def _reciprocal_loop_jit(
         pos_i = positions[i]
         q_i = charges[i]
         sum_over_k = 0.0
-        
+
         for k_idx in range(n_k_vectors):
             k_vec = kv_cartesian[k_idx]
             Ak = Ak_terms[k_idx]
-            Qk_conj = Q_conj_vector[k_idx] # This is Q(k)*
-            
+            Qk_conj = Q_conj_vector[k_idx]  # This is Q(k)*
+
             k_dot_r = k_vec[0] * pos_i[0] + k_vec[1] * pos_i[1] + k_vec[2] * pos_i[2]
-            
+
             # exp(i*k.r_i)
             exp_kri = np.cos(k_dot_r) + 1j * np.sin(k_dot_r)
-            
+
             # term_in_brackets = exp(i*k.r_i) * Q(k)*
             term_in_brackets = exp_kri * Qk_conj
-            
+
             sum_over_k += Ak * np.real(term_in_brackets)
-        
+
         recip_energies_raw[i] = q_i * sum_over_k
 
     return recip_energies_raw
@@ -308,7 +321,7 @@ class EwaldSum(Calculator):
     def _realspaceEnergy(self, structure: ase.Atoms) -> np.ndarray:
         """
         Calculates the real-space energy (vectorized) per atom.
-        
+
         This is now a wrapper that calls the Numba-compiled JIT function.
         """
         # 1. Extract raw numpy arrays
@@ -335,13 +348,13 @@ class EwaldSum(Calculator):
             self.alpha,
             self.R_cutoff,
         )
-        
+
         return real_energies
-    
+
     def _reciprocalEnergy(self, structure: ase.Atoms) -> np.ndarray:
         """
         Calculates the reciprocal-space energy (vectorized) per atom.
-        
+
         This is now a wrapper that calls the Numba-compiled JIT function.
         """
         n_atoms = len(structure)
@@ -381,11 +394,7 @@ class EwaldSum(Calculator):
 
         # --- Hand off to Numba for the big O(N*Nk) loops ---
         recip_energies_raw = _reciprocal_loop_jit(
-            n_atoms,
-            positions,
-            charges,
-            kv_cartesian,
-            Ak_terms
+            n_atoms, positions, charges, kv_cartesian, Ak_terms
         )
 
         # Apply prefactor
@@ -498,11 +507,11 @@ class EwaldSum(Calculator):
         recip_energies_raw = self._reciprocalEnergy(self.atoms)  # type: ignore
         self_energies_raw = self._selfEnergy(charges)
 
-        volume = self.atoms.cell.volume # type: ignore
-        total_charge = np.sum(charges) 
-        neutrality_energy_raw = 0.0 
-        
-        if abs(total_charge) > 1e-9: # Check if system is non-neutral
+        volume = self.atoms.cell.volume  # type: ignore
+        total_charge = np.sum(charges)
+        neutrality_energy_raw = 0.0
+
+        if abs(total_charge) > 1e-9:  # Check if system is non-neutral
             neutrality_energy_raw = -(np.pi / (2.0 * volume * self.alpha**2)) * (total_charge**2)
 
         # --- Sum them to get the total per-atom array (raw) ---
@@ -518,13 +527,12 @@ class EwaldSum(Calculator):
 
         if "energy" in properties:
             total_energy_ev = np.sum(total_energies_ev)
-            
+
             # Add the global neutrality correction
             final_total_energy = total_energy_ev + neutrality_energy_ev
 
             self.results["energy"] = final_total_energy
             self.results["free_energy"] = final_total_energy
-
 
 
 class CustomLennardJones(Calculator):

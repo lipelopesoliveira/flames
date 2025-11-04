@@ -327,10 +327,8 @@ def read_cif(file_name):
         partial_charges = np.zeros(len(atom_site_type_symbol))
 
     struc = ase.Atoms(
-        symbols=atom_site_type_symbol,
-        scaled_positions=atom_site_frac,
-        cell=cellpar,
-        pbc=True)
+        symbols=atom_site_type_symbol, scaled_positions=atom_site_frac, cell=cellpar, pbc=True
+    )
 
     struc.set_initial_charges(partial_charges)
 
