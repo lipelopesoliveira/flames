@@ -497,7 +497,8 @@ class EwaldSum(Calculator):
 
         Calculator.calculate(self, atoms, properties, system_changes)
 
-        COULOMB_CONSTANT_eV_A = 14.399645353  # This converts energy from (e^2 / A) to (eV)
+        # Coulomb constant Ke = 1 / (4 * pi * e0) in eV . Angs / e^2
+        Ke = units.C * units.m * units._e**2 / (4 * np.pi * units._eps0)
 
         charges = self.atoms.get_initial_charges()  # type: ignore
 
@@ -517,8 +518,8 @@ class EwaldSum(Calculator):
         total_energies_raw = real_energies_raw + recip_energies_raw + self_energies_raw
 
         # --- Convert to eV ---
-        total_energies_ev = total_energies_raw * COULOMB_CONSTANT_eV_A
-        neutrality_energy_ev = neutrality_energy_raw * COULOMB_CONSTANT_eV_A
+        total_energies_ev = total_energies_raw * Ke
+        neutrality_energy_ev = neutrality_energy_raw * Ke
 
         # --- Store results ---
         if "energies" in properties:
@@ -675,6 +676,7 @@ class CustomLennardJones(Calculator):
 
         self.lj_params: dict = lj_parameters
         self.vdw_cutoff = kwargs.get("vdw_cutoff", 12.0)
+        self.shifted = kwargs.get("shifted", True)
 
     def calculate(
         self,
@@ -708,13 +710,37 @@ class CustomLennardJones(Calculator):
 
         rij = self.atoms.get_all_distances(mic=True)  # type: ignore
 
-        # Replace all distances greater than the cutoff with 0
-        rij[rij > self.vdw_cutoff] = 0
+        # We must avoid division by zero for i=j pairs.
+        # Set diagonal to infinity so energy contribution becomes zero.
+        np.fill_diagonal(rij, np.inf)
 
-        energy = 4 * epsilons * ((sigmas / rij) ** 12 - (sigmas / rij) ** 6)
+        # Calculate the energy for *all* pairs
+        # (This is vectorized and fast)
+        s_over_r = sigmas / rij
+        s_over_r_6 = s_over_r**6
+        energy = 4 * epsilons * (s_over_r_6**2 - s_over_r_6)
 
-        # Replace any NaN values with 0
-        energy[np.isnan(energy)] = 0.0
+        if self.shifted:
+            # --- Shifted Potential Logic ---
+            # Calculate the energy shift at the cutoff distance
+            rc = self.vdw_cutoff
+            s_over_rc = sigmas / self.vdw_cutoff
+            s_over_rc_6 = s_over_rc**6
+            energy_shift = 4 * epsilons * (s_over_rc_6**2 - s_over_rc_6)
+
+            # Apply cutoff AND shift
+            # First, set everything outside the cutoff to 0
+            energy[rij > self.vdw_cutoff] = 0.0
+
+            # Create a mask for interactions *inside* the cutoff
+            mask = (rij > 0) & (rij <= self.vdw_cutoff)
+
+            # Subtract the shift from all interactions *inside* the cutoff
+            energy[mask] -= energy_shift[mask]
+
+        # NOW, apply the cutoff:
+        # Set energy to 0 for all pairs *outside* the cutoff.
+        energy[rij > self.vdw_cutoff] = 0.0
 
         # Sum the energy matrix and divide by 2 to avoid double counting since the energy matrix is symmetric
         energy /= 2
