@@ -2,7 +2,6 @@ import datetime
 import os
 import sys
 from typing import TextIO
-from tqdm import tqdm
 
 import ase
 import numpy as np
@@ -19,6 +18,7 @@ from ase.md.nvtberendsen import NVTBerendsen
 from ase.md.velocitydistribution import MaxwellBoltzmannDistribution, Stationary
 from ase.optimize.optimize import Optimizer
 from ase.spacegroup.symmetrize import check_symmetry
+from tqdm import tqdm
 
 
 def crystalOptimization(
@@ -809,15 +809,17 @@ def unwrap_positions(positions, cell, pbc=True, ref_atom=0):
     return np.dot(unwrapped_fractional, cell)
 
 
-def rdf_gcmc(images: list[ase.Atoms],
-             atom_1: str,
-             atom_2: str,
-             rmax: float = 10.0,
-             binwidth: float = 0.1,
-             exclude_idx: list = [],
-             surface: bool = False,
-             show_progress: bool = True) -> np.ndarray:
-    '''
+def rdf_gcmc(
+    images: list[ase.Atoms],
+    atom_1: str,
+    atom_2: str,
+    rmax: float = 10.0,
+    binwidth: float = 0.1,
+    exclude_idx: list = [],
+    surface: bool = False,
+    show_progress: bool = True,
+) -> np.ndarray:
+    """
     Calculate radial distribution function for GCMC trajectories.
 
     This version is modified to handle trajectories where the
@@ -827,7 +829,7 @@ def rdf_gcmc(images: list[ase.Atoms],
     ----------
     images : list of Atoms or Trajectory
         ASE Atoms object(s).
-    
+
     atom_1, atom_2 : str
         Atoms to use for the RDF calculation. MUST be element symbols
         (e.g., 'O') for GCMC. Integer indices are NOT supported as
@@ -851,7 +853,7 @@ def rdf_gcmc(images: list[ase.Atoms],
 
     show_progress: bool
         Show progress bar using tqdm library
-    
+
     Returns
     -------
     g_r: ndarray
@@ -860,12 +862,12 @@ def rdf_gcmc(images: list[ase.Atoms],
     Raises
     ------
     ValueError
-    '''
+    """
 
     # --- 1. Setup ---
     if isinstance(images, Atoms):
         images = [images]
-    
+
     nimages = len(images)
     if nimages == 0:
         raise ValueError("No images provided.")
@@ -887,8 +889,8 @@ def rdf_gcmc(images: list[ase.Atoms],
     dr = binwidth
     nbins = int(rmax / dr)
     if nbins == 0:
-         ValueError(f"Error: rmax ({rmax}) or binwidth ({binwidth}) results in 0 bins.")
-         
+        ValueError(f"Error: rmax ({rmax}) or binwidth ({binwidth}) results in 0 bins.")
+
     bin_edges = np.linspace(0, rmax, nbins + 1)
     r_centers = (bin_edges[:-1] + bin_edges[1:]) / 2.0
     bins = np.zeros(nbins, dtype=float)
@@ -896,23 +898,23 @@ def rdf_gcmc(images: list[ase.Atoms],
     # Accumulators for average normalization
     total_volume = 0.0
     total_pairs = 0.0
-    total_area = 0.0 # For g(z)
-    
+    total_area = 0.0  # For g(z)
+
     # Check if this is a self-comparison (e.g., 'O' vs 'O')
-    is_self_comparison = (atom_1 == atom_2)
+    is_self_comparison = atom_1 == atom_2
 
     # --- 2. Loop over all images ---
     for atoms in tqdm(images, disable=not show_progress):
         if len(atoms) == 0:
-            continue # Skip empty frames
-        
+            continue  # Skip empty frames
+
         # --- 2a. Get frame-specific properties ---
         vol = atoms.get_volume()
         cell = atoms.cell.array
         pos = atoms.get_positions()
         symbols = atoms.get_chemical_symbols()
         allElements = set(symbols)
-        
+
         total_volume += vol
         if surface:
             # Area is volume projected onto XY plane (assuming Z is the surface normal)
@@ -924,7 +926,7 @@ def rdf_gcmc(images: list[ase.Atoms],
         for i, idx_spec in enumerate([atom_1, atom_2]):
             # Ensure idx_spec is a list (e.g., 'O' -> ['O'])
             idx_list = idx_spec if isinstance(idx_spec, list) else [idx_spec]
-            
+
             frame_indices = []
             for element_symbol in idx_list:
                 if isinstance(element_symbol, str):
@@ -933,13 +935,13 @@ def rdf_gcmc(images: list[ase.Atoms],
                         indices = [atom.index for atom in atoms if atom.symbol == element_symbol]
                         frame_indices.extend(indices)
                 # We already checked for ints, so no need for else
-            
+
             # Apply exclusions and remove duplicates from this frame's list
             frame_indices = [idx for idx in frame_indices if idx not in exclude_idx]
             current_idx[i] = list(set(frame_indices))
 
         current_idx1_list, current_idx2_list = current_idx
-        
+
         # Skip frame if one of the lists is empty
         if not current_idx1_list or not current_idx2_list:
             continue
@@ -958,15 +960,15 @@ def rdf_gcmc(images: list[ase.Atoms],
         # --- 2d. Apply mask for self-interaction ---
         dist_masked = None
         if is_self_comparison:
-             # Check if the generated index lists are identical
-             if current_idx1_list == current_idx2_list:
+            # Check if the generated index lists are identical
+            if current_idx1_list == current_idx2_list:
                 if dist.shape[0] == dist.shape[1]:
                     # Remove diagonal (self-pairs)
                     mask = ~np.eye(dist.shape[0], dtype=bool)
                     dist_masked = dist[mask]
                 else:
-                    dist_masked = dist.flatten() # Should not happen, but safe
-             else:
+                    dist_masked = dist.flatten()  # Should not happen, but safe
+            else:
                 # e.g., idx1=['O'], idx2=['O','H'] -> not a true self-comparison
                 dist_masked = dist.flatten()
         else:
@@ -985,7 +987,7 @@ def rdf_gcmc(images: list[ase.Atoms],
 
     avg_vol = total_volume / nimages
     avg_pairs_per_frame = total_pairs / nimages
-    
+
     # Calculate average pair density
     if avg_vol == 0:
         print("Warning: Average volume is zero. Cannot normalize.")
@@ -993,12 +995,12 @@ def rdf_gcmc(images: list[ase.Atoms],
     pair_density = avg_pairs_per_frame / avg_vol
 
     if pair_density == 0:
-         print("Warning: Zero pair density. Returning g(r) = 0.")
-         return np.array(list(zip(r_centers, np.zeros(nbins)))).T
-    
+        print("Warning: Zero pair density. Returning g(r) = 0.")
+        return np.array(list(zip(r_centers, np.zeros(nbins)))).T
+
     # Get average counts per bin
     avg_counts_per_bin = bins / nimages
-    
+
     if surface:
         # g(z) normalization
         avg_area = total_area / nimages
@@ -1009,20 +1011,20 @@ def rdf_gcmc(images: list[ase.Atoms],
         # Ideal count in a 1D slab of thickness 'dr'
         # N_ideal = (Avg Pairs / Avg Vol) * Avg Area * dr
         ideal_counts = (avg_pairs_per_frame / avg_vol) * avg_area * dr
-        if ideal_counts == 0: # Handle constant
+        if ideal_counts == 0:  # Handle constant
             print("Warning: Ideal count for g(z) is zero. Cannot normalize.")
             return np.array(list(zip(r_centers, np.zeros(nbins)))).T
-        g = avg_counts_per_bin / ideal_counts # Normalize all bins by the same 1D density
-        
+        g = avg_counts_per_bin / ideal_counts  # Normalize all bins by the same 1D density
+
     else:
         # g(r) normalization: Volume of spherical shells: 4 * pi * r^2 * dr
         vol_shells = 4.0 * np.pi * r_centers**2 * dr
-        
+
         # Ideal number of pairs in each shell
         ideal_counts = pair_density * vol_shells
-        
+
         g = np.zeros_like(avg_counts_per_bin)
-        
+
         # Avoid division by zero at r=0
         non_zero = ideal_counts > 1e-9
         g[non_zero] = avg_counts_per_bin[non_zero] / ideal_counts[non_zero]
