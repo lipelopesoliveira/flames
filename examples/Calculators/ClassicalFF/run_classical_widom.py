@@ -1,8 +1,3 @@
-import os
-import sys
-
-sys.path.append("/home/felipe/PRs/mlp_adsorption")
-
 import ase
 from ase.calculators import mixing
 from ase.data import vdw_radii

@@ -1,14 +1,14 @@
-import ase
 import json
 
+import ase
 from ase.calculators import mixing
 from ase.data import vdw_radii
 from ase.io import read
 from numba import get_num_threads, set_num_threads
 
 from flames.calculators import CustomLennardJones, EwaldSum
-from flames.utilities import read_cif
 from flames.gcmc import GCMC
+from flames.utilities import read_cif
 
 NUM_THREADS_TO_USE = 25
 set_num_threads(NUM_THREADS_TO_USE)

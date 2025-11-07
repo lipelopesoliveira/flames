@@ -723,7 +723,6 @@ class CustomLennardJones(Calculator):
         if self.shifted:
             # --- Shifted Potential Logic ---
             # Calculate the energy shift at the cutoff distance
-            rc = self.vdw_cutoff
             s_over_rc = sigmas / self.vdw_cutoff
             s_over_rc_6 = s_over_rc**6
             energy_shift = 4 * epsilons * (s_over_rc_6**2 - s_over_rc_6)
