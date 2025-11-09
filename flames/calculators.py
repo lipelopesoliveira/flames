@@ -693,15 +693,23 @@ class CustomLennardJones(Calculator):
 
         nAtoms = len(self.atoms)  # type: ignore
 
+        if "labels" in self.atoms.arrays.keys():  # type: ignore
+            # Replace missing labels with atomic type
+            for i, label in enumerate(self.atoms.arrays["labels"]):  # type: ignore
+                if label == 0:
+                    self.atoms.arrays["labels"][i] = self.atoms.symbols[i]  # type: ignore
+        else:
+            self.atoms.arrays["labels"] = self.atoms.symbols  # type: ignore
+
         # Preallocate arrays
         sigmas = np.empty((nAtoms, nAtoms))
         epsilons = np.empty((nAtoms, nAtoms))
 
         sigma_vec = np.array(
-            [self.lj_params[s]["sigma"] for s in self.atoms.get_chemical_symbols()]  # type: ignore
+            [self.lj_params[s]["sigma"] for s in self.atoms.arrays["labels"]]  # type: ignore
         )
         epsilon_vec = np.array(
-            [self.lj_params[s]["epsilon"] for s in self.atoms.get_chemical_symbols()]  # type: ignore
+            [self.lj_params[s]["epsilon"] for s in self.atoms.arrays["labels"]]  # type: ignore
         )
 
         # Use broadcasting instead of loops
