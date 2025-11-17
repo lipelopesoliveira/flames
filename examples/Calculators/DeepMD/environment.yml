@@ -1,0 +1,22 @@
+name: flames_deepmd
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip
+  - jupyter
+  - jupyterlab
+  - numpy
+  - scipy
+  - pandas
+  - ase
+  - gemmi
+  - pymatgen
+  - tqdm
+  - simplejson
+  - gemmi
+  - pip:
+    - deepmd-kit[torch]
+    - pymser
+    - cuequivariance-torch
+    - torch-dftd

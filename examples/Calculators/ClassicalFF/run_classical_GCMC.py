@@ -12,6 +12,7 @@ from flames.gcmc import GCMC
 
 NUM_THREADS_TO_USE = 4
 set_num_threads(NUM_THREADS_TO_USE)
+
 with open("/home/felipe/PRs/mlp_adsorption/flames/data/UFF_lj_params.json", "r") as f:
     uff_lj_params = json.loads(f.read())
 
