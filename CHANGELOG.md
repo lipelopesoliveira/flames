@@ -14,6 +14,8 @@
 
 ### Documentation 📖
 
+- Add online documentation for the code. See https://lipelopesoliveira.github.io/flames/
+
 ### Removed 🗑️
 
 ## v[0.4.4] - 2025-11-04
