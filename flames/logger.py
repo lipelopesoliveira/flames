@@ -357,6 +357,8 @@ Accepted: {rnd_number < acc}
         avg_uptake = eq_results["average"]
         std_uptake = eq_results["uncertainty"]
 
+        avg_uptake_excess = avg_uptake - self.sim.excess_nmol
+
         enthalpy, enthalpy_sd = pymser.calc_equilibrated_enthalpy(
             energy=np.array(self.sim.total_ads_list) / units.kB,  # Convert to K
             number_of_molecules=self.sim.uptake_list,
@@ -392,6 +394,13 @@ Finishing GCMC simulation
     Average loading absolute [cm^3 (STP)/gr framework]   {avg_uptake * self.sim.conv_factors["cm^3 STP/gr"]:12.5f} +/- {std_uptake * self.sim.conv_factors["cm^3 STP/gr"]:12.5f} [-]
     Average loading absolute [cm^3 (STP)/cm^3 framework] {avg_uptake * self.sim.conv_factors["cm^3 STP/cm^3"]:12.5f} +/- {std_uptake * self.sim.conv_factors["cm^3 STP/cm^3"]:12.5f} [-]
     Average loading absolute [%wt framework]             {avg_uptake * self.sim.conv_factors["mg/g"] * 1e-1:12.5f} +/- {std_uptake * self.sim.conv_factors["mg/g"] * 1e-1:12.5f} [-]
+
+    Average excess absolute [molecules/unit cell]        {avg_uptake_excess:12.5f} +/- {std_uptake:12.5f} [-]
+    Average loading absolute [mol/kg framework]          {avg_uptake_excess * self.sim.conv_factors["mol/kg"]:12.5f} +/- {std_uptake * self.sim.conv_factors["mol/kg"]:12.5f} [-]
+    Average loading absolute [mg/g framework]            {avg_uptake_excess * self.sim.conv_factors["mg/g"]:12.5f} +/- {std_uptake * self.sim.conv_factors["mg/g"]:12.5f} [-]
+    Average loading absolute [cm^3 (STP)/gr framework]   {avg_uptake_excess * self.sim.conv_factors["cm^3 STP/gr"]:12.5f} +/- {std_uptake * self.sim.conv_factors["cm^3 STP/gr"]:12.5f} [-]
+    Average loading absolute [cm^3 (STP)/cm^3 framework] {avg_uptake_excess * self.sim.conv_factors["cm^3 STP/cm^3"]:12.5f} +/- {std_uptake * self.sim.conv_factors["cm^3 STP/cm^3"]:12.5f} [-]
+    Average loading absolute [%wt framework]             {avg_uptake_excess * self.sim.conv_factors["mg/g"] * 1e-1:12.5f} +/- {std_uptake * self.sim.conv_factors["mg/g"] * 1e-1:12.5f} [-]
 
 
     Enthalpy of adsorption: [kJ/mol]                     {enthalpy:12.5f} +/- {enthalpy_sd:12.5f} [kJ/mol]

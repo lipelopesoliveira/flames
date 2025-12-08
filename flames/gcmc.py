@@ -133,6 +133,10 @@ class GCMC(BaseSimulator):
         Acentric factor of the adsorbate.
     :type acentricFactor: float, optional
 
+    :param void_fraction:
+        Void fraction of the adsorbate.
+    :type void_fraction: float, optional
+
     :param LLM:
         Use Leftmost Local Minima (LLM) on the determination of the equilibration point by `pyMSER <https://github.com/lipelopesoliveira/pyMSER>`_.
         This can underestimate the equilibration point in some situations, but generate good averages for well-behaved scenarios.
@@ -172,6 +176,7 @@ class GCMC(BaseSimulator):
         criticalTemperature: Union[float, None] = None,
         criticalPressure: Union[float, None] = None,
         acentricFactor: Union[float, None] = None,
+        void_fraction: float = 0.0,
         LLM: bool = True,
         move_weights: dict = {
             "insertion": 0.20,
@@ -214,6 +219,8 @@ class GCMC(BaseSimulator):
         self.criticalTemperature = criticalTemperature
         self.criticalPressure = criticalPressure
         self.acentricFactor = acentricFactor
+        self.void_fraction = void_fraction
+        self.excess_nmol = 0.0
 
         # Check if any critical parameters are not None
         if all([self.criticalTemperature, self.criticalPressure, self.acentricFactor]):
@@ -223,9 +230,12 @@ class GCMC(BaseSimulator):
                 criticalTemperature=self.criticalTemperature,  # type: ignore
                 criticalPressure=self.criticalPressure,  # type: ignore
                 acentricFactor=self.acentricFactor,  # type: ignore
-                molarMass=self.adsorbate_mass,
+                molarMass=self.adsorbate_mass * 1e3, # convert kg/mol to g/mol
             )
             self.fugacity_coeff = self.eos.get_fugacity_coefficient()
+
+            self.excess_nmol = self.eos.get_bulk_phase_molar_density() * self.V * units.m ** -3 * self.void_fraction
+
 
         # Parameters for storing the main results during the simulation
         self.N_ads: int = 0
@@ -494,9 +504,17 @@ class GCMC(BaseSimulator):
         avrg = self.equilibrated_results.get("average", 0)
         stdv = self.equilibrated_results.get("uncertainty", 0)
 
-        results["uptake"] = {
+        results["absolute_uptake"] = {
             unit: {
                 "mean": avrg * factor,
+                "sd": stdv * factor,
+            }
+            for unit, factor in self.conv_factors.items()
+        }
+
+        results["excess_uptake"] = {
+            unit: {
+                "mean": (avrg - self.excess_nmol) * factor,
                 "sd": stdv * factor,
             }
             for unit, factor in self.conv_factors.items()

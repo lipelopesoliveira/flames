@@ -5,6 +5,9 @@
 ### New Features 🎉
 
 - Added the `Reinsertion` move to the GCMC simulation. This move allows for the reinsertion of an adsorbate molecule that has been previously deleted, providing a mechanism to recover from unfavorable deletions and improve sampling efficiency.
+- Added excess uptake calculation to the GCMC simulation results.
+  - Added the `void_fraction` parameter to the `GCMC` class that allows users to specify the void fraction of the structure for calculating the excess uptake.
+  - Added the `get_bulk_phase_molar_density` on the `PengRobinsonEOS` class to calculate the bulk phase molar density needed for the excess uptake calculation.
 
 ### Fixed 🐛
 
