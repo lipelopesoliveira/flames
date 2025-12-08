@@ -231,21 +231,27 @@ class GCMCLogger(BaseLogger):
 
     def print_run_header(self) -> None:
         """Prints the header for the main GCMC loop."""
-        header = """
+
+        header = "Movement statistics:\n"
+
+        for key, value in self.sim.move_weights.items():
+            header += f"  {key.capitalize():11}: {value:.3f}\n"
+
+        header += """
 ===========================================================================
 
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Starting GCMC simulation
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
- Iteration |  Number of  |  Uptake  |    Tot En.   |Av. Ads. En.|  Pacc  |  Pdel  |  Ptra  |  Prot  |  Time
-     -     |  Molecules  | [mmol/g] |     [eV]     |  [kJ/mol]  |    %   |    %   |   %    |   %    |   [s]
----------- | ----------- | -------- | ------------ | ---------- | ------ | ------ | ------ | ------ | ------"""
+ Iteration |  Number of  |  Uptake  |    Tot En.   |Av. Ads. En.|  Pacc  |  Pdel  |  Ptra  |  Prot  |  Prin  |  Time
+     -     |  Molecules  | [mmol/g] |     [eV]     |  [kJ/mol]  |    %   |    %   |   %    |   %    |   %    |   [s]
+---------- | ----------- | -------- | ------------ | ---------- | ------ | ------ | ------ | ------ | ------ | -------"""
         self._print(header)
 
     def print_step_info(self, step, average_ads_energy, step_time) -> None:
 
-        line_str = "{:^11}|{:^13}|{:>9.2f} |{:>13.4f} |{:>11.4f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:9.2f}"
+        line_str = "{:^11}|{:^13}|{:>9.2f} |{:>13.4f} |{:>11.4f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:9.2f}"
 
         self._print(
             line_str.format(
@@ -272,6 +278,11 @@ Starting GCMC simulation
                 (
                     np.average(self.sim.mov_dict["rotation"]) * 100
                     if len(self.sim.mov_dict["rotation"]) > 0
+                    else 0
+                ),
+                (
+                    np.average(self.sim.mov_dict["reinsertion"]) * 100
+                    if len(self.sim.mov_dict["reinsertion"]) > 0
                     else 0
                 ),
                 step_time,

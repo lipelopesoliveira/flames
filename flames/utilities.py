@@ -186,12 +186,12 @@ def check_weights(move_weights: dict) -> dict:
     Check if the move weights are valid and normalize them to sum to 1.
 
     Parameters:
-    - move_weights (dict): A dictionary containing the move weights for 'insertion', 'deletion', 'translation', and 'rotation'.
+    - move_weights (dict): A dictionary containing the move weights for 'insertion', 'deletion', 'translation', 'rotation', and 'reinsertion'.
     Returns:
     - dict: Normalized move weights.
     """
 
-    valid_keys = {"insertion", "deletion", "translation", "rotation"}
+    valid_keys = {"insertion", "deletion", "translation", "rotation", "reinsertion"}
 
     # Check if move_weights is a dictionary
     if type(move_weights) is not dict:

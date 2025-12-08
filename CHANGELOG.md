@@ -1,10 +1,14 @@
 # Changelog
 
-## v[X.Y.Z] - YYYY-MM-DD (Unreleased)
+## v[0.5.0] - 2025-12-08 (Unreleased)
 
 ### New Features 🎉
 
+- Added the `Reinsertion` move to the GCMC simulation. This move allows for the reinsertion of an adsorbate molecule that has been previously deleted, providing a mechanism to recover from unfavorable deletions and improve sampling efficiency.
+
 ### Fixed 🐛
+
+- Set `max_overlap_tries` to 1 by default, as any value greater than 1 may cause problems on the GCMC simulation.
 
 ### Enhanced ✨
 
@@ -243,3 +247,15 @@
 ## v[0.1.0] - 2025-07-12
 
 - Initial release of the MLP Adsorption code, including the GCMC and Widom methods with basic functionality on the simulation of adsorption processes.
+
+## v[X.Y.Z] - YYYY-MM-DD (Unreleased)
+
+### New Features 🎉
+
+### Fixed 🐛
+
+### Enhanced ✨
+
+### Documentation 📖
+
+### Removed 🗑️

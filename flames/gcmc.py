@@ -72,15 +72,16 @@ class GCMC(BaseSimulator):
     :type vdw_factor: float, optional
 
     :param max_overlap_tries:
-        Maximum number of tries to insert/move a molecule without overlap. Default is ``100``.
+        Maximum number of tries to insert/move a molecule without overlap. Default is ``1``.
+        Do not change this parameter unless you know what you are doing.
     :type max_overlap_tries: int, optional
 
     :param max_translation:
-        Maximum translation distance. Default is ``1.0``.
+        Maximum translation distance. Default is ``1.5``.
     :type max_translation: float, optional
 
     :param max_rotation:
-        Maximum rotation angle (in radians). Default is ``15`` degrees (converted to radians).
+        Maximum rotation angle (in radians). Default is ``90`` degrees (converted to radians).
     :type max_rotation: float, optional
 
     :param save_frequency:
@@ -92,7 +93,7 @@ class GCMC(BaseSimulator):
     :type save_rejected: bool, optional
 
     :param output_to_file:
-        If ``True``, writes the output to a file named ``GCMC_Output.out`` in the ``results`` directory. Default is ``True``.
+        If ``True``, writes the output to a file named ``output_{temperature}_{pressure}.out`` in the ``results`` directory. Default is ``True``.
     :type output_to_file: bool, optional
 
     :param output_folder:
@@ -138,9 +139,9 @@ class GCMC(BaseSimulator):
     :type LLM: bool, optional
 
     :param move_weights:
-        A dictionary containing the move weights for ``'insertion'``, ``'deletion'``, ``'translation'``, and ``'rotation'``.
+        A dictionary containing the move weights for ``'insertion'``, ``'deletion'``, ``'translation'``, ``'rotation'``, and ``'reinsertion'``.
         Default is equal weights for all moves.
-        Example: ``{'insertion': 0.3, 'deletion': 0.3, 'translation': 0.2, 'rotation': 0.2}``
+        Example: ``{'insertion': 0.3, 'deletion': 0.3, 'translation': 0.2, 'rotation': 0.2, 'reinsertion': 0.0}``
     :type move_weights: dict, optional
 
     """
@@ -155,9 +156,9 @@ class GCMC(BaseSimulator):
         device: str,
         vdw_radii: np.ndarray,
         vdw_factor: float = 0.6,
-        max_overlap_tries: int = 100,
-        max_translation: float = 1.0,
-        max_rotation: float = np.radians(15),
+        max_overlap_tries: int = 1,
+        max_translation: float = 1.5,
+        max_rotation: float = np.radians(90),
         max_deltaE: float = 1.555,
         save_frequency: int = 100,
         save_rejected: bool = False,
@@ -173,10 +174,11 @@ class GCMC(BaseSimulator):
         acentricFactor: Union[float, None] = None,
         LLM: bool = True,
         move_weights: dict = {
-            "insertion": 0.25,
-            "deletion": 0.25,
-            "translation": 0.25,
-            "rotation": 0.25,
+            "insertion": 0.20,
+            "deletion": 0.20,
+            "translation": 0.20,
+            "rotation": 0.20,
+            "reinsertion": 0.20,
         },
     ):
         """
@@ -236,13 +238,20 @@ class GCMC(BaseSimulator):
         self.max_translation = max_translation
         self.max_rotation = max_rotation
 
-        self.mov_dict: dict = {"insertion": [], "deletion": [], "translation": [], "rotation": []}
+        self.mov_dict: dict = {
+            "insertion": [],
+            "deletion": [],
+            "translation": [],
+            "rotation": [],
+            "reinsertion": []
+        }
 
         self.movements: dict = {
             "insertion": self.try_insertion,
             "deletion": self.try_deletion,
             "rotation": self.try_rotation,
             "translation": self.try_translation,
+            "reinsertion": self.try_reinsertion,
         }
 
         # Base iteration for restarting the simulation. This is for tracking the iteration count only
@@ -413,7 +422,7 @@ class GCMC(BaseSimulator):
 
     def save_results(
         self,
-        file_name: str = "GCMC_Results.json",
+        file_name: Union[str, None] = None,
         batch_size: Union[int, bool] = False,
         run_ADF: bool = False,
         uncertainty: str = "uSD",
@@ -445,6 +454,9 @@ class GCMC(BaseSimulator):
             - "SE": Standard Error
 
         """
+
+        if file_name is None:
+            file_name = f"results_{self.T}_{self.P}.out"
 
         self.equilibrate(batch_size=batch_size, run_ADF=run_ADF, uncertainty=uncertainty)
 
@@ -542,6 +554,30 @@ class GCMC(BaseSimulator):
                 prefactor=pre_factor,
                 acc=acc,
                 rnd_number=rnd_number,
+            )
+
+        # Apply Metropolis acceptance/rejection rule
+        return rnd_number < acc
+
+    def _reinsertion_acceptance(self, deltaE) -> bool:
+        """
+        Calculate the acceptance probability for reinsertion of an adsorbate molecule as
+
+        Preins (N -> N ) = min(1, exp(-β ΔE) )
+        """
+
+        exp_value = np.exp(-self.beta * deltaE)
+        acc = min(1, exp_value)
+
+        rnd_number = self.rnd_generator.random()
+
+        if self.debug:
+            self.logger.print_debug_movement(
+                movement="Reinsertion",
+                deltaE=deltaE,
+                prefactor=1,
+                acc=acc,
+                rnd_number=rnd_number
             )
 
         # Apply Metropolis acceptance/rejection rule
@@ -682,6 +718,77 @@ class GCMC(BaseSimulator):
             self.current_system = atoms_trial.copy()
             self.current_total_energy = e_new
             self.N_ads -= 1
+
+            return True
+        else:
+            return False
+
+    def try_reinsertion(self) -> bool:
+        """
+        Try to delete and reinsert an adsorbate molecule.
+        This method randomly selects an adsorbate molecule, deletes it, and tries to reinsert it
+        at a new random position within the framework.
+
+        If there are no adsorbates, it returns False.
+
+        Returns
+        -------
+        bool
+            True if the reinsertion was accepted, False otherwise.
+        """
+
+        if self.N_ads == 0:
+            return False
+        
+        # Randomly select an adsorbate molecule to delete
+        i_ads = self.rnd_generator.integers(low=0, high=self.N_ads, size=1)[0]
+
+        # Get the indices of the adsorbate atoms to be deleted
+        i_start = self.n_atoms_framework + self.n_adsorbate_atoms * i_ads
+        i_end = self.n_atoms_framework + self.n_adsorbate_atoms * (i_ads + 1)
+
+        # Create a trial system for the deletion
+        atoms_trial = self.current_system.copy()
+    
+        # Delete the adsorbate atoms from the trial structure
+        del atoms_trial[i_start:i_end]
+
+        inserted = False
+        for _ in range(1000):
+            # Try at least 1000 times to insert the molecule without overlap
+            temp = random_mol_insertion(
+                atoms_trial, self.adsorbate, self.rnd_generator
+            )
+
+            overlaped = check_overlap(
+                atoms=temp,
+                group1_indices=np.arange(len(atoms_trial)),
+                group2_indices=np.arange(start=len(atoms_trial), stop=len(temp)),
+                vdw_radii=self.vdw,
+            )
+
+            if not overlaped:
+                inserted = True
+                atoms_trial = temp
+                break
+
+        if not inserted:
+            return False
+
+        atoms_trial.calc = self.model  # type: ignore
+        e_new = atoms_trial.get_potential_energy()
+
+        deltaE = e_new - self.current_total_energy
+
+        if np.abs(deltaE) > np.abs(self.max_deltaE):
+            self._save_rejected_if_enabled(atoms_trial)
+            return False
+        
+        # Apply the acceptance criteria for deletion
+        if self._reinsertion_acceptance(deltaE=deltaE):
+
+            self.current_system = atoms_trial.copy()
+            self.current_total_energy = e_new
 
             return True
         else:
