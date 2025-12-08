@@ -152,13 +152,6 @@ class PengRobinsonEOS:
         """
         Calculate the equivalent bulk phase number of molecules per cubic meter.
 
-        n_mol = rho / (molar_mass / N_A) * 1e-30
-
-        where:
-        rho is the density in kg/m^3,
-        molar_mass is the molar mass in g/mol,
-        N_A is Avogadro's number.
-
         Returns:
 
         molar_density: float

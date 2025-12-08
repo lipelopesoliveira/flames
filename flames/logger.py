@@ -80,7 +80,6 @@ Running on device: {self.sim.device}
 Constants used:
 Boltzmann constant:     {units.kB} eV/K
 Beta (1/kT):            {self.sim.beta:.3f} eV^-1
-Fugacity coefficient:   {self.sim.fugacity_coeff:.9f} (dimensionless)
 
 ===========================================================================
 
@@ -134,6 +133,27 @@ Atomic positions:
 """
         for atom in self.sim.adsorbate:
             header += "  {:2} {:12.7f} {:12.7f} {:12.7f}\n".format(atom.symbol, *atom.position)
+
+        header += f"""
+===========================================================================
+Equation of State Parameters:
+
+    Critical temparure [K]: {self.sim.criticalTemperature:.6f}
+    Critical pressure [Pa]: {self.sim.criticalPressure:.6f}
+    Acentric factor [-]:    {self.sim.acentricFactor:.6f}
+
+    Vapour=stable, Liquid=metastable
+
+    MolFraction:           1.0000000000 [-]
+    Compressibility:       {self.sim.eos.get_compressibility():.6f} [-]
+    Fugacity coeff.:       {self.sim.fugacity_coeff:.10f} [-]
+    Bulk phase pressure:   {self.sim.P * self.sim.fugacity_coeff:.6f} [Pa]
+
+    Density of the bulk fluid phase:      {self.sim.eos.get_bulk_phase_density():.6f} [kg/m^3]
+
+    Amount of excess molecules:        {self.sim.eos.get_bulk_phase_molar_density() * self.sim.V * self.sim.void_fraction:.10f} [-]
+
+"""
 
         header += """
 ===========================================================================
