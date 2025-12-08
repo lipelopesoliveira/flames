@@ -16,6 +16,8 @@
 
 ### Enhanced ✨
 
+- Change the json output file name on the `GCMC.save_results` method to `results_<T>_<P>.json` if no file name is provided by the user.
+
 ### Documentation 📖
 
 - Add online documentation for the code. See https://lipelopesoliveira.github.io/flames/
