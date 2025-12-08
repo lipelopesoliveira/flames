@@ -230,12 +230,13 @@ class GCMC(BaseSimulator):
                 criticalTemperature=self.criticalTemperature,  # type: ignore
                 criticalPressure=self.criticalPressure,  # type: ignore
                 acentricFactor=self.acentricFactor,  # type: ignore
-                molarMass=self.adsorbate_mass * 1e3, # convert kg/mol to g/mol
+                molarMass=self.adsorbate_mass * 1e3,  # convert kg/mol to g/mol
             )
             self.fugacity_coeff = self.eos.get_fugacity_coefficient()
 
-            self.excess_nmol = self.eos.get_bulk_phase_molar_density() * self.V * units.m ** -3 * self.void_fraction
-
+            self.excess_nmol = (
+                self.eos.get_bulk_phase_molar_density() * self.V * units.m**-3 * self.void_fraction
+            )
 
         # Parameters for storing the main results during the simulation
         self.N_ads: int = 0
@@ -253,7 +254,7 @@ class GCMC(BaseSimulator):
             "deletion": [],
             "translation": [],
             "rotation": [],
-            "reinsertion": []
+            "reinsertion": [],
         }
 
         self.movements: dict = {
@@ -591,11 +592,7 @@ class GCMC(BaseSimulator):
 
         if self.debug:
             self.logger.print_debug_movement(
-                movement="Reinsertion",
-                deltaE=deltaE,
-                prefactor=1,
-                acc=acc,
-                rnd_number=rnd_number
+                movement="Reinsertion", deltaE=deltaE, prefactor=1, acc=acc, rnd_number=rnd_number
             )
 
         # Apply Metropolis acceptance/rejection rule
@@ -757,7 +754,7 @@ class GCMC(BaseSimulator):
 
         if self.N_ads == 0:
             return False
-        
+
         # Randomly select an adsorbate molecule to delete
         i_ads = self.rnd_generator.integers(low=0, high=self.N_ads, size=1)[0]
 
@@ -767,16 +764,14 @@ class GCMC(BaseSimulator):
 
         # Create a trial system for the deletion
         atoms_trial = self.current_system.copy()
-    
+
         # Delete the adsorbate atoms from the trial structure
         del atoms_trial[i_start:i_end]
 
         inserted = False
         for _ in range(1000):
             # Try at least 1000 times to insert the molecule without overlap
-            temp = random_mol_insertion(
-                atoms_trial, self.adsorbate, self.rnd_generator
-            )
+            temp = random_mol_insertion(atoms_trial, self.adsorbate, self.rnd_generator)
 
             overlaped = check_overlap(
                 atoms=temp,
@@ -801,7 +796,7 @@ class GCMC(BaseSimulator):
         if np.abs(deltaE) > np.abs(self.max_deltaE):
             self._save_rejected_if_enabled(atoms_trial)
             return False
-        
+
         # Apply the acceptance criteria for deletion
         if self._reinsertion_acceptance(deltaE=deltaE):
 
