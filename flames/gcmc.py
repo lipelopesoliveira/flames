@@ -467,7 +467,7 @@ class GCMC(BaseSimulator):
         """
 
         if file_name is None:
-            file_name = f"results_{self.T}_{self.P}.out"
+            file_name = f"results_{self.T}_{self.P}.json"
 
         self.equilibrate(batch_size=batch_size, run_ADF=run_ADF, uncertainty=uncertainty)
 
