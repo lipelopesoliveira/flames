@@ -12,6 +12,7 @@
 ### Fixed 🐛
 
 - Set `max_overlap_tries` to 1 by default, as any value greater than 1 may cause problems on the GCMC simulation.
+- Fix conversion factor for 'nmol' in BaseSimulator to account for supercell dimensions
 
 ### Enhanced ✨
 

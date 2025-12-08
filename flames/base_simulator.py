@@ -190,7 +190,7 @@ class BaseSimulator:
         mol2cm3 = units.kB / units.J * units.mol * 273.15 / atm2pa
 
         self.conv_factors = {
-            "nmol": 1,
+            "nmol": 1 / np.prod(self.ideal_supercell),
             "mol/kg": (1 / units.mol) / self.get_framework_mass(),
             "mg/g": (self.adsorbate_mass * 1e3) / self.get_framework_mass(),
             "cm^3 STP/gr": mol2cm3 / units.mol / self.get_framework_mass() * 1e3,
