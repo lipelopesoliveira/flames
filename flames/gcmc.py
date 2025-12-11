@@ -373,6 +373,7 @@ class GCMC(BaseSimulator):
         batch_size: Union[int, bool] = False,
         run_ADF: bool = False,
         uncertainty: str = "uSD",
+        production_start: int = 0
     ) -> None:
         """
         Use pyMSER to get the equilibrated statistics of the simulation.
@@ -396,21 +397,23 @@ class GCMC(BaseSimulator):
             - "uSE": uncorrelated Standard Error
             - "SD": Standard Deviation
             - "SE": Standard Error
+        production_start : int
+            The step to start the production analysis from. Default is 0.
 
         """
 
         eq_results = pymser.equilibrate(
-            self.uptake_list,
+            self.uptake_list[production_start:],
             LLM=self.LLM,
-            batch_size=int(len(self.uptake_list) / 50) if batch_size is False else batch_size,
+            batch_size=int(len(self.uptake_list[production_start:]) / 50) if batch_size is False else batch_size,
             ADF_test=run_ADF,
             uncertainty=uncertainty,
             print_results=False,
         )
 
         enthalpy, enthalpy_sd = pymser.calc_equilibrated_enthalpy(
-            energy=np.array(self.total_ads_list) / units.kB,  # Convert to K
-            number_of_molecules=self.uptake_list,
+            energy=np.array(self.total_ads_list[production_start:]) / units.kB,  # Convert to K
+            number_of_molecules=self.uptake_list[production_start:],
             temperature=self.T,
             eq_index=eq_results["t0"],
             uncertainty="SD",
@@ -422,7 +425,7 @@ class GCMC(BaseSimulator):
         eq_results["ac_time"] = int(eq_results["ac_time"])
         eq_results["uncorr_samples"] = int(eq_results["uncorr_samples"])
 
-        eq_results["equilibrated"] = eq_results["t0"] < 0.75 * len(self.uptake_list)
+        eq_results["equilibrated"] = eq_results["t0"] < 0.75 * len(self.uptake_list[production_start:])
 
         eq_results["enthalpy_kJ_per_mol"] = float(enthalpy)
         eq_results["enthalpy_sd_kJ_per_mol"] = float(enthalpy_sd)

@@ -17,6 +17,7 @@
 ### Enhanced ✨
 
 - Change the json output file name on the `GCMC.save_results` method to `results_<T>_<P>.json` if no file name is provided by the user.
+- Add the `production_start` parameter to the `GCMC.equilibrate` method to allow users to specify the step from which the production analysis should begin. This provides greater flexibility in analyzing the simulation data and helps to exclude initial equilibration steps from the analysis, specially when running MD + GCMC simulations.
 
 ### Documentation 📖
 
