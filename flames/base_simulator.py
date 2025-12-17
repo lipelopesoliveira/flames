@@ -198,7 +198,7 @@ class BaseSimulator:
             "mg/g": (self.adsorbate_mass * 1e3) / self.get_framework_mass(),
             "cm^3 STP/gr": mol2cm3 / units.mol / self.get_framework_mass() * 1e3,
             "cm^3 STP/cm^3": 1e6 * mol2cm3 / units.mol / (self.framework.get_volume() * (1e-8**3)),
-            "% wt": (self.adsorbate_mass * 1e3) / self.get_framework_mass() * 1e-1,
+            "% wt": self.adsorbate_mass / self.get_framework_mass() * 100,
         }
 
         self.vdw: np.ndarray = vdw_radii * vdw_factor  # Adjust van der Waals radii to avoid overlap
