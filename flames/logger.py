@@ -134,7 +134,9 @@ Atomic positions:
         for atom in self.sim.adsorbate:
             header += "  {:2} {:12.7f} {:12.7f} {:12.7f}\n".format(atom.symbol, *atom.position)
 
-        header += f"""
+        # Only prints if EOS parameters are set in the simulator
+        if _ := getattr(self.sim, "criticalTemperature", None):
+            header += f"""
 ===========================================================================
 Equation of State Parameters:
 
