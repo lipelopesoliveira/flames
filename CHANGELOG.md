@@ -13,11 +13,13 @@
 
 - Set `max_overlap_tries` to 1 by default, as any value greater than 1 may cause problems on the GCMC simulation.
 - Fix conversion factor for 'nmol' in BaseSimulator to account for supercell dimensions
+- Remove the `save_frequency` parameter from the `Widom` class, to avoid confusion since the snapshots are now controlled by the `save_snapshots` parameter.
 
 ### Enhanced ✨
 
 - Change the json output file name on the `GCMC.save_results` method to `results_<T>_<P>.json` if no file name is provided by the user.
 - Add the `production_start` parameter to the `GCMC.equilibrate` method to allow users to specify the step from which the production analysis should begin. This provides greater flexibility in analyzing the simulation data and helps to exclude initial equilibration steps from the analysis, specially when running MD + GCMC simulations.
+- Add the `save_snapshots` parameter to the `Widom` class to allow users to control whether to save the simulation snapshots during the Widom insertion process. When set to `True`, the simulation state and results will be saved every step; when set to `False`, they will not be saved. By default, this parameter is set to `True`.
 
 ### Documentation 📖
 
