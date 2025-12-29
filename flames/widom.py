@@ -264,7 +264,9 @@ class Widom(BaseSimulator):
         if self.save_rejected:
             self.rejected_trajectory.write(atoms_trial)  # type: ignore
 
-    def _save_state(self,) -> None:
+    def _save_state(
+        self,
+    ) -> None:
         """
         Save the current state of the simulation if the iteration matches the save frequency.
         """
