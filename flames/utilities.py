@@ -157,6 +157,12 @@ def make_cubic(
         If True, generate a transformation with a diagonal transformation matrix (default is False)
     force_90_degrees : bool, optional
         If True, force the angles to be 90 degrees (default is False)
+    allow_orthorhombic : bool, optional
+        If ``True``, allows the supercell to be orthorhombic (90-degree angles only)
+        If ``False``, the supercell can have non-orthogonal angles (default is False)
+    max_length : float or None, optional
+        Maximum length (in Angstroms) for any side of the supercell
+        If ``None``, no maximum length is enforced (default is None)
     min_atoms : int, optional
         Minimum number of atoms in the supercell (default is 0)
     max_atoms : int, optional

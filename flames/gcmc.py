@@ -120,6 +120,21 @@ class GCMC(BaseSimulator):
         If ``True``, automatically creates a supercell based on the cutoff radius. Default is ``True``.
     :type automatic_supercell: bool, optional
 
+    :param allow_orthorhombic:
+        If ``True``, allows the supercell to be orthorhombic (90-degree angles only).
+        If ``False``, the supercell can have non-orthogonal angles. Default is ``False``.
+    :type allow_orthorhombic: bool, optional
+
+    :param force_90_degrees:
+        If ``True``, forces all angles of the supercell to be 90 degrees, regardless of the input structure.
+        This is useful for simulations requiring orthogonal cells. Default is ``True``.
+    :type force_90_degrees: bool, optional
+
+    :param max_length:
+        Maximum length (in Angstroms) for any side of the supercell. If ``None``, no maximum length is enforced.
+        This can be used to limit the size of the supercell for computational efficiency. Default is ``None``.
+    :type max_length: float or None, optional
+    
     :param criticalTemperature:
         Critical temperature of the adsorbate in Kelvin.
     :type criticalTemperature: float, optional
