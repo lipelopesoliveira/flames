@@ -72,11 +72,6 @@ class GCMC(BaseSimulator):
         Factor to scale the Van der Waals radii. Default is ``0.6``.
     :type vdw_factor: float, optional
 
-    :param max_overlap_tries:
-        Maximum number of tries to insert/move a molecule without overlap. Default is ``1``.
-        Do not change this parameter unless you know what you are doing.
-    :type max_overlap_tries: int, optional
-
     :param max_translation:
         Maximum translation distance. Default is ``1.5``.
     :type max_translation: float, optional
@@ -161,7 +156,6 @@ class GCMC(BaseSimulator):
         device: str,
         vdw_radii: np.ndarray,
         vdw_factor: float = 0.6,
-        max_overlap_tries: int = 1,
         max_translation: float = 1.5,
         max_rotation: float = np.radians(90),
         max_deltaE: float = 1.555,
@@ -178,7 +172,7 @@ class GCMC(BaseSimulator):
         criticalPressure: Union[float, None] = None,
         acentricFactor: Union[float, None] = None,
         void_fraction: float = 0.0,
-        LLM: bool = True,
+        LLM: bool = False,
         move_weights: dict = {
             "insertion": 0.20,
             "deletion": 0.20,
@@ -243,7 +237,7 @@ class GCMC(BaseSimulator):
         self.total_energy_list: list[float] = []
         self.total_ads_list: list[float] = []
 
-        self.move_weights = check_weights(move_weights)
+        self._move_weights = check_weights(move_weights)
 
         self.max_translation = max_translation
         self.max_rotation = max_rotation
@@ -267,14 +261,35 @@ class GCMC(BaseSimulator):
         # Base iteration for restarting the simulation. This is for tracking the iteration count only
         self.base_iteration: int = 0
 
-        # Maximum number of tries to insert a molecule without overlap
-        self.max_overlap_tries = max_overlap_tries
-
         # Dictionary to store the equilibrated results by pyMSER
         self.equilibrated_results: dict = {}
 
         # Uses Leftmost Local Minima
         self.LLM = LLM
+
+    @property
+    def move_weights(self) -> dict:
+        """
+        Get the move weights for the GCMC simulation.
+
+        Returns
+        -------
+        dict
+            A dictionary containing the move weights for each type of movement.
+        """
+        return self._move_weights
+
+    @move_weights.setter
+    def move_weights(self, weights: dict) -> None:
+        """
+        Set the move weights for the GCMC simulation.
+
+        Parameters
+        ----------
+        weights : dict
+            A dictionary containing the move weights for each type of movement.
+        """
+        self._move_weights = check_weights(weights)
 
     def _save_rejected(self, atoms_trial: ase.Atoms) -> None:
         """
@@ -368,6 +383,51 @@ class GCMC(BaseSimulator):
         self.logger.print_load_state_info(
             n_atoms=len(state), average_ads_energy=average_binding_energy
         )
+    
+    def insert_adsorbates(self, n_adsorbates: int, max_attempts: int = 1000) -> None:
+        """
+        Insert a given number of adsorbate molecules into the framework at random positions without overlap.
+
+        Parameters
+        ----------
+        n_molecules : int
+            Number of adsorbate molecules to insert.
+        max_attempts : int
+            Maximum number of attempts to insert the molecules without overlap. Default is 1000.
+        """
+        temp_system = self.current_system.copy()
+
+        n_attempts = 0
+        inserted_adsorbates = 0
+        while inserted_adsorbates < n_adsorbates and n_attempts < max_attempts:
+            n_attempts += 1
+            atoms_trial = random_mol_insertion(
+                temp_system, self.adsorbate, self.rnd_generator
+            )
+
+            overlaped = check_overlap(
+                atoms=atoms_trial,
+                group1_indices=np.arange(len(temp_system)),
+                group2_indices=np.arange(len(temp_system), len(atoms_trial)),
+                vdw_radii=self.vdw,
+            )
+
+            if not overlaped:
+                temp_system = atoms_trial.copy()
+                inserted_adsorbates += 1
+
+        if n_attempts == max_attempts:
+            raise Warning(
+                f"Maximum number of attempts ({max_attempts}) reached. " + \
+                f"Could not insert all {n_adsorbates} adsorbates without overlap. " + \
+                f"Max inserted adsorbates: {inserted_adsorbates}."
+            )
+
+        # Update the current system and total energy
+        temp_system.calc = self.model
+        self.current_system = temp_system.copy()
+        self.current_total_energy = temp_system.get_potential_energy()
+        self.N_ads += inserted_adsorbates
 
     def equilibrate(
         self,
@@ -653,7 +713,6 @@ class GCMC(BaseSimulator):
         This method randomly places the adsorbate in the framework and checks for van der Waals overlap.
         If there is no overlap, it calculates the new potential energy and decides whether to accept the insertion
         based on the acceptance criteria.
-        If after a number of tries (self.max_overlap_tries) no valid position is found, the insertion is rejected.
 
         Returns
         -------
@@ -661,21 +720,19 @@ class GCMC(BaseSimulator):
             True if the insertion was accepted, False otherwise.
         """
 
-        for _ in range(self.max_overlap_tries):
-            atoms_trial = random_mol_insertion(
-                self.current_system, self.adsorbate, self.rnd_generator
-            )
 
-            overlaped = check_overlap(
-                atoms=atoms_trial,
-                group1_indices=np.arange(len(self.current_system)),
-                group2_indices=np.arange(len(self.current_system), len(atoms_trial)),
-                vdw_radii=self.vdw,
-            )
+        atoms_trial = random_mol_insertion(
+            self.current_system, self.adsorbate, self.rnd_generator
+        )
 
-            if not overlaped:
-                break
-        else:
+        overlaped = check_overlap(
+            atoms=atoms_trial,
+            group1_indices=np.arange(len(self.current_system)),
+            group2_indices=np.arange(len(self.current_system), len(atoms_trial)),
+            vdw_radii=self.vdw,
+        )
+
+        if overlaped:
             return False
 
         # Energy calculation
@@ -830,36 +887,34 @@ class GCMC(BaseSimulator):
         if self.N_ads == 0:
             return False
 
-        for _ in range(self.max_overlap_tries):
-            i_ads = self.rnd_generator.integers(low=0, high=self.N_ads, size=1)[0]
-            atoms_trial = self.current_system.copy()
+        
+        i_ads = self.rnd_generator.integers(low=0, high=self.N_ads, size=1)[0]
+        atoms_trial = self.current_system.copy()
 
-            pos = atoms_trial.get_positions()  # type: ignore
+        pos = atoms_trial.get_positions()  # type: ignore
 
-            i_start = self.n_atoms_framework + self.n_adsorbate_atoms * i_ads
-            i_end = self.n_atoms_framework + self.n_adsorbate_atoms * (i_ads + 1)
+        i_start = self.n_atoms_framework + self.n_adsorbate_atoms * i_ads
+        i_end = self.n_atoms_framework + self.n_adsorbate_atoms * (i_ads + 1)
 
-            pos[i_start:i_end] = random_translation(
-                original_position=pos[i_start:i_end],
-                cell=self.current_system.cell.array,
-                max_translation=self.max_translation,
-                rnd_generator=self.rnd_generator,
-            )
+        pos[i_start:i_end] = random_translation(
+            original_position=pos[i_start:i_end],
+            cell=self.current_system.cell.array,
+            max_translation=self.max_translation,
+            rnd_generator=self.rnd_generator,
+        )
 
-            atoms_trial.set_positions(pos)  # type: ignore
+        atoms_trial.set_positions(pos)  # type: ignore
 
-            overlaped = check_overlap(
-                atoms=atoms_trial,
-                group1_indices=np.concatenate(
-                    [np.arange(0, i_start), np.arange(i_end, len(atoms_trial))]
-                ),
-                group2_indices=np.arange(i_start, i_end),
-                vdw_radii=self.vdw,
-            )
+        overlaped = check_overlap(
+            atoms=atoms_trial,
+            group1_indices=np.concatenate(
+                [np.arange(0, i_start), np.arange(i_end, len(atoms_trial))]
+            ),
+            group2_indices=np.arange(i_start, i_end),
+            vdw_radii=self.vdw,
+        )
 
-            if not overlaped:
-                break
-        else:
+        if  overlaped:
             return False
 
         atoms_trial.calc = self.model  # type: ignore
@@ -894,35 +949,32 @@ class GCMC(BaseSimulator):
         if self.N_ads == 0:
             return False
 
-        for _ in range(self.max_overlap_tries):
 
-            i_ads = self.rnd_generator.integers(low=0, high=self.N_ads, size=1)[0]
-            atoms_trial = self.current_system.copy()
+        i_ads = self.rnd_generator.integers(low=0, high=self.N_ads, size=1)[0]
+        atoms_trial = self.current_system.copy()
 
-            pos = atoms_trial.get_positions()  # type: ignore
-            i_start = self.n_atoms_framework + self.n_adsorbate_atoms * i_ads
-            i_end = self.n_atoms_framework + self.n_adsorbate_atoms * (i_ads + 1)
+        pos = atoms_trial.get_positions()  # type: ignore
+        i_start = self.n_atoms_framework + self.n_adsorbate_atoms * i_ads
+        i_end = self.n_atoms_framework + self.n_adsorbate_atoms * (i_ads + 1)
 
-            pos[i_start:i_end] = random_rotation_limited(
-                original_position=pos[i_start:i_end],
-                cell=self.current_system.cell.array,
-                rnd_generator=self.rnd_generator,
-                theta_max=self.max_rotation,
-            )
-            atoms_trial.set_positions(pos)  # type: ignore
+        pos[i_start:i_end] = random_rotation_limited(
+            original_position=pos[i_start:i_end],
+            cell=self.current_system.cell.array,
+            rnd_generator=self.rnd_generator,
+            theta_max=self.max_rotation,
+        )
+        atoms_trial.set_positions(pos)  # type: ignore
 
-            overlaped = check_overlap(
-                atoms=atoms_trial,
-                group1_indices=np.concatenate(
-                    [np.arange(0, i_start), np.arange(i_end, len(atoms_trial))]
-                ),
-                group2_indices=np.arange(i_start, i_end),
-                vdw_radii=self.vdw,
-            )
+        overlaped = check_overlap(
+            atoms=atoms_trial,
+            group1_indices=np.concatenate(
+                [np.arange(0, i_start), np.arange(i_end, len(atoms_trial))]
+            ),
+            group2_indices=np.arange(i_start, i_end),
+            vdw_radii=self.vdw,
+        )
 
-            if not overlaped:
-                break
-        else:
+        if overlaped:
             return False
 
         atoms_trial.calc = self.model  # type: ignore
@@ -1024,795 +1076,6 @@ class GCMC(BaseSimulator):
         )
 
         self._save_state(actual_iteration)
-
-    def run(self, N) -> None:
-        """Run the Grand Canonical Monte Carlo simulation for N iterations."""
-
-        self.logger.print_run_header()
-
-        for iteration in tqdm(range(1, N + 1), disable=(self.out_file is None), desc="GCMC Step"):
-            self.step(iteration)
-
-
-
-class NVT_MC(BaseSimulator):
-    """
-    Base class for fixed number of molecules (NVT) Monte Carlo simulations using ASE.
-
-    This class employs Monte Carlo simulations with a fixed number of molecules (NVT ensemble) to study the adsorption of molecules in a framework material.
-    It allows for movements such as translation, rotation, and reinsertion of adsorbate molecules within the framework.
-
-    Currently, it supports any ASE-compatible calculator for energy calculations.
-
-    :param model:
-        The calculator to use for energy calculations. Can be any ASE-compatible calculator.
-        The output of the calculator should be in eV.
-    :type model: ase.calculators.calculator.Calculator
-
-    :param framework_atoms:
-        The framework structure as an ASE Atoms object.
-    :type framework_atoms: ase.Atoms
-
-    :param adsorbate_atoms:
-        The adsorbate structure as an ASE Atoms object.
-    :type adsorbate_atoms: ase.Atoms
-
-    :param n_molecules:
-        Number of adsorbate molecules to simulate in the framework.
-    :type n_molecules: int
-
-    :param temperature:
-        Temperature of the ideal reservoir in Kelvin.
-    :type temperature: float
-
-    :param pressure:
-        Pressure of the ideal reservoir in Pascal.
-    :type pressure: float
-
-    :param device:
-        Device to run the simulation on, e.g., ``'cpu'`` or ``'cuda'``.
-    :type device: str
-
-    :param vdw_radii:
-        Van der Waals radii for the atoms in the framework and adsorbate.
-        Should be an array of the same length as the number of atomic numbers in ASE.
-    :type vdw_radii: np.ndarray
-
-    :param max_deltaE:
-        Maximum energy difference (in eV) to consider for acceptance criteria.
-        This is used to avoid overflow due to problematic calculations. Default is ``1.555`` eV (approx. 150 kJ/mol).
-    :type max_deltaE: float, optional
-
-    :param vdw_factor:
-        Factor to scale the Van der Waals radii. Default is ``0.6``.
-    :type vdw_factor: float, optional
-
-    :param max_overlap_tries:
-        Maximum number of tries to insert/move a molecule without overlap. Default is ``1``.
-        Do not change this parameter unless you know what you are doing.
-    :type max_overlap_tries: int, optional
-
-    :param max_translation:
-        Maximum translation distance. Default is ``1.5``.
-    :type max_translation: float, optional
-
-    :param max_rotation:
-        Maximum rotation angle (in radians). Default is ``90`` degrees (converted to radians).
-    :type max_rotation: float, optional
-
-    :param save_frequency:
-        Frequency at which to save the simulation state and results. Default is ``100``.
-    :type save_frequency: int, optional
-
-    :param save_rejected:
-        If ``True``, saves the rejected moves in a trajectory file. Default is ``False``.
-    :type save_rejected: bool, optional
-
-    :param output_to_file:
-        If ``True``, writes the output to a file named ``output_{temperature}_{pressure}.out`` in the ``results`` directory. Default is ``True``.
-    :type output_to_file: bool, optional
-
-    :param output_folder:
-        Folder to save the output files. If ``None``, a folder named ``results_<T>_<P>`` will be created.
-    :type output_folder: str or None, optional
-
-    :param debug:
-        If ``True``, prints detailed debug information during the simulation. Default is ``False``.
-    :type debug: bool, optional
-
-    :param fugacity_coeff:
-        Fugacity coefficient to correct the pressure. Default is ``1.0``.
-        Only used if ``criticalTemperature``, ``criticalPressure``, and ``acentricFactor`` are not provided.
-    :type fugacity_coeff: float, optional
-
-    :param random_seed:
-        Random seed for reproducibility. Default is ``None`` and will generate a random seed automatically if not provided.
-    :type random_seed: int or None, optional
-
-    :param cutoff_radius:
-        Interaction potential cut-off radius used to estimate the minimum unit cell. Default is ``6.0``.
-    :type cutoff_radius: float, optional
-
-    :param automatic_supercell:
-        If ``True``, automatically creates a supercell based on the cutoff radius. Default is ``True``.
-    :type automatic_supercell: bool, optional
-
-    :param criticalTemperature:
-        Critical temperature of the adsorbate in Kelvin.
-    :type criticalTemperature: float, optional
-
-    :param criticalPressure:
-        Critical pressure of the adsorbate in Pascal.
-    :type criticalPressure: float, optional
-
-    :param acentricFactor:
-        Acentric factor of the adsorbate.
-    :type acentricFactor: float, optional
-
-    :param void_fraction:
-        Void fraction of the adsorbate.
-    :type void_fraction: float, optional
-
-    :param LLM:
-        Use Leftmost Local Minima (LLM) on the determination of the equilibration point by `pyMSER <https://github.com/lipelopesoliveira/pyMSER>`_.
-        This can underestimate the equilibration point in some situations, but generate good averages for well-behaved scenarios.
-    :type LLM: bool, optional
-
-    :param move_weights:
-        A dictionary containing the move weights for ``'insertion'``, ``'deletion'``, ``'translation'``, ``'rotation'``, and ``'reinsertion'``.
-        Default is equal weights for all moves.
-        Example: ``{'insertion': 0.3, 'deletion': 0.3, 'translation': 0.2, 'rotation': 0.2, 'reinsertion': 0.0}``
-    :type move_weights: dict, optional
-
-    """
-
-    def __init__(
-        self,
-        model: calculator.Calculator,
-        framework_atoms: ase.Atoms,
-        adsorbate_atoms: ase.Atoms,
-        n_molecules: int,
-        temperature: float,
-        device: str,
-        vdw_radii: np.ndarray,
-        vdw_factor: float = 0.6,
-        max_overlap_tries: int = 1,
-        max_translation: float = 1.5,
-        max_rotation: float = np.radians(90),
-        max_deltaE: float = 1.555,
-        save_frequency: int = 100,
-        save_rejected: bool = False,
-        output_to_file: bool = True,
-        output_folder: Union[str, None] = None,
-        debug: bool = False,
-        fugacity_coeff: float = 1.0,
-        random_seed: Union[int, None] = None,
-        cutoff_radius: float = 6.0,
-        automatic_supercell: bool = True,
-        criticalTemperature: Union[float, None] = None,
-        criticalPressure: Union[float, None] = None,
-        acentricFactor: Union[float, None] = None,
-        void_fraction: float = 0.0,
-        LLM: bool = True,
-        move_weights: dict = {
-            "insertion": 0.0,
-            "deletion": 0.00,
-            "translation": 1 / 3,
-            "rotation": 1 / 3,
-            "reinsertion": 1 / 3,
-        },
-    ) -> None:
-        """
-        Initialize the NPT Monte Carlo simulation.
-        """
-
-        super().__init__(
-            model=model,
-            framework_atoms=framework_atoms,
-            adsorbate_atoms=adsorbate_atoms,
-            temperature=temperature,
-            pressure=0.0,
-            device=device,
-            vdw_radii=vdw_radii,
-            vdw_factor=vdw_factor,
-            max_deltaE=max_deltaE,
-            save_frequency=save_frequency,
-            save_rejected=save_rejected,
-            output_to_file=output_to_file,
-            output_folder=output_folder,
-            debug=debug,
-            fugacity_coeff=fugacity_coeff,
-            random_seed=random_seed,
-            cutoff_radius=cutoff_radius,
-            automatic_supercell=automatic_supercell,
-        )
-
-        self.logger = GCMCLogger(simulation=self, output_file=self.out_file)
-
-        self.start_time = datetime.datetime.now()
-
-        # Parameters for calculateing the Peng-Robinson equation of state
-        self.criticalTemperature = criticalTemperature
-        self.criticalPressure = criticalPressure
-        self.acentricFactor = acentricFactor
-        self.void_fraction = void_fraction
-        self.excess_nmol = 0.0
-
-        # Check if any critical parameters are not None
-        if all([self.criticalTemperature, self.criticalPressure, self.acentricFactor]):
-            self.eos = PengRobinsonEOS(
-                temperature=self.T,
-                pressure=self.P,
-                criticalTemperature=self.criticalTemperature,  # type: ignore
-                criticalPressure=self.criticalPressure,  # type: ignore
-                acentricFactor=self.acentricFactor,  # type: ignore
-                molarMass=self.adsorbate_mass * 1e3,  # convert kg/mol to g/mol
-            )
-            self.fugacity_coeff = self.eos.get_fugacity_coefficient()
-
-            self.excess_nmol = self.eos.get_bulk_phase_molar_density() * self.V * self.void_fraction
-
-        # Parameters for storing the main results during the simulation
-        self.N_ads: int = 0
-        self.uptake_list: list[int] = []
-        self.total_energy_list: list[float] = []
-        self.total_ads_list: list[float] = []
-
-        self.move_weights = check_weights(move_weights)
-
-        self.max_translation = max_translation
-        self.max_rotation = max_rotation
-
-        self.mov_dict: dict = {
-            "insertion": [],
-            "deletion": [],
-            "translation": [],
-            "rotation": [],
-            "reinsertion": [],
-        }
-
-        self.movements: dict = {
-            "insertion": self.try_insertion,
-            "deletion": self.try_deletion,
-            "rotation": self.try_rotation,
-            "translation": self.try_translation,
-            "reinsertion": self.try_reinsertion,
-        }
-
-        # Base iteration for restarting the simulation. This is for tracking the iteration count only
-        self.base_iteration: int = 0
-
-        # Maximum number of tries to insert a molecule without overlap
-        self.max_overlap_tries = max_overlap_tries
-
-        # Dictionary to store the equilibrated results by pyMSER
-        self.equilibrated_results: dict = {}
-
-        # Uses Leftmost Local Minima
-        self.LLM = LLM
-
-    def _save_rejected(self, atoms_trial: ase.Atoms) -> None:
-        """
-        Helper to conditionally write the rejected configuration to the trajectory.
-
-        Parameters
-        ----------
-        atoms_trial : ase.Atoms
-            The trial configuration that was rejected.
-        """
-        if self.save_rejected:
-            self.rejected_trajectory.write(atoms_trial)  # type: ignore
-
-    def _insertion_acceptance(self, deltaE) -> bool:
-        """
-        Calculate the acceptance probability for insertion of an adsorbate molecule as
-
-        P_acc (N -> N + 1) = min(1, β * V * f * exp(-β ΔE) / (N + 1))
-        """
-
-        exp_value = np.exp(-self.beta * deltaE)
-
-        pre_factor = self.V * self.beta * self.fugacity / (self.N_ads + 1)
-
-        acc = min(1, pre_factor * exp_value)
-
-        rnd_number = self.rnd_generator.random()
-
-        if self.debug:
-            self.logger.print_debug_movement(
-                movement="Insertion",
-                deltaE=deltaE,
-                prefactor=pre_factor,
-                acc=acc,
-                rnd_number=rnd_number,
-            )
-
-        # Apply Metropolis acceptance/rejection rule
-        return rnd_number < acc
-
-    def _deletion_acceptance(self, deltaE) -> bool:
-        """
-        Calculate the acceptance probability for deletion of an adsorbate molecule as
-
-        P_del (N -> N - 1 ) = min(1, N / (β * V * f) * exp(-β ΔE) )
-        """
-
-        exp_value = np.exp(-self.beta * deltaE)
-
-        pre_factor = self.N_ads / (self.V * self.beta * self.fugacity)
-
-        acc = min(1, pre_factor * exp_value)
-
-        rnd_number = self.rnd_generator.random()
-
-        if self.debug:
-            self.logger.print_debug_movement(
-                movement="Deletion",
-                deltaE=deltaE,
-                prefactor=pre_factor,
-                acc=acc,
-                rnd_number=rnd_number,
-            )
-
-        # Apply Metropolis acceptance/rejection rule
-        return rnd_number < acc
-
-    def _reinsertion_acceptance(self, deltaE) -> bool:
-        """
-        Calculate the acceptance probability for reinsertion of an adsorbate molecule as
-
-        P_reins (N -> N ) = min(1, exp(-β ΔE) )
-        """
-
-        exp_value = np.exp(-self.beta * deltaE)
-        acc = min(1, exp_value)
-
-        rnd_number = self.rnd_generator.random()
-
-        if self.debug:
-            self.logger.print_debug_movement(
-                movement="Reinsertion", deltaE=deltaE, prefactor=1, acc=acc, rnd_number=rnd_number
-            )
-
-        # Apply Metropolis acceptance/rejection rule
-        return rnd_number < acc
-
-    def _move_acceptance(self, deltaE, movement_name="Movement") -> bool:
-        """
-        Calculate the acceptance probability for translation or rotation of an adsorbate molecule as
-
-        P_move = min(1, exp(-β ΔE))
-        """
-
-        exp_value = np.exp(-self.beta * deltaE)
-        acc = min(1, exp_value)
-
-        rnd_number = self.rnd_generator.random()
-
-        if self.debug:
-            self.logger.print_debug_movement(
-                movement=movement_name, deltaE=deltaE, prefactor=1, acc=acc, rnd_number=rnd_number
-            )
-
-        # Apply Metropolis acceptance/rejection rule
-        return rnd_number < acc
-
-    def _save_state(self, actual_iteration: int) -> None:
-
-        if actual_iteration % self.save_every == 0:
-
-            self.trajectory.write(self.current_system)  # type: ignore
-
-            np.save(
-                os.path.join(self.out_folder, f"uptake_{self.P:.5f}.npy"),
-                np.array(self.uptake_list),
-            )
-
-            np.save(
-                os.path.join(self.out_folder, f"total_energy_{self.P:.5f}.npy"),
-                np.array(self.total_energy_list),
-            )
-
-            np.save(
-                os.path.join(self.out_folder, f"total_ads_{self.P:.5f}.npy"),
-                np.array(self.total_ads_list),
-            )
-
-    def try_insertion(self) -> bool:
-        """
-        Try to insert a new adsorbate molecule into the framework.
-        This method randomly places the adsorbate in the framework and checks for van der Waals overlap.
-        If there is no overlap, it calculates the new potential energy and decides whether to accept the insertion
-        based on the acceptance criteria.
-        If after a number of tries (self.max_overlap_tries) no valid position is found, the insertion is rejected.
-
-        Returns
-        -------
-        bool
-            True if the insertion was accepted, False otherwise.
-        """
-
-        for _ in range(self.max_overlap_tries):
-            atoms_trial = random_mol_insertion(
-                self.current_system, self.adsorbate, self.rnd_generator
-            )
-
-            overlaped = check_overlap(
-                atoms=atoms_trial,
-                group1_indices=np.arange(len(self.current_system)),
-                group2_indices=np.arange(len(self.current_system), len(atoms_trial)),
-                vdw_radii=self.vdw,
-            )
-
-            if not overlaped:
-                break
-        else:
-            return False
-
-        # Energy calculation
-        atoms_trial.calc = self.model
-        e_new = atoms_trial.get_potential_energy()
-
-        deltaE = e_new - self.current_total_energy - self.adsorbate_energy
-
-        if np.abs(deltaE) > np.abs(self.max_deltaE):
-            self._save_rejected(atoms_trial)
-            return False
-
-        # Apply the acceptance criteria for insertion
-        if self._insertion_acceptance(deltaE=deltaE):
-            self.current_system = atoms_trial.copy()
-            self.current_total_energy = e_new
-            self.N_ads += 1
-            return True
-
-        self._save_rejected(atoms_trial)
-        return False
-
-    def try_deletion(self) -> bool:
-        """
-        Try to delete an adsorbate molecule from the framework.
-        This method randomly selects an adsorbate molecule and try to apply the deletion.
-
-        If there are no adsorbates, it returns False.
-
-        Returns
-        -------
-        bool
-            True if the deletion was accepted, False otherwise.
-        """
-        if self.N_ads == 0:
-            return False
-
-        # Randomly select an adsorbate molecule to delete
-        i_ads = self.rnd_generator.integers(low=0, high=self.N_ads, size=1)[0]
-
-        # Get the indices of the adsorbate atoms to be deleted
-        i_start = self.n_atoms_framework + self.n_adsorbate_atoms * i_ads
-        i_end = self.n_atoms_framework + self.n_adsorbate_atoms * (i_ads + 1)
-
-        # Create a trial system for the deletion
-        atoms_trial = self.current_system.copy()
-        atoms_trial.calc = self.model  # type: ignore
-
-        # Delete the adsorbate atoms from the trial structure
-        del atoms_trial[i_start:i_end]
-
-        # Calculate the new potential energy of the trial structure
-        e_new = atoms_trial.get_potential_energy()  # type: ignore
-
-        deltaE = e_new + self.adsorbate_energy - self.current_total_energy
-
-        if np.abs(deltaE) > np.abs(self.max_deltaE):
-            return False
-
-        # Apply the acceptance criteria for deletion
-        if self._deletion_acceptance(deltaE=deltaE):
-
-            self.current_system = atoms_trial.copy()
-            self.current_total_energy = e_new
-            self.N_ads -= 1
-
-            return True
-        else:
-            return False
-
-    def try_reinsertion(self) -> bool:
-        """
-        Try to delete and reinsert an adsorbate molecule.
-        This method randomly selects an adsorbate molecule, deletes it, and tries to reinsert it
-        at a new random position within the framework.
-
-        If there are no adsorbates, it returns False.
-
-        Returns
-        -------
-        bool
-            True if the reinsertion was accepted, False otherwise.
-        """
-
-        if self.N_ads == 0:
-            return False
-
-        # Randomly select an adsorbate molecule to delete
-        i_ads = self.rnd_generator.integers(low=0, high=self.N_ads, size=1)[0]
-
-        # Get the indices of the adsorbate atoms to be deleted
-        i_start = self.n_atoms_framework + self.n_adsorbate_atoms * i_ads
-        i_end = self.n_atoms_framework + self.n_adsorbate_atoms * (i_ads + 1)
-
-        # Create a trial system for the deletion
-        atoms_trial = self.current_system.copy()
-
-        # Delete the adsorbate atoms from the trial structure
-        del atoms_trial[i_start:i_end]
-
-        inserted = False
-        for _ in range(1000):
-            # Try at least 1000 times to insert the molecule without overlap
-            temp = random_mol_insertion(atoms_trial, self.adsorbate, self.rnd_generator)
-
-            overlaped = check_overlap(
-                atoms=temp,
-                group1_indices=np.arange(len(atoms_trial)),
-                group2_indices=np.arange(start=len(atoms_trial), stop=len(temp)),
-                vdw_radii=self.vdw,
-            )
-
-            if not overlaped:
-                inserted = True
-                atoms_trial = temp
-                break
-
-        if not inserted:
-            return False
-
-        atoms_trial.calc = self.model  # type: ignore
-        e_new = atoms_trial.get_potential_energy()
-
-        deltaE = e_new - self.current_total_energy
-
-        if np.abs(deltaE) > np.abs(self.max_deltaE):
-            self._save_rejected(atoms_trial)
-            return False
-
-        # Apply the acceptance criteria for deletion
-        if self._reinsertion_acceptance(deltaE=deltaE):
-
-            self.current_system = atoms_trial.copy()
-            self.current_total_energy = e_new
-
-            return True
-        else:
-            return False
-
-    def try_translation(self) -> bool:
-        """
-        Try to translate an adsorbate molecule within the framework.
-        This method randomly selects an adsorbate molecule and applies a random translation.
-        It checks for van der Waals overlap and calculates the new potential energy.
-
-        Returns
-        -------
-        bool
-            True if the translation was accepted, False otherwise.
-        """
-
-        if self.N_ads == 0:
-            return False
-
-        for _ in range(self.max_overlap_tries):
-            i_ads = self.rnd_generator.integers(low=0, high=self.N_ads, size=1)[0]
-            atoms_trial = self.current_system.copy()
-
-            pos = atoms_trial.get_positions()  # type: ignore
-
-            i_start = self.n_atoms_framework + self.n_adsorbate_atoms * i_ads
-            i_end = self.n_atoms_framework + self.n_adsorbate_atoms * (i_ads + 1)
-
-            pos[i_start:i_end] = random_translation(
-                original_position=pos[i_start:i_end],
-                cell=self.current_system.cell.array,
-                max_translation=self.max_translation,
-                rnd_generator=self.rnd_generator,
-            )
-
-            atoms_trial.set_positions(pos)  # type: ignore
-
-            overlaped = check_overlap(
-                atoms=atoms_trial,
-                group1_indices=np.concatenate(
-                    [np.arange(0, i_start), np.arange(i_end, len(atoms_trial))]
-                ),
-                group2_indices=np.arange(i_start, i_end),
-                vdw_radii=self.vdw,
-            )
-
-            if not overlaped:
-                break
-        else:
-            return False
-
-        atoms_trial.calc = self.model  # type: ignore
-        e_trial = atoms_trial.get_potential_energy()  # type: ignore
-
-        deltaE = e_trial - self.current_total_energy
-
-        if np.abs(deltaE) > np.abs(self.max_deltaE):
-            self._save_rejected(atoms_trial)
-            return False
-
-        if self._move_acceptance(deltaE=deltaE, movement_name="Translation"):
-            self.current_system = atoms_trial.copy()
-            self.current_total_energy = e_trial
-            return True
-        else:
-            self._save_rejected(atoms_trial)
-            return False
-
-    def try_rotation(self) -> bool:
-        """
-        Try to rotate an adsorbate molecule within the framework.
-        This method randomly selects an adsorbate molecule and applies a random rotation.
-        It checks for van der Waals overlap and calculates the new potential energy.
-
-        Returns
-        -------
-        bool
-            True if the rotation was accepted, False otherwise.
-        """
-
-        if self.N_ads == 0:
-            return False
-
-        for _ in range(self.max_overlap_tries):
-
-            i_ads = self.rnd_generator.integers(low=0, high=self.N_ads, size=1)[0]
-            atoms_trial = self.current_system.copy()
-
-            pos = atoms_trial.get_positions()  # type: ignore
-            i_start = self.n_atoms_framework + self.n_adsorbate_atoms * i_ads
-            i_end = self.n_atoms_framework + self.n_adsorbate_atoms * (i_ads + 1)
-
-            pos[i_start:i_end] = random_rotation_limited(
-                original_position=pos[i_start:i_end],
-                cell=self.current_system.cell.array,
-                rnd_generator=self.rnd_generator,
-                theta_max=self.max_rotation,
-            )
-            atoms_trial.set_positions(pos)  # type: ignore
-
-            overlaped = check_overlap(
-                atoms=atoms_trial,
-                group1_indices=np.concatenate(
-                    [np.arange(0, i_start), np.arange(i_end, len(atoms_trial))]
-                ),
-                group2_indices=np.arange(i_start, i_end),
-                vdw_radii=self.vdw,
-            )
-
-            if not overlaped:
-                break
-        else:
-            return False
-
-        atoms_trial.calc = self.model  # type: ignore
-        e_trial = atoms_trial.get_potential_energy()  # type: ignore
-
-        deltaE = e_trial - self.current_total_energy
-
-        if np.abs(deltaE) > np.abs(self.max_deltaE):
-            self._save_rejected(atoms_trial)
-            return False
-
-        if self._move_acceptance(deltaE=deltaE, movement_name="Rotation"):
-            self.current_system = atoms_trial.copy()
-            self.current_total_energy = e_trial
-            return True
-        else:
-            self._save_rejected(atoms_trial)
-            return False
-
-    def _pick_random_move(self) -> str:
-        """
-        Randomly select a move from the `move_weights` dict.
-        If there is no molecule on the system, always return insertion.
-
-        Returns
-        -------
-        move: str
-        """
-
-        if self.N_ads == 0:
-            move = "insertion"
-
-        else:
-            move = self.rnd_generator.choice(
-                a=list(self.move_weights.keys()), p=list(self.move_weights.values())
-            )
-
-        return move
-
-    def get_average_ads_energy(self) -> float:
-        """
-        Compute the average adsorption energy per adsorbed molecule.
-
-        The adsorption energy is calculated as:
-            E_ads_avg = [E_total - (N_ads * E_adsorbate) - E_framework] / N_ads
-
-        where:
-            - E_total: current total energy of the system (simulation)
-            - N_ads: number of adsorbed molecules
-            - E_adsorbate: energy of an isolated adsorbate molecule
-            - E_framework: energy of the empty framework
-
-        The result is converted from simulation units to kJ/mol per adsorbate.
-
-        Returns
-        -------
-        float
-            The average adsorption energy per molecule in kJ/mol.
-            Returns 0.0 if no molecules are adsorbed (N_ads == 0).
-        """
-
-        if self.N_ads == 0:
-            return 0.0
-
-        # Total adsorption energy (system - framework - isolated adsorbates * n adsorbates)
-        adsorption_energy_total = (
-            self.current_total_energy - self.framework_energy - (self.N_ads * self.adsorbate_energy)
-        )
-
-        # Convert to kJ/mol and normalize per adsorbate
-        E_ads_avg = adsorption_energy_total / (units.kJ / units.mol) / self.N_ads
-
-        return E_ads_avg
-
-    def step(self, iteration: int):
-
-        actual_iteration = iteration + self.base_iteration
-
-        step_time_start = datetime.datetime.now()
-
-        # Randomly select a move based on the move weights
-        move = self._pick_random_move()
-
-        accepted = self.movements[move]()
-        self.mov_dict[move].append(1 if accepted else 0)
-
-        self.uptake_list.append(self.N_ads)
-        self.total_energy_list.append(self.current_total_energy)
-        self.total_ads_list.append(
-            self.current_total_energy - (self.N_ads * self.adsorbate_energy) - self.framework_energy
-        )
-
-        average_ads_energy = self.get_average_ads_energy()
-
-        self.logger.print_step_info(
-            step=actual_iteration,
-            average_ads_energy=average_ads_energy,
-            step_time=(datetime.datetime.now() - step_time_start).total_seconds(),
-        )
-
-        self._save_state(actual_iteration)
-
-    def insert_molecules(self, n_molecules: int, max_tries: int) -> None:
-        """
-        Insert a fixed number of adsorbate molecules into the framework.
-
-        Parameters
-        ----------
-        n_molecules : int
-            Number of adsorbate molecules to insert.
-        max_tries : int
-            Maximum number of tries to insert each molecule without overlap.
-        """
-
-        while self.N_ads != n_molecules:
-            if self.N_ads < n_molecules:
-                self.try_insertion()
-            else:
-                self.try_deletion()
 
     def run(self, N) -> None:
         """Run the Grand Canonical Monte Carlo simulation for N iterations."""
