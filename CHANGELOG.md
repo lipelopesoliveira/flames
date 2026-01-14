@@ -10,6 +10,7 @@
   - Added the `void_fraction` parameter to the `GCMC` class that allows users to specify the void fraction of the structure for calculating the excess uptake.
   - Added the `get_bulk_phase_molar_density` on the `PengRobinsonEOS` class to calculate the bulk phase molar density needed for the excess uptake calculation.
 - Now it is possible to manually set the adsorbate and framework energy when initializing the `GCMC` and `Widom` classes. This allows users to provide pre-calculated energies for the adsorbate and framework.
+- Added the `nPT_MTKNPT` method on ase_utils for running NPT Molecular Dynamics (MD) simulations using the MTK NPT thermostat/barostat. This method is now the default for NPT MD simulations in the `BaseSimulator` class.
 
 ### Fixed 🐛
 
