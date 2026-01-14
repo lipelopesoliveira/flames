@@ -130,7 +130,7 @@ class GCMC(BaseSimulator):
         Maximum length (in Angstroms) for any side of the supercell. If ``None``, no maximum length is enforced.
         This can be used to limit the size of the supercell for computational efficiency. Default is ``None``.
     :type max_length: float or None, optional
-    
+
     :param criticalTemperature:
         Critical temperature of the adsorbate in Kelvin.
     :type criticalTemperature: float, optional

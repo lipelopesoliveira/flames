@@ -143,9 +143,7 @@ class BaseSimulator:
         os.makedirs(os.path.join(self.out_folder, "Movies"), exist_ok=True)
 
         if output_to_file:
-            self.out_file: TextIO | None = open(
-                os.path.join(self.out_folder, "Output.out"), "a"
-            )
+            self.out_file: TextIO | None = open(os.path.join(self.out_folder, "Output.out"), "a")
         else:
             self.out_file = None
 

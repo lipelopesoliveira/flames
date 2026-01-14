@@ -138,7 +138,7 @@ def make_cubic(
     force_diagonal: bool = False,
     force_90_degrees: bool = False,
     allow_orthorhombic: bool = False,
-    max_length:  float | None = None,
+    max_length: float | None = None,
     min_atoms: int = 0,
     max_atoms: int = 10000,
     angle_tolerance: float = 1e-3,
@@ -183,7 +183,7 @@ def make_cubic(
         max_atoms=max_atoms,
         angle_tolerance=angle_tolerance,
         allow_orthorhombic=allow_orthorhombic,
-        max_length=max_length
+        max_length=max_length,
     ).apply_transformation(pmg_structure)
 
     ase_structure = cubic_dict.to_ase_atoms()
