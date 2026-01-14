@@ -1,5 +1,5 @@
 import os
-from typing import TextIO, Union
+from typing import TextIO
 
 import ase
 import numpy as np
@@ -143,7 +143,7 @@ class BaseSimulator:
         os.makedirs(os.path.join(self.out_folder, "Movies"), exist_ok=True)
 
         if output_to_file:
-            self.out_file: Union[TextIO, None] = open(
+            self.out_file: TextIO | None = open(
                 os.path.join(self.out_folder, "Output.out"), "a"
             )
         else:
@@ -234,7 +234,7 @@ class BaseSimulator:
         return float(np.sum(self.framework.get_masses()) / units.kg)
 
     def set_framework(
-        self, framework_atoms: ase.Atoms, framework_energy: Union[float, None] = None
+        self, framework_atoms: ase.Atoms, framework_energy: float | None = None
     ) -> None:
         """
         Set the framework structure for the simulation.
@@ -271,7 +271,7 @@ class BaseSimulator:
         self.framework_density = get_density(self.framework)
 
     def set_adsorbate(
-        self, adsorbate_atoms: ase.Atoms, adsorbate_energy: Union[float, None] = None
+        self, adsorbate_atoms: ase.Atoms, adsorbate_energy: float | None = None
     ) -> None:
         """
         Set the adsorbate structure for the simulation.

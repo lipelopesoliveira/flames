@@ -1,7 +1,6 @@
 import datetime
 import json
 import os
-from typing import Union
 
 import ase
 import numpy as np
@@ -472,7 +471,7 @@ class GCMC(BaseSimulator):
 
     def equilibrate(
         self,
-        batch_size: Union[int, bool] = False,
+        batch_size: int | bool = False,
         run_ADF: bool = False,
         uncertainty: str = "uSD",
         production_start: int = 0,
@@ -542,8 +541,8 @@ class GCMC(BaseSimulator):
 
     def save_results(
         self,
-        file_name: Union[str, None] = None,
-        batch_size: Union[int, bool] = False,
+        file_name: str | None = None,
+        batch_size: int | bool = False,
         run_ADF: bool = False,
         uncertainty: str = "uSD",
     ) -> None:

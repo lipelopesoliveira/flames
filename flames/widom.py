@@ -1,7 +1,6 @@
 import datetime
 import json
 import os
-from typing import Union
 
 import ase
 import numpy as np
