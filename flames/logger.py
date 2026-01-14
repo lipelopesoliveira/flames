@@ -332,7 +332,7 @@ Restarting GCMC simulation from previous configuration...
 Loaded state with {n_atoms} total atoms.
 
 Current total energy: {self.sim.current_total_energy:.3f} eV
-Current number of adsorbates: {self.sim.N_ads}
+Current number of adsorbates: {self.sim.n_adsorbates}
 Current average binding energy: {average_ads_energy:.3f} kJ/mol
 
 Current steps are: {self.sim.base_iteration}
