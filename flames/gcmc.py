@@ -259,7 +259,7 @@ class GCMC(BaseSimulator):
         }
 
         # Base iteration for restarting the simulation. This is for tracking the iteration count only
-        self.base_iteration: int = 0
+        self._base_iteration: int = 0
 
         # Dictionary to store the equilibrated results by pyMSER
         self.equilibrated_results: dict = {}
@@ -290,6 +290,29 @@ class GCMC(BaseSimulator):
             A dictionary containing the move weights for each type of movement.
         """
         self._move_weights = check_weights(weights)
+
+    @property
+    def base_iteration(self) -> int:
+        """
+        Get the base iteration for the GCMC simulation.
+
+        Returns
+        -------
+        int
+            The base iteration count.
+        """
+        return self._base_iteration
+    @base_iteration.setter
+    def base_iteration(self, iteration: int) -> None:
+        """
+        Set the base iteration for the GCMC simulation.
+
+        Parameters
+        ----------
+        iteration : int
+            The base iteration count to set.
+        """
+        self._base_iteration = iteration
 
     def _save_rejected(self, atoms_trial: ase.Atoms) -> None:
         """
@@ -597,6 +620,11 @@ class GCMC(BaseSimulator):
         Calculate the acceptance probability for insertion of an adsorbate molecule as
 
         P_acc (N -> N + 1) = min(1, β * V * f * exp(-β ΔE) / (N + 1))
+
+        Parameters
+        ----------
+        deltaE : float
+            Energy difference between the new and old configuration in eV.
         """
 
         exp_value = np.exp(-self.beta * deltaE)
@@ -624,6 +652,11 @@ class GCMC(BaseSimulator):
         Calculate the acceptance probability for deletion of an adsorbate molecule as
 
         P_del (N -> N - 1 ) = min(1, N / (β * V * f) * exp(-β ΔE) )
+
+        Parameters
+        ----------
+        deltaE : float
+            Energy difference between the new and old configuration in eV.
         """
 
         exp_value = np.exp(-self.beta * deltaE)
@@ -651,6 +684,11 @@ class GCMC(BaseSimulator):
         Calculate the acceptance probability for reinsertion of an adsorbate molecule as
 
         P_reins (N -> N ) = min(1, exp(-β ΔE) )
+
+        Parameters
+        ----------
+        deltaE : float
+            Energy difference between the new and old configuration in eV.
         """
 
         exp_value = np.exp(-self.beta * deltaE)
@@ -671,6 +709,11 @@ class GCMC(BaseSimulator):
         Calculate the acceptance probability for translation or rotation of an adsorbate molecule as
 
         P_move = min(1, exp(-β ΔE))
+
+        Parameters
+        ----------
+        deltaE : float
+            Energy difference between the new and old configuration in eV.
         """
 
         exp_value = np.exp(-self.beta * deltaE)
