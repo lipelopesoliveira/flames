@@ -114,6 +114,8 @@ class BaseSimulator:
         pressure: float,
         device: str,
         vdw_radii: np.ndarray,
+        framework_energy: Union[float, None] = None,
+        adsorbate_energy: Union[float, None] = None,
         vdw_factor: float = 0.6,
         max_deltaE: float = 1.555,
         save_frequency: int = 100,
@@ -168,8 +170,8 @@ class BaseSimulator:
         self.model = model
         self.device = device
 
-        self.set_framework(framework_atoms)
-        self.set_adsorbate(adsorbate_atoms)
+        self.set_framework(framework_atoms, framework_energy=framework_energy)
+        self.set_adsorbate(adsorbate_atoms, adsorbate_energy=adsorbate_energy)
 
         self.current_system = self.framework.copy()
         self.current_system.calc = self.model
@@ -231,7 +233,7 @@ class BaseSimulator:
         """
         return float(np.sum(self.framework.get_masses()) / units.kg)
 
-    def set_framework(self, framework_atoms: ase.Atoms) -> None:
+    def set_framework(self, framework_atoms: ase.Atoms, framework_energy: Union[float, None] = None) -> None:
         """
         Set the framework structure for the simulation.
 
@@ -239,6 +241,8 @@ class BaseSimulator:
         ----------
         framework_atoms : ase.Atoms
             The new framework structure as an ASE Atoms object.
+        framework_energy : float or None, optional
+            The energy of the framework in eV. If None, the energy will be calculated using the provided model.
         """
         self.framework = framework_atoms
         self.framework.set_tags(np.zeros(len(self.framework), dtype=int))
@@ -252,7 +256,10 @@ class BaseSimulator:
         self.perpendicular_cell = get_perpendicular_lengths(self.framework.get_cell()) * np.eye(3)
 
         self.framework.calc = self.model
-        self.framework_energy = self.framework.get_potential_energy()
+        if framework_energy:
+            self.framework_energy = framework_energy * np.prod(self.ideal_supercell)
+        else:
+            self.framework_energy = self.framework.get_potential_energy()
         self.n_atoms_framework = len(self.framework)
 
         self.V = np.linalg.det(self.cell) / units.m**3
@@ -261,7 +268,7 @@ class BaseSimulator:
         # Get the framework density in g/cm^3
         self.framework_density = get_density(self.framework)
 
-    def set_adsorbate(self, adsorbate_atoms: ase.Atoms) -> None:
+    def set_adsorbate(self, adsorbate_atoms: ase.Atoms, adsorbate_energy: Union[float, None] = None) -> None:
         """
         Set the adsorbate structure for the simulation.
 
@@ -269,6 +276,8 @@ class BaseSimulator:
         ----------
         adsorbate_atoms : ase.Atoms
             The new adsorbate structure as an ASE Atoms object.
+        adsorbate_energy : float or None, optional
+            The energy of the adsorbate in eV. If None, the energy will be calculated using the provided model.
         """
         self.adsorbate = adsorbate_atoms
         self.adsorbate.set_tags(np.ones(len(self.adsorbate), dtype=int))
@@ -276,7 +285,10 @@ class BaseSimulator:
         self.adsorbate.set_cell(self.framework.get_cell())
         self.adsorbate.set_pbc([True, True, True])
 
-        self.adsorbate_energy = self.adsorbate.get_potential_energy()
+        if adsorbate_energy:
+            self.adsorbate_energy = adsorbate_energy
+        else:
+            self.adsorbate_energy = self.adsorbate.get_potential_energy()
         self.n_adsorbate_atoms = len(self.adsorbate)
         self.adsorbate_mass = np.sum(self.adsorbate.get_masses()) / units.kg
 
