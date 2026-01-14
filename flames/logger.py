@@ -190,11 +190,11 @@ Partial pressure:
             (
                 self.sim.current_total_energy
                 - self.sim.framework_energy
-                - self.sim.N_ads * self.sim.adsorbate_energy
+                - self.sim.n_adsorbates * self.sim.adsorbate_energy
             )
             / (units.kJ / units.mol)
-            / self.sim.N_ads
-            if self.sim.N_ads > 0
+            / self.sim.n_adsorbates
+            if self.sim.n_adsorbates > 0
             else 0
         )
         self._print(f"Restarting simulation from step {self.sim.base_iteration}...")
@@ -278,8 +278,8 @@ Starting GCMC simulation
         self._print(
             line_str.format(
                 step,
-                self.sim.N_ads,
-                self.sim.N_ads * self.sim.conv_factors["mol/kg"],
+                self.sim.n_adsorbates,
+                self.sim.n_adsorbates * self.sim.conv_factors["mol/kg"],
                 self.sim.current_total_energy,
                 average_ads_energy,
                 (

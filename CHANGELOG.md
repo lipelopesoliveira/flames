@@ -16,6 +16,7 @@
 - Fix conversion factor for 'nmol' in BaseSimulator to account for supercell dimensions
 - Remove the `save_frequency` parameter from the `Widom` class, to avoid confusion since the snapshots are now controlled by the `save_snapshots` parameter.
 - Changed the default value for the LLM parameter in the GCMC class to False.
+- Rename the `N_ads` attribute to `n_adsorbates` in both the `GCMC` and `Widom` classes for better clarity.
 
 ### Enhanced ✨
 

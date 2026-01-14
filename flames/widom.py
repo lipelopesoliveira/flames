@@ -146,7 +146,7 @@ class Widom(BaseSimulator):
         self.minimum_configuration: ase.Atoms = self.framework.copy()
         self.minimum_energy: float = 0
         self.base_iteration = 0
-        self.N_ads = 0
+        self.n_adsorbates = 0
         self.int_energy_list = np.zeros(1, dtype=float)
 
         self.boltz_fac = np.exp(-self.beta * self.int_energy_list)
