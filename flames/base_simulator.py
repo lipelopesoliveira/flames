@@ -493,7 +493,9 @@ Start optimizing adsorbate structure...
             )
 
         else:
-            raise ValueError(f"Driver must be one of 'Berendsen', 'NoseHoover' or 'MTKNPT'. Not {driver}.")
+            raise ValueError(
+                f"Driver must be one of 'Berendsen', 'NoseHoover' or 'MTKNPT'. Not {driver}."
+            )
 
         self.set_state(new_state)
 
