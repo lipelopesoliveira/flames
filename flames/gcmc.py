@@ -584,10 +584,10 @@ class GCMC(BaseSimulator):
             },
             "equilibration": {
                 "LLM": self.LLM,
-                "t0": self.equilibrated_results.get("t0", None),
+                "t0": int(self.equilibrated_results.get("t0", 0)),
                 "average": self.equilibrated_results.get("average", None),
                 "uncertainty": self.equilibrated_results.get("uncertainty", None),
-                "equilibrated": self.equilibrated_results.get("equilibrated", None),
+                "equilibrated": bool(self.equilibrated_results.get("equilibrated", False)),
                 "ac_time": self.equilibrated_results.get("ac_time", None),
                 "uncorr_samples": self.equilibrated_results.get("uncorr_samples", None),
             },
