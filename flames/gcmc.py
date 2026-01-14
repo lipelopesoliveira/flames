@@ -232,7 +232,7 @@ class GCMC(BaseSimulator):
             self.excess_nmol = self.eos.get_bulk_phase_molar_density() * self.V * self.void_fraction
 
         # Parameters for storing the main results during the simulation
-        self.N_ads: int = 0
+        self.n_adsorbates: int = 0
         self.uptake_list: list[int] = []
         self.total_energy_list: list[float] = []
         self.total_ads_list: list[float] = []
@@ -371,12 +371,12 @@ class GCMC(BaseSimulator):
 
         self.set_state(state)
 
-        self.N_ads = int((len(state) - self.n_atoms_framework) / len(self.adsorbate))
+        self.n_adsorbates = int((len(state) - self.n_atoms_framework) / len(self.adsorbate))
         average_binding_energy = (
-            (self.current_total_energy - self.framework_energy - self.N_ads * self.adsorbate_energy)
+            (self.current_total_energy - self.framework_energy - self.n_adsorbates * self.adsorbate_energy)
             / (units.kJ / units.mol)
-            / self.N_ads
-            if self.N_ads > 0
+            / self.n_adsorbates
+            if self.n_adsorbates > 0
             else 0
         )
 
@@ -427,7 +427,7 @@ class GCMC(BaseSimulator):
         temp_system.calc = self.model
         self.current_system = temp_system.copy()
         self.current_total_energy = temp_system.get_potential_energy()
-        self.N_ads += inserted_adsorbates
+        self.n_adsorbates += inserted_adsorbates
 
     def equilibrate(
         self,
@@ -601,7 +601,7 @@ class GCMC(BaseSimulator):
 
         exp_value = np.exp(-self.beta * deltaE)
 
-        pre_factor = self.V * self.beta * self.fugacity / (self.N_ads + 1)
+        pre_factor = self.V * self.beta * self.fugacity / (self.n_adsorbates + 1)
 
         acc = min(1, pre_factor * exp_value)
 
@@ -628,7 +628,7 @@ class GCMC(BaseSimulator):
 
         exp_value = np.exp(-self.beta * deltaE)
 
-        pre_factor = self.N_ads / (self.V * self.beta * self.fugacity)
+        pre_factor = self.n_adsorbates / (self.V * self.beta * self.fugacity)
 
         acc = min(1, pre_factor * exp_value)
 
@@ -749,7 +749,7 @@ class GCMC(BaseSimulator):
         if self._insertion_acceptance(deltaE=deltaE):
             self.current_system = atoms_trial.copy()
             self.current_total_energy = e_new
-            self.N_ads += 1
+            self.n_adsorbates += 1
             return True
 
         self._save_rejected(atoms_trial)
@@ -767,11 +767,11 @@ class GCMC(BaseSimulator):
         bool
             True if the deletion was accepted, False otherwise.
         """
-        if self.N_ads == 0:
+        if self.n_adsorbates == 0:
             return False
 
         # Randomly select an adsorbate molecule to delete
-        i_ads = self.rnd_generator.integers(low=0, high=self.N_ads, size=1)[0]
+        i_ads = self.rnd_generator.integers(low=0, high=self.n_adsorbates, size=1)[0]
 
         # Get the indices of the adsorbate atoms to be deleted
         i_start = self.n_atoms_framework + self.n_adsorbate_atoms * i_ads
@@ -797,7 +797,7 @@ class GCMC(BaseSimulator):
 
             self.current_system = atoms_trial.copy()
             self.current_total_energy = e_new
-            self.N_ads -= 1
+            self.n_adsorbates -= 1
 
             return True
         else:
@@ -817,11 +817,11 @@ class GCMC(BaseSimulator):
             True if the reinsertion was accepted, False otherwise.
         """
 
-        if self.N_ads == 0:
+        if self.n_adsorbates == 0:
             return False
 
         # Randomly select an adsorbate molecule to delete
-        i_ads = self.rnd_generator.integers(low=0, high=self.N_ads, size=1)[0]
+        i_ads = self.rnd_generator.integers(low=0, high=self.n_adsorbates, size=1)[0]
 
         # Get the indices of the adsorbate atoms to be deleted
         i_start = self.n_atoms_framework + self.n_adsorbate_atoms * i_ads
@@ -884,11 +884,11 @@ class GCMC(BaseSimulator):
             True if the translation was accepted, False otherwise.
         """
 
-        if self.N_ads == 0:
+        if self.n_adsorbates == 0:
             return False
 
         
-        i_ads = self.rnd_generator.integers(low=0, high=self.N_ads, size=1)[0]
+        i_ads = self.rnd_generator.integers(low=0, high=self.n_adsorbates, size=1)[0]
         atoms_trial = self.current_system.copy()
 
         pos = atoms_trial.get_positions()  # type: ignore
@@ -946,11 +946,11 @@ class GCMC(BaseSimulator):
             True if the rotation was accepted, False otherwise.
         """
 
-        if self.N_ads == 0:
+        if self.n_adsorbates == 0:
             return False
 
 
-        i_ads = self.rnd_generator.integers(low=0, high=self.N_ads, size=1)[0]
+        i_ads = self.rnd_generator.integers(low=0, high=self.n_adsorbates, size=1)[0]
         atoms_trial = self.current_system.copy()
 
         pos = atoms_trial.get_positions()  # type: ignore
@@ -1004,7 +1004,7 @@ class GCMC(BaseSimulator):
         move: str
         """
 
-        if self.N_ads == 0:
+        if self.n_adsorbates == 0:
             move = "insertion"
 
         else:
@@ -1036,16 +1036,16 @@ class GCMC(BaseSimulator):
             Returns 0.0 if no molecules are adsorbed (N_ads == 0).
         """
 
-        if self.N_ads == 0:
+        if self.n_adsorbates == 0:
             return 0.0
 
         # Total adsorption energy (system - framework - isolated adsorbates * n adsorbates)
         adsorption_energy_total = (
-            self.current_total_energy - self.framework_energy - (self.N_ads * self.adsorbate_energy)
+            self.current_total_energy - self.framework_energy - (self.n_adsorbates * self.adsorbate_energy)
         )
 
         # Convert to kJ/mol and normalize per adsorbate
-        E_ads_avg = adsorption_energy_total / (units.kJ / units.mol) / self.N_ads
+        E_ads_avg = adsorption_energy_total / (units.kJ / units.mol) / self.n_adsorbates
 
         return E_ads_avg
 
@@ -1061,10 +1061,10 @@ class GCMC(BaseSimulator):
         accepted = self.movements[move]()
         self.mov_dict[move].append(1 if accepted else 0)
 
-        self.uptake_list.append(self.N_ads)
+        self.uptake_list.append(self.n_adsorbates)
         self.total_energy_list.append(self.current_total_energy)
         self.total_ads_list.append(
-            self.current_total_energy - (self.N_ads * self.adsorbate_energy) - self.framework_energy
+            self.current_total_energy - (self.n_adsorbates * self.adsorbate_energy) - self.framework_energy
         )
 
         average_ads_energy = self.get_average_ads_energy()
