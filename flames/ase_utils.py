@@ -12,10 +12,10 @@ from ase.filters import FrechetCellFilter
 from ase.geometry import get_distances
 from ase.io.trajectory import Trajectory
 from ase.md import MDLogger
+from ase.md.nose_hoover_chain import MTKNPT, IsotropicMTKNPT
 from ase.md.npt import NPT
 from ase.md.nptberendsen import Inhomogeneous_NPTBerendsen, NPTBerendsen
 from ase.md.nvtberendsen import NVTBerendsen
-from ase.md.nose_hoover_chain import MTKNPT, IsotropicMTKNPT
 from ase.md.velocitydistribution import MaxwellBoltzmannDistribution, Stationary
 from ase.optimize.optimize import Optimizer
 from ase.spacegroup.symmetrize import check_symmetry
@@ -733,7 +733,6 @@ def nPT_NoseHoover(
     print(footer, file=out_file, flush=True)
 
     return atoms
-
 
 
 def nPT_MTKNPT(

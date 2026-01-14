@@ -12,9 +12,9 @@ from ase.optimize import LBFGS
 from flames.ase_utils import (
     crystalOptimization,
     nPT_Berendsen,
+    nPT_MTKNPT,
     nPT_NoseHoover,
     nVT_Berendsen,
-    nPT_MTKNPT,
 )
 from flames.utilities import (
     calculate_unit_cells,
@@ -472,7 +472,7 @@ Start optimizing adsorbate structure...
                 output_interval=self.save_every,
                 movie_interval=self.save_every,
             )
-        
+
         elif driver == "MTKNPT":
 
             isotropic = True if (mode == "iso_flex" or mode == "iso_shape") else False
@@ -491,7 +491,7 @@ Start optimizing adsorbate structure...
                 output_interval=self.save_every,
                 movie_interval=self.save_every,
             )
-        
+
         else:
             raise ValueError(f"Driver must be one of 'Berendsen', 'NoseHoover' or 'MTKNPT'.")
 
