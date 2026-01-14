@@ -137,6 +137,8 @@ def make_cubic(
     min_length: int = 10,
     force_diagonal: bool = False,
     force_90_degrees: bool = False,
+    allow_orthorhombic: bool = False,
+    max_length:  float | None = None,
     min_atoms: int = 0,
     max_atoms: int = 10000,
     angle_tolerance: float = 1e-3,
@@ -155,6 +157,12 @@ def make_cubic(
         If True, generate a transformation with a diagonal transformation matrix (default is False)
     force_90_degrees : bool, optional
         If True, force the angles to be 90 degrees (default is False)
+    allow_orthorhombic : bool, optional
+        If ``True``, allows the supercell to be orthorhombic (90-degree angles only)
+        If ``False``, the supercell can have non-orthogonal angles (default is False)
+    max_length : float or None, optional
+        Maximum length (in Angstroms) for any side of the supercell
+        If ``None``, no maximum length is enforced (default is None)
     min_atoms : int, optional
         Minimum number of atoms in the supercell (default is 0)
     max_atoms : int, optional
@@ -174,6 +182,8 @@ def make_cubic(
         min_atoms=min_atoms,
         max_atoms=max_atoms,
         angle_tolerance=angle_tolerance,
+        allow_orthorhombic=allow_orthorhombic,
+        max_length=max_length
     ).apply_transformation(pmg_structure)
 
     ase_structure = cubic_dict.to_ase_atoms()
