@@ -14,6 +14,7 @@ from flames.ase_utils import (
     nPT_Berendsen,
     nPT_NoseHoover,
     nVT_Berendsen,
+    nPT_MTKNPT,
 )
 from flames.utilities import (
     calculate_unit_cells,
@@ -416,7 +417,7 @@ Start optimizing adsorbate structure...
         self.adsorbate.calc = self.model
         self.adsorbate_energy = self.adsorbate.get_potential_energy()
 
-    def npt(self, nsteps, time_step: float = 0.5, mode: str = "iso_shape"):
+    def npt(self, nsteps, time_step: float = 0.5, mode: str = "iso_shape", driver: str = "MTKNPT"):
         """
         Run a NPT simulation using the Berendsen thermostat and barostat.
 
@@ -429,12 +430,14 @@ Start optimizing adsorbate structure...
         mode : str, optional
             The mode of the NPT simulation (default is "iso_shape").
             Can be one of "iso_shape", "aniso_shape", or "aniso_flex".
+        driver : str, optional
+            The driver to use for the NPT simulation. Can be Berendsen, NoseHoover or MTKNPT (default is "MTKNPT").
         """
 
         allowed_modes = ["iso_shape", "aniso_shape", "aniso_flex"]
         assert mode in allowed_modes, f"Mode must be one of {allowed_modes}."
 
-        if mode == "iso_shape" or mode == "aniso_shape":
+        if (mode == "iso_shape" or mode == "aniso_shape") and driver == "Berendsen":
 
             new_state = nPT_Berendsen(
                 atoms=self.current_system,
@@ -451,7 +454,7 @@ Start optimizing adsorbate structure...
                 output_interval=self.save_every,
                 movie_interval=self.save_every,
             )
-        else:
+        elif driver == "NoseHoover":
 
             new_state = nPT_NoseHoover(
                 atoms=self.current_system,
@@ -469,6 +472,28 @@ Start optimizing adsorbate structure...
                 output_interval=self.save_every,
                 movie_interval=self.save_every,
             )
+        
+        elif driver == "MTKNPT":
+
+            isotropic = True if (mode == "iso_flex" or mode == "iso_shape") else False
+
+            new_state = nPT_MTKNPT(
+                atoms=self.current_system,
+                model=self.model,
+                temperature=self.T,
+                pressure=self.P * 1e-5,
+                time_step=time_step,
+                num_md_steps=nsteps,
+                isotropic=isotropic,
+                out_folder=self.out_folder,
+                out_file=self.out_file,  # type: ignore
+                trajectory=self.trajectory,
+                output_interval=self.save_every,
+                movie_interval=self.save_every,
+            )
+        
+        else:
+            raise ValueError(f"Driver must be one of 'Berendsen', 'NoseHoover' or 'MTKNPT'.")
 
         self.set_state(new_state)
 
