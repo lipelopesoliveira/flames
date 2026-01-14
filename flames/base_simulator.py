@@ -233,7 +233,9 @@ class BaseSimulator:
         """
         return float(np.sum(self.framework.get_masses()) / units.kg)
 
-    def set_framework(self, framework_atoms: ase.Atoms, framework_energy: Union[float, None] = None) -> None:
+    def set_framework(
+        self, framework_atoms: ase.Atoms, framework_energy: Union[float, None] = None
+    ) -> None:
         """
         Set the framework structure for the simulation.
 
@@ -268,7 +270,9 @@ class BaseSimulator:
         # Get the framework density in g/cm^3
         self.framework_density = get_density(self.framework)
 
-    def set_adsorbate(self, adsorbate_atoms: ase.Atoms, adsorbate_energy: Union[float, None] = None) -> None:
+    def set_adsorbate(
+        self, adsorbate_atoms: ase.Atoms, adsorbate_energy: Union[float, None] = None
+    ) -> None:
         """
         Set the adsorbate structure for the simulation.
 

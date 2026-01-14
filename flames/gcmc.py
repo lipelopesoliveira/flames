@@ -302,6 +302,7 @@ class GCMC(BaseSimulator):
             The base iteration count.
         """
         return self._base_iteration
+
     @base_iteration.setter
     def base_iteration(self, iteration: int) -> None:
         """
@@ -396,7 +397,11 @@ class GCMC(BaseSimulator):
 
         self.n_adsorbates = int((len(state) - self.n_atoms_framework) / len(self.adsorbate))
         average_binding_energy = (
-            (self.current_total_energy - self.framework_energy - self.n_adsorbates * self.adsorbate_energy)
+            (
+                self.current_total_energy
+                - self.framework_energy
+                - self.n_adsorbates * self.adsorbate_energy
+            )
             / (units.kJ / units.mol)
             / self.n_adsorbates
             if self.n_adsorbates > 0
@@ -406,7 +411,7 @@ class GCMC(BaseSimulator):
         self.logger.print_load_state_info(
             n_atoms=len(state), average_ads_energy=average_binding_energy
         )
-    
+
     def insert_adsorbates(self, n_adsorbates: int, max_attempts: int = 1000) -> None:
         """
         Insert a given number of adsorbate molecules into the framework at random positions without overlap.
@@ -424,9 +429,7 @@ class GCMC(BaseSimulator):
         inserted_adsorbates = 0
         while inserted_adsorbates < n_adsorbates and n_attempts < max_attempts:
             n_attempts += 1
-            atoms_trial = random_mol_insertion(
-                temp_system, self.adsorbate, self.rnd_generator
-            )
+            atoms_trial = random_mol_insertion(temp_system, self.adsorbate, self.rnd_generator)
 
             overlaped = check_overlap(
                 atoms=atoms_trial,
@@ -441,9 +444,9 @@ class GCMC(BaseSimulator):
 
         if n_attempts == max_attempts:
             raise Warning(
-                f"Maximum number of attempts ({max_attempts}) reached. " + \
-                f"Could not insert all {n_adsorbates} adsorbates without overlap. " + \
-                f"Max inserted adsorbates: {inserted_adsorbates}."
+                f"Maximum number of attempts ({max_attempts}) reached. "
+                + f"Could not insert all {n_adsorbates} adsorbates without overlap. "
+                + f"Max inserted adsorbates: {inserted_adsorbates}."
             )
 
         # Update the current system and total energy
@@ -763,10 +766,7 @@ class GCMC(BaseSimulator):
             True if the insertion was accepted, False otherwise.
         """
 
-
-        atoms_trial = random_mol_insertion(
-            self.current_system, self.adsorbate, self.rnd_generator
-        )
+        atoms_trial = random_mol_insertion(self.current_system, self.adsorbate, self.rnd_generator)
 
         overlaped = check_overlap(
             atoms=atoms_trial,
@@ -930,7 +930,6 @@ class GCMC(BaseSimulator):
         if self.n_adsorbates == 0:
             return False
 
-        
         i_ads = self.rnd_generator.integers(low=0, high=self.n_adsorbates, size=1)[0]
         atoms_trial = self.current_system.copy()
 
@@ -957,7 +956,7 @@ class GCMC(BaseSimulator):
             vdw_radii=self.vdw,
         )
 
-        if  overlaped:
+        if overlaped:
             return False
 
         atoms_trial.calc = self.model  # type: ignore
@@ -991,7 +990,6 @@ class GCMC(BaseSimulator):
 
         if self.n_adsorbates == 0:
             return False
-
 
         i_ads = self.rnd_generator.integers(low=0, high=self.n_adsorbates, size=1)[0]
         atoms_trial = self.current_system.copy()
@@ -1084,7 +1082,9 @@ class GCMC(BaseSimulator):
 
         # Total adsorption energy (system - framework - isolated adsorbates * n adsorbates)
         adsorption_energy_total = (
-            self.current_total_energy - self.framework_energy - (self.n_adsorbates * self.adsorbate_energy)
+            self.current_total_energy
+            - self.framework_energy
+            - (self.n_adsorbates * self.adsorbate_energy)
         )
 
         # Convert to kJ/mol and normalize per adsorbate
@@ -1117,7 +1117,9 @@ class GCMC(BaseSimulator):
         self.uptake_list.append(self.n_adsorbates)
         self.total_energy_list.append(self.current_total_energy)
         self.total_ads_list.append(
-            self.current_total_energy - (self.n_adsorbates * self.adsorbate_energy) - self.framework_energy
+            self.current_total_energy
+            - (self.n_adsorbates * self.adsorbate_energy)
+            - self.framework_energy
         )
 
         average_ads_energy = self.get_average_ads_energy()
