@@ -162,15 +162,15 @@ class GCMC(BaseSimulator):
         save_frequency: int = 100,
         save_rejected: bool = False,
         output_to_file: bool = True,
-        output_folder: Union[str, None] = None,
+        output_folder: str | None = None,
         debug: bool = False,
         fugacity_coeff: float = 1.0,
-        random_seed: Union[int, None] = None,
+        random_seed: int | None = None,
         cutoff_radius: float = 6.0,
         automatic_supercell: bool = True,
-        criticalTemperature: Union[float, None] = None,
-        criticalPressure: Union[float, None] = None,
-        acentricFactor: Union[float, None] = None,
+        criticalTemperature: float | None = None,
+        criticalPressure: float | None = None,
+        acentricFactor: float | None = None,
         void_fraction: float = 0.0,
         LLM: bool = False,
         move_weights: dict = {
@@ -180,7 +180,7 @@ class GCMC(BaseSimulator):
             "rotation": 0.20,
             "reinsertion": 0.20,
         },
-    ):
+    ) -> None:
         """
         Initialize the Grand Canonical Monte Carlo (GCMC) simulation.
         """
@@ -1092,7 +1092,17 @@ class GCMC(BaseSimulator):
 
         return E_ads_avg
 
-    def step(self, iteration: int):
+    def step(self, iteration: int) -> None:
+        """
+        Perform a single Grand Canonical Monte Carlo step.
+        It will randomly select a move based on the move weights and attempt to perform it.
+        The uptake, total energy, and total adsorbates lists are updated accordingly.
+
+        Parameters
+        ----------
+        iteration : int
+            The current iteration number.
+        """
 
         actual_iteration = iteration + self.base_iteration
 

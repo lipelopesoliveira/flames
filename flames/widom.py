@@ -109,9 +109,9 @@ class Widom(BaseSimulator):
         save_snapshots: bool = True,
         save_rejected: bool = False,
         output_to_file: bool = True,
-        output_folder: Union[str, None] = None,
+        output_folder: str | None = None,
         debug: bool = False,
-        random_seed: Union[int, None] = None,
+        random_seed: int | None = None,
         cutoff_radius: float = 6.0,
         automatic_supercell: bool = True,
     ) -> None:
@@ -151,7 +151,6 @@ class Widom(BaseSimulator):
 
         self.boltz_fac = np.exp(-self.beta * self.int_energy_list)
 
-        # kH = β <exp(-β ΔE)> [mol kg-1 Pa-1]
         self.kH = self._compute_kH(self.boltz_fac)
 
         self.kH_std_dv = 0.0
