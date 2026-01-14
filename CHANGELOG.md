@@ -1,6 +1,6 @@
 # Changelog
 
-## v[0.5.0] - 2025-12-08 (Unreleased)
+## v[0.4.5] - 2025-12-08 (Unreleased)
 
 ### New Features 🎉
 
@@ -9,6 +9,7 @@
 - Added excess uptake calculation to the GCMC simulation results.
   - Added the `void_fraction` parameter to the `GCMC` class that allows users to specify the void fraction of the structure for calculating the excess uptake.
   - Added the `get_bulk_phase_molar_density` on the `PengRobinsonEOS` class to calculate the bulk phase molar density needed for the excess uptake calculation.
+- Now it is possible to manually set the adsorbate and framework energy when initializing the `GCMC` and `Widom` classes. This allows users to provide pre-calculated energies for the adsorbate and framework.
 
 ### Fixed 🐛
 
