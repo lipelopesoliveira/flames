@@ -236,7 +236,7 @@ class GCMC(BaseSimulator):
             self.excess_nmol = self.eos.get_bulk_phase_molar_density() * self.V * self.void_fraction
 
         # Parameters for storing the main results during the simulation
-        self.n_adsorbates: int = 0
+        self._n_adsorbates: int = 0
         self.uptake_list: list[int] = []
         self.total_energy_list: list[float] = []
         self.total_ads_list: list[float] = []
@@ -318,6 +318,43 @@ class GCMC(BaseSimulator):
             The base iteration count to set.
         """
         self._base_iteration = iteration
+
+    @property
+    def n_adsorbates(self) -> int:
+        """
+        Get the number of adsorbates in the current system.
+
+        Returns
+        -------
+        int
+            The number of adsorbates.
+        """
+        return self._n_adsorbates
+
+    @n_adsorbates.setter
+    def n_adsorbates(self, n: int) -> None:
+        """
+        Set the number of adsorbates in the current system.
+
+        Parameters
+        ----------
+        n : int
+            The number of adsorbates to set.
+        """
+
+        # Check if the number is a valid integer
+        if not isinstance(n, int) or n < 0:
+            raise ValueError("Number of adsorbates must be a non-negative integer.")
+
+        n_adsorbate_atoms = len(self.current_system) - self.n_atoms_framework
+
+        if n != int(n_adsorbate_atoms / self.n_adsorbate_atoms):
+            raise ValueError(
+                f"Number of adsorbates ({n}) is different from the number of adsorbate atoms in the system."
+                f" Currently there are {int(n_adsorbate_atoms / self.n_adsorbate_atoms)} adsorbates."
+            )
+
+        self._n_adsorbates = n
 
     def _save_rejected(self, atoms_trial: ase.Atoms) -> None:
         """
