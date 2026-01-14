@@ -288,7 +288,7 @@ def random_n_splits(data: np.ndarray, n: int, random_generator=None) -> np.ndarr
     return np.array(result_arrays)
 
 
-def read_cif(file_name):
+def read_cif(file_name: str, partial_charges_tag: str = "_atom_site_charge") -> ase.Atoms:
     """
     Reads a file in format `.cif` from the `path` given and returns
     a list containg the N atom labels and a Nx3 array contaning
@@ -298,6 +298,8 @@ def read_cif(file_name):
     ----------
     file_name : str
         Name of the `cif` file. Does not neet to contain the `.cif` extention.
+    partial_charges_tag : str
+        The tag in the cif file corresponding to the partial charges.
 
     Returns
     -------
@@ -331,7 +333,7 @@ def read_cif(file_name):
     atom_site_frac = np.array([atom_site_fract_x, atom_site_fract_y, atom_site_fract_z]).T
 
     try:
-        partial_charges = np.array(cif.find_values("_atom_site_charge")).astype(float)
+        partial_charges = np.array(cif.find_values(partial_charges_tag)).astype(float)
     except Exception:
         partial_charges = np.zeros(len(atom_site_type_symbol))
 
