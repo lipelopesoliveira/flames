@@ -204,7 +204,7 @@ Partial pressure:
 Restart file requested.
 Loaded state with {len(state)} total atoms.
 Current total energy: {self.sim.current_total_energy:.3f} eV
-Current number of adsorbates: {self.sim.N_ads}
+Current number of adsorbates: {self.sim.n_adsorbates}
 Current average binding energy: {avg_binding_energy:.3f} kJ/mol
 ===========================================================================
 """
@@ -352,7 +352,7 @@ Current steps are: {self.sim.base_iteration}
             f"""
 =======================================================================================================
 Movement type: {movement}
-Current number of adsorbates: {self.sim.N_ads}
+Current number of adsorbates: {self.sim.n_adsorbates}
 Interaction energy: {deltaE} eV, {(deltaE / (units.kJ / units.mol))} kJ/mol
 Exponential factor:     {-self.sim.beta * deltaE:.3E}
 Exponential:            {np.exp(-self.sim.beta * deltaE):.3E}
