@@ -23,7 +23,7 @@ AdsorbatePath = "co2.xyz"
 
 model = mace_mp(
     model="medium-0b2",
-    dispersion=True,
+    dispersion=False,
     damping="zero",  # choices: ["zero", "bj", "zerom", "bjm"]
     dispersion_xc="pbe",
     default_dtype="float32",
