@@ -8,7 +8,7 @@
         <link rel="prefetch" href="../_static/logo-dark-mode.png" as="image">
 
     <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.09.25 -->
-        <title>Widom Class - FLAMES v0.4.4</title>
+        <title>Widom Class - FLAMES v0.4.5</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=580074bf" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -165,7 +165,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">FLAMES v0.4.4</div></a>
+      <a href="../index.html"><div class="brand">FLAMES v0.4.5</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -261,7 +261,7 @@
 <p>The <code class="docutils literal notranslate"><span class="pre">Widom</span></code> class serves as the main interface for handling Widom insertion simulation logic.</p>
 <dl class="py class">
 <dt class="sig sig-object py">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flames.widom.</span></span><span class="sig-name descname"><span class="pre">Widom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">framework_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adsorbate_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vdw_radii</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vdw_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_overlap_tries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_deltaE</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.555</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_frequency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_rejected</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_to_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">automatic_supercell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/widom.html#Widom"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flames.widom.</span></span><span class="sig-name descname"><span class="pre">Widom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">framework_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adsorbate_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vdw_radii</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vdw_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_overlap_tries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_deltaE</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.555</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_snapshots</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_rejected</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_to_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">automatic_supercell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/widom.html#Widom"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseSimulator</span></code></p>
 <p>Base class for Widom insertion method using ASE.</p>
 <p>This class performs the Widom insertion method to calculate the enthalpy of adsorption and Henry coefficient of an adsorbate in a framework.</p>
@@ -279,7 +279,7 @@
 <li><p><strong>max_deltaE</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Maximum energy difference (in eV) to consider for acceptance criteria.
 This is used to avoid overflow due to problematic calculations. Default is <code class="docutils literal notranslate"><span class="pre">1.555</span></code> eV (approx. 150 kJ/mol).</p></li>
 <li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Device to run the calculations on, either <code class="docutils literal notranslate"><span class="pre">'cpu'</span></code> or <code class="docutils literal notranslate"><span class="pre">'cuda'</span></code>. Default is <code class="docutils literal notranslate"><span class="pre">'cpu'</span></code>.</p></li>
-<li><p><strong>save_frequency</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Frequency at which to save the simulation state and results. Default is <code class="docutils literal notranslate"><span class="pre">100</span></code>.</p></li>
+<li><p><strong>save_snapshots</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to save the simulation state and results. Default is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
 <li><p><strong>save_rejected</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, saves the rejected moves in a trajectory file. Default is <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
 <li><p><strong>output_to_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, writes the output to a file named <code class="docutils literal notranslate"><span class="pre">Widom_Output.out</span></code> in the <code class="docutils literal notranslate"><span class="pre">results</span></code> directory. Default is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
 <li><p><strong>output_folder</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – Folder to save the output files. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, a folder named <code class="docutils literal notranslate"><span class="pre">results_&lt;T&gt;_&lt;P&gt;</span></code> will be created.</p></li>
@@ -320,7 +320,7 @@ This is used to avoid overflow due to problematic calculations. Default is <code
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">npt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nsteps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'iso_shape'</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">npt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nsteps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'iso_shape'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">driver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'MTKNPT'</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Run a NPT simulation using the Berendsen thermostat and barostat.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -329,6 +329,7 @@ This is used to avoid overflow due to problematic calculations. Default is <code
 <li><p><strong>time_step</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Time step for the NPT simulation (default is 0.5 fs).</p></li>
 <li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – The mode of the NPT simulation (default is “iso_shape”).
 Can be one of “iso_shape”, “aniso_shape”, or “aniso_flex”.</p></li>
+<li><p><strong>driver</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – The driver to use for the NPT simulation. Can be Berendsen, NoseHoover or MTKNPT (default is “MTKNPT”).</p></li>
 </ul>
 </dd>
 </dl>
@@ -428,11 +429,14 @@ It also loads the uptake, total energy, and total adsorbates lists from the save
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">set_adsorbate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adsorbate_atoms</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">set_adsorbate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adsorbate_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adsorbate_energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Set the adsorbate structure for the simulation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>adsorbate_atoms</strong> (<em>ase.Atoms</em>) – The new adsorbate structure as an ASE Atoms object.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>adsorbate_atoms</strong> (<em>ase.Atoms</em>) – The new adsorbate structure as an ASE Atoms object.</p></li>
+<li><p><strong>adsorbate_energy</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – The energy of the adsorbate in eV. If None, the energy will be calculated using the provided model.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
@@ -442,11 +446,14 @@ It also loads the uptake, total energy, and total adsorbates lists from the save
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">set_framework</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">framework_atoms</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">set_framework</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">framework_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framework_energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Set the framework structure for the simulation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>framework_atoms</strong> (<em>ase.Atoms</em>) – The new framework structure as an ASE Atoms object.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>framework_atoms</strong> (<em>ase.Atoms</em>) – The new framework structure as an ASE Atoms object.</p></li>
+<li><p><strong>framework_energy</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – The energy of the framework in eV. If None, the energy will be calculated using the provided model.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
@@ -550,7 +557,7 @@ based on the acceptance criteria.</p>
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2025, Felipe Lopes de Oliveira
+                Copyright &#169; 2026, Felipe Lopes de Oliveira
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -577,7 +584,7 @@ based on the acceptance criteria.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=90733dfc"></script>
+</div><script src="../_static/documentation_options.js?v=340bb9e5"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

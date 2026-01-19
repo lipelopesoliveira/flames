@@ -145,5 +145,22 @@ class PengRobinsonEOS:
         """
         Z = self.get_compressibility()
         molar_volume = self.R * self.T * Z / self.P
-        density = 1e-3 * self.molar_mass / molar_volume  # Density in kg/m^3
+        density = 1e-3 * self.molar_mass / molar_volume * units.mol  # Density in kg/m^3
         return density
+
+    def get_bulk_phase_molar_density(self) -> float:
+        """
+        Calculate the equivalent bulk phase number of molecules per cubic meter.
+
+        Returns:
+
+        molar_density: float
+            Bulk phase molar density in mol/m^3
+        """
+
+        Z = self.get_compressibility()
+        molar_volume = self.R * self.T * Z / self.P
+
+        molar_density = 1 / molar_volume * units.mol  # Density in mol/m^3
+
+        return molar_density

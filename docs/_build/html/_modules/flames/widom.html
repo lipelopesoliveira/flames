@@ -7,7 +7,7 @@
         <link rel="prefetch" href="../../_static/logo-dark-mode.png" as="image">
 
     <link rel="shortcut icon" href="../../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.09.25 -->
-        <title>flames.widom - FLAMES v0.4.4</title>
+        <title>flames.widom - FLAMES v0.4.5</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=580074bf" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">FLAMES v0.4.4</div></a>
+      <a href="../../index.html"><div class="brand">FLAMES v0.4.5</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -253,7 +253,6 @@
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">ase</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -316,9 +315,9 @@
 <span class="sd">        Device to run the calculations on, either ``&#39;cpu&#39;`` or ``&#39;cuda&#39;``. Default is ``&#39;cpu&#39;``.</span>
 <span class="sd">    :type device: str, optional</span>
 
-<span class="sd">    :param save_frequency:</span>
-<span class="sd">        Frequency at which to save the simulation state and results. Default is ``100``.</span>
-<span class="sd">    :type save_frequency: int, optional</span>
+<span class="sd">    :param save_snapshots:</span>
+<span class="sd">        Whether to save the simulation state and results. Default is ``True``.</span>
+<span class="sd">    :type save_snapshots: bool, optional</span>
 
 <span class="sd">    :param save_rejected:</span>
 <span class="sd">        If ``True``, saves the rejected moves in a trajectory file. Default is ``False``.</span>
@@ -360,12 +359,12 @@
         <span class="n">max_overlap_tries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
         <span class="n">max_deltaE</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.555</span><span class="p">,</span>
         <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
-        <span class="n">save_frequency</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="n">save_snapshots</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">save_rejected</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">output_to_file</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="n">output_folder</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">output_folder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">random_seed</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">random_seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">cutoff_radius</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">6.0</span><span class="p">,</span>
         <span class="n">automatic_supercell</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -383,7 +382,6 @@
             <span class="n">vdw_radii</span><span class="o">=</span><span class="n">vdw_radii</span><span class="p">,</span>
             <span class="n">vdw_factor</span><span class="o">=</span><span class="n">vdw_factor</span><span class="p">,</span>
             <span class="n">max_deltaE</span><span class="o">=</span><span class="n">max_deltaE</span><span class="p">,</span>
-            <span class="n">save_frequency</span><span class="o">=</span><span class="n">save_frequency</span><span class="p">,</span>
             <span class="n">save_rejected</span><span class="o">=</span><span class="n">save_rejected</span><span class="p">,</span>
             <span class="n">output_to_file</span><span class="o">=</span><span class="n">output_to_file</span><span class="p">,</span>
             <span class="n">output_folder</span><span class="o">=</span><span class="n">output_folder</span><span class="p">,</span>
@@ -401,12 +399,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">minimum_configuration</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">minimum_energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">base_iteration</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">N_ads</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbates</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">int_energy_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">boltz_fac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">int_energy_list</span><span class="p">)</span>
 
-        <span class="c1"># kH = β &lt;exp(-β ΔE)&gt; [mol kg-1 Pa-1]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kH</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_kH</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">boltz_fac</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">kH_std_dv</span> <span class="o">=</span> <span class="mf">0.0</span>
@@ -418,6 +415,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">max_overlap_tries</span> <span class="o">=</span> <span class="n">max_overlap_tries</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">MAX_ENERGY_ERROR</span> <span class="o">=</span> <span class="mf">1000.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_snapshots</span> <span class="o">=</span> <span class="n">save_snapshots</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_compute_kH</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">boltz_fac</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -518,22 +516,17 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_rejected</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">rejected_trajectory</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">atoms_trial</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_save_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actual_iteration</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_save_state</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Save the current state of the simulation if the iteration matches the save frequency.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        actual_iteration : int</span>
-<span class="sd">            The current iteration number.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">if</span> <span class="n">actual_iteration</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_every</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-
-            <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
-                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;int_energy_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">P</span><span class="si">:</span><span class="s2">.5f</span><span class="si">}</span><span class="s2">.npy&quot;</span><span class="p">),</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">int_energy_list</span><span class="p">),</span>
-            <span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;int_energy_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">P</span><span class="si">:</span><span class="s2">.5f</span><span class="si">}</span><span class="s2">.npy&quot;</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">int_energy_list</span><span class="p">),</span>
+        <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_save_minimum_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deltaE</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">atoms_trial</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -722,11 +715,12 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_save_minimum_configuration</span><span class="p">(</span><span class="n">deltaE</span><span class="p">,</span> <span class="n">atoms_trial</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">atoms_trial</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_snapshots</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">atoms_trial</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
 
         <span class="c1"># Append int_energy_list</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_statistics</span><span class="p">(</span><span class="n">deltaE</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_save_state</span><span class="p">(</span><span class="n">actual_iteration</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_save_state</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">print_iteration_info</span><span class="p">(</span>
             <span class="p">[</span>
@@ -762,7 +756,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2025, Felipe Lopes de Oliveira
+                Copyright &#169; 2026, Felipe Lopes de Oliveira
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -789,7 +783,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=90733dfc"></script>
+</div><script src="../../_static/documentation_options.js?v=340bb9e5"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

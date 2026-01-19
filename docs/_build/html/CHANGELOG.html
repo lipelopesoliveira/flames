@@ -8,7 +8,7 @@
         <link rel="prefetch" href="_static/logo-dark-mode.png" as="image">
 
     <link rel="shortcut icon" href="_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.09.25 -->
-        <title>Changelog - FLAMES v0.4.4</title>
+        <title>Changelog - FLAMES v0.4.5</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=580074bf" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
@@ -165,7 +165,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">FLAMES v0.4.4</div></a>
+      <a href="index.html"><div class="brand">FLAMES v0.4.5</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -258,19 +258,47 @@
         <article role="main" id="furo-main-content">
           <section id="changelog">
 <h1>Changelog<a class="headerlink" href="#changelog" title="Link to this heading">¶</a></h1>
-<section id="v-x-y-z-yyyy-mm-dd-unreleased">
-<h2>v[X.Y.Z] - YYYY-MM-DD (Unreleased)<a class="headerlink" href="#v-x-y-z-yyyy-mm-dd-unreleased" title="Link to this heading">¶</a></h2>
+<section id="v-0-4-5-2025-12-08-unreleased">
+<h2>v[0.4.5] - 2025-12-08 (Unreleased)<a class="headerlink" href="#v-0-4-5-2025-12-08-unreleased" title="Link to this heading">¶</a></h2>
 <section id="new-features">
 <h3>New Features 🎉<a class="headerlink" href="#new-features" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Added the <code class="docutils literal notranslate"><span class="pre">Reinsertion</span></code> move to the GCMC simulation. This move allows for the reinsertion of an adsorbate molecule that has been previously deleted, providing a mechanism to recover from unfavorable deletions and improve sampling efficiency.</p></li>
+<li><p>Added the <code class="docutils literal notranslate"><span class="pre">insert_molecules</span></code> method to the <code class="docutils literal notranslate"><span class="pre">GCMC</span></code> class. This method allows users to insert a specified number of adsorbate molecules into the simulation box at once, facilitating the initialization of the system with a desired loading.</p></li>
+<li><p>Added excess uptake calculation to the GCMC simulation results.</p>
+<ul>
+<li><p>Added the <code class="docutils literal notranslate"><span class="pre">void_fraction</span></code> parameter to the <code class="docutils literal notranslate"><span class="pre">GCMC</span></code> class that allows users to specify the void fraction of the structure for calculating the excess uptake.</p></li>
+<li><p>Added the <code class="docutils literal notranslate"><span class="pre">get_bulk_phase_molar_density</span></code> on the <code class="docutils literal notranslate"><span class="pre">PengRobinsonEOS</span></code> class to calculate the bulk phase molar density needed for the excess uptake calculation.</p></li>
+</ul>
+</li>
+<li><p>Now it is possible to manually set the adsorbate and framework energy when initializing the <code class="docutils literal notranslate"><span class="pre">GCMC</span></code> and <code class="docutils literal notranslate"><span class="pre">Widom</span></code> classes. This allows users to provide pre-calculated energies for the adsorbate and framework.</p></li>
+<li><p>Added the <code class="docutils literal notranslate"><span class="pre">nPT_MTKNPT</span></code> method on ase_utils for running NPT Molecular Dynamics (MD) simulations using the MTK NPT thermostat/barostat. This method is now the default for NPT MD simulations in the <code class="docutils literal notranslate"><span class="pre">BaseSimulator</span></code> class.</p></li>
+</ul>
 </section>
 <section id="fixed">
 <h3>Fixed 🐛<a class="headerlink" href="#fixed" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Remove the <code class="docutils literal notranslate"><span class="pre">max_overlap_tries</span></code> parameter from the GCMC class, as any value greater than 1 may cause problems on the GCMC simulation.</p></li>
+<li><p>Fix conversion factor for ‘nmol’ in BaseSimulator to account for supercell dimensions</p></li>
+<li><p>Remove the <code class="docutils literal notranslate"><span class="pre">save_frequency</span></code> parameter from the <code class="docutils literal notranslate"><span class="pre">Widom</span></code> class, to avoid confusion since the snapshots are now controlled by the <code class="docutils literal notranslate"><span class="pre">save_snapshots</span></code> parameter.</p></li>
+<li><p>Changed the default value for the LLM parameter in the GCMC class to False.</p></li>
+<li><p>Rename the <code class="docutils literal notranslate"><span class="pre">N_ads</span></code> attribute to <code class="docutils literal notranslate"><span class="pre">n_adsorbates</span></code> in both the <code class="docutils literal notranslate"><span class="pre">GCMC</span></code> and <code class="docutils literal notranslate"><span class="pre">Widom</span></code> classes for better clarity.</p></li>
+</ul>
 </section>
 <section id="enhanced">
 <h3>Enhanced ✨<a class="headerlink" href="#enhanced" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Change the json output file name on the <code class="docutils literal notranslate"><span class="pre">GCMC.save_results</span></code> method to <code class="docutils literal notranslate"><span class="pre">results_&lt;T&gt;_&lt;P&gt;.json</span></code> if no file name is provided by the user.</p></li>
+<li><p>Add the <code class="docutils literal notranslate"><span class="pre">production_start</span></code> parameter to the <code class="docutils literal notranslate"><span class="pre">GCMC.equilibrate</span></code> method to allow users to specify the step from which the production analysis should begin. This provides greater flexibility in analyzing the simulation data and helps to exclude initial equilibration steps from the analysis, specially when running MD + GCMC simulations.</p></li>
+<li><p>Add the <code class="docutils literal notranslate"><span class="pre">save_snapshots</span></code> parameter to the <code class="docutils literal notranslate"><span class="pre">Widom</span></code> class to allow users to control whether to save the simulation snapshots during the Widom insertion process. When set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, the simulation state and results will be saved every step; when set to <code class="docutils literal notranslate"><span class="pre">False</span></code>, they will not be saved. By default, this parameter is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p>Now <code class="docutils literal notranslate"><span class="pre">move_weights</span></code> parameter is a property in the <code class="docutils literal notranslate"><span class="pre">GCMC</span></code> class, allowing for get and set methods to change the move weights after initialization.</p></li>
+</ul>
 </section>
 <section id="documentation">
 <h3>Documentation 📖<a class="headerlink" href="#documentation" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Att online documentation for the code at https://lipelopesoliveira.github.io/flames/</p></li>
+</ul>
 </section>
 <section id="removed">
 <h3>Removed 🗑️<a class="headerlink" href="#removed" title="Link to this heading">¶</a></h3>
@@ -614,6 +642,24 @@
 <li><p>Initial release of the MLP Adsorption code, including the GCMC and Widom methods with basic functionality on the simulation of adsorption processes.</p></li>
 </ul>
 </section>
+<section id="v-x-y-z-yyyy-mm-dd-unreleased">
+<h2>v[X.Y.Z] - YYYY-MM-DD (Unreleased)<a class="headerlink" href="#v-x-y-z-yyyy-mm-dd-unreleased" title="Link to this heading">¶</a></h2>
+<section id="id46">
+<h3>New Features 🎉<a class="headerlink" href="#id46" title="Link to this heading">¶</a></h3>
+</section>
+<section id="id47">
+<h3>Fixed 🐛<a class="headerlink" href="#id47" title="Link to this heading">¶</a></h3>
+</section>
+<section id="id48">
+<h3>Enhanced ✨<a class="headerlink" href="#id48" title="Link to this heading">¶</a></h3>
+</section>
+<section id="id49">
+<h3>Documentation 📖<a class="headerlink" href="#id49" title="Link to this heading">¶</a></h3>
+</section>
+<section id="id50">
+<h3>Removed 🗑️<a class="headerlink" href="#id50" title="Link to this heading">¶</a></h3>
+</section>
+</section>
 </section>
 
         </article>
@@ -645,7 +691,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2025, Felipe Lopes de Oliveira
+                Copyright &#169; 2026, Felipe Lopes de Oliveira
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -679,7 +725,7 @@
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Changelog</a><ul>
-<li><a class="reference internal" href="#v-x-y-z-yyyy-mm-dd-unreleased">v[X.Y.Z] - YYYY-MM-DD (Unreleased)</a><ul>
+<li><a class="reference internal" href="#v-0-4-5-2025-12-08-unreleased">v[0.4.5] - 2025-12-08 (Unreleased)</a><ul>
 <li><a class="reference internal" href="#new-features">New Features 🎉</a></li>
 <li><a class="reference internal" href="#fixed">Fixed 🐛</a></li>
 <li><a class="reference internal" href="#enhanced">Enhanced ✨</a></li>
@@ -760,6 +806,14 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#v-0-1-0-2025-07-12">v[0.1.0] - 2025-07-12</a></li>
+<li><a class="reference internal" href="#v-x-y-z-yyyy-mm-dd-unreleased">v[X.Y.Z] - YYYY-MM-DD (Unreleased)</a><ul>
+<li><a class="reference internal" href="#id46">New Features 🎉</a></li>
+<li><a class="reference internal" href="#id47">Fixed 🐛</a></li>
+<li><a class="reference internal" href="#id48">Enhanced ✨</a></li>
+<li><a class="reference internal" href="#id49">Documentation 📖</a></li>
+<li><a class="reference internal" href="#id50">Removed 🗑️</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -771,7 +825,7 @@
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=90733dfc"></script>
+</div><script src="_static/documentation_options.js?v=340bb9e5"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>

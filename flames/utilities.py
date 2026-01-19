@@ -138,7 +138,7 @@ def make_cubic(
     force_diagonal: bool = False,
     force_90_degrees: bool = False,
     allow_orthorhombic: bool = False,
-    max_length:  float | None = None,
+    max_length: float | None = None,
     min_atoms: int = 0,
     max_atoms: int = 10000,
     angle_tolerance: float = 1e-3,
@@ -183,7 +183,7 @@ def make_cubic(
         max_atoms=max_atoms,
         angle_tolerance=angle_tolerance,
         allow_orthorhombic=allow_orthorhombic,
-        max_length=max_length
+        max_length=max_length,
     ).apply_transformation(pmg_structure)
 
     ase_structure = cubic_dict.to_ase_atoms()
@@ -196,12 +196,12 @@ def check_weights(move_weights: dict) -> dict:
     Check if the move weights are valid and normalize them to sum to 1.
 
     Parameters:
-    - move_weights (dict): A dictionary containing the move weights for 'insertion', 'deletion', 'translation', and 'rotation'.
+    - move_weights (dict): A dictionary containing the move weights for 'insertion', 'deletion', 'translation', 'rotation', and 'reinsertion'.
     Returns:
     - dict: Normalized move weights.
     """
 
-    valid_keys = {"insertion", "deletion", "translation", "rotation"}
+    valid_keys = {"insertion", "deletion", "translation", "rotation", "reinsertion"}
 
     # Check if move_weights is a dictionary
     if type(move_weights) is not dict:
@@ -288,7 +288,7 @@ def random_n_splits(data: np.ndarray, n: int, random_generator=None) -> np.ndarr
     return np.array(result_arrays)
 
 
-def read_cif(file_name):
+def read_cif(file_name: str, partial_charges_tag: str = "_atom_site_charge") -> ase.Atoms:
     """
     Reads a file in format `.cif` from the `path` given and returns
     a list containg the N atom labels and a Nx3 array contaning
@@ -298,6 +298,8 @@ def read_cif(file_name):
     ----------
     file_name : str
         Name of the `cif` file. Does not neet to contain the `.cif` extention.
+    partial_charges_tag : str
+        The tag in the cif file corresponding to the partial charges.
 
     Returns
     -------
@@ -331,7 +333,7 @@ def read_cif(file_name):
     atom_site_frac = np.array([atom_site_fract_x, atom_site_fract_y, atom_site_fract_z]).T
 
     try:
-        partial_charges = np.array(cif.find_values("_atom_site_charge")).astype(float)
+        partial_charges = np.array(cif.find_values(partial_charges_tag)).astype(float)
     except Exception:
         partial_charges = np.zeros(len(atom_site_type_symbol))
 

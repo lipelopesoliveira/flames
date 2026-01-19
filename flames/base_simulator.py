@@ -1,5 +1,5 @@
 import os
-from typing import TextIO, Union
+from typing import TextIO
 
 import ase
 import numpy as np
@@ -12,6 +12,7 @@ from ase.optimize import LBFGS
 from flames.ase_utils import (
     crystalOptimization,
     nPT_Berendsen,
+    nPT_MTKNPT,
     nPT_NoseHoover,
     nVT_Berendsen,
 )
@@ -114,15 +115,17 @@ class BaseSimulator:
         pressure: float,
         device: str,
         vdw_radii: np.ndarray,
+        framework_energy: float | None = None,
+        adsorbate_energy: float | None = None,
         vdw_factor: float = 0.6,
         max_deltaE: float = 1.555,
         save_frequency: int = 100,
         save_rejected: bool = False,
         output_to_file: bool = True,
-        output_folder: Union[str, None] = None,
+        output_folder: str | None = None,
         debug: bool = False,
         fugacity_coeff: float = 1.0,
-        random_seed: Union[int, None] = None,
+        random_seed: int | None = None,
         cutoff_radius: float = 6.0,
         automatic_supercell: bool = True,
     ):
@@ -141,9 +144,7 @@ class BaseSimulator:
         os.makedirs(os.path.join(self.out_folder, "Movies"), exist_ok=True)
 
         if output_to_file:
-            self.out_file: Union[TextIO, None] = open(
-                os.path.join(self.out_folder, "Output.out"), "a"
-            )
+            self.out_file: TextIO | None = open(os.path.join(self.out_folder, "Output.out"), "a")
         else:
             self.out_file = None
 
@@ -168,8 +169,8 @@ class BaseSimulator:
         self.model = model
         self.device = device
 
-        self.set_framework(framework_atoms)
-        self.set_adsorbate(adsorbate_atoms)
+        self.set_framework(framework_atoms, framework_energy=framework_energy)
+        self.set_adsorbate(adsorbate_atoms, adsorbate_energy=adsorbate_energy)
 
         self.current_system = self.framework.copy()
         self.current_system.calc = self.model
@@ -189,17 +190,17 @@ class BaseSimulator:
         atm2pa = 101325
         mol2cm3 = units.kB / units.J * units.mol * 273.15 / atm2pa
 
+        # Get the ideal supercell. This will be updated by the set_framework method
+        self.ideal_supercell = self.get_ideal_supercell()
+
         self.conv_factors = {
-            "nmol": 1,
+            "nmol": 1 / np.prod(self.ideal_supercell),
             "mol/kg": (1 / units.mol) / self.get_framework_mass(),
             "mg/g": (self.adsorbate_mass * 1e3) / self.get_framework_mass(),
             "cm^3 STP/gr": mol2cm3 / units.mol / self.get_framework_mass() * 1e3,
             "cm^3 STP/cm^3": 1e6 * mol2cm3 / units.mol / (self.framework.get_volume() * (1e-8**3)),
-            "% wt": (self.adsorbate_mass * 1e3) / self.get_framework_mass() * 1e-1,
+            "% wt": self.adsorbate_mass / self.get_framework_mass() * 100,
         }
-
-        # Get the ideal supercell. This will be updated by the set_framework method
-        self.ideal_supercell = [1, 1, 1]
 
         self.vdw: np.ndarray = vdw_radii * vdw_factor  # Adjust van der Waals radii to avoid overlap
 
@@ -231,7 +232,9 @@ class BaseSimulator:
         """
         return float(np.sum(self.framework.get_masses()) / units.kg)
 
-    def set_framework(self, framework_atoms: ase.Atoms) -> None:
+    def set_framework(
+        self, framework_atoms: ase.Atoms, framework_energy: float | None = None
+    ) -> None:
         """
         Set the framework structure for the simulation.
 
@@ -239,6 +242,8 @@ class BaseSimulator:
         ----------
         framework_atoms : ase.Atoms
             The new framework structure as an ASE Atoms object.
+        framework_energy : float or None, optional
+            The energy of the framework in eV. If None, the energy will be calculated using the provided model.
         """
         self.framework = framework_atoms
         self.framework.set_tags(np.zeros(len(self.framework), dtype=int))
@@ -252,7 +257,10 @@ class BaseSimulator:
         self.perpendicular_cell = get_perpendicular_lengths(self.framework.get_cell()) * np.eye(3)
 
         self.framework.calc = self.model
-        self.framework_energy = self.framework.get_potential_energy()
+        if framework_energy:
+            self.framework_energy = framework_energy * np.prod(self.ideal_supercell)
+        else:
+            self.framework_energy = self.framework.get_potential_energy()
         self.n_atoms_framework = len(self.framework)
 
         self.V = np.linalg.det(self.cell) / units.m**3
@@ -261,7 +269,9 @@ class BaseSimulator:
         # Get the framework density in g/cm^3
         self.framework_density = get_density(self.framework)
 
-    def set_adsorbate(self, adsorbate_atoms: ase.Atoms) -> None:
+    def set_adsorbate(
+        self, adsorbate_atoms: ase.Atoms, adsorbate_energy: float | None = None
+    ) -> None:
         """
         Set the adsorbate structure for the simulation.
 
@@ -269,6 +279,8 @@ class BaseSimulator:
         ----------
         adsorbate_atoms : ase.Atoms
             The new adsorbate structure as an ASE Atoms object.
+        adsorbate_energy : float or None, optional
+            The energy of the adsorbate in eV. If None, the energy will be calculated using the provided model.
         """
         self.adsorbate = adsorbate_atoms
         self.adsorbate.set_tags(np.ones(len(self.adsorbate), dtype=int))
@@ -276,7 +288,10 @@ class BaseSimulator:
         self.adsorbate.set_cell(self.framework.get_cell())
         self.adsorbate.set_pbc([True, True, True])
 
-        self.adsorbate_energy = self.adsorbate.get_potential_energy()
+        if adsorbate_energy:
+            self.adsorbate_energy = adsorbate_energy
+        else:
+            self.adsorbate_energy = self.adsorbate.get_potential_energy()
         self.n_adsorbate_atoms = len(self.adsorbate)
         self.adsorbate_mass = np.sum(self.adsorbate.get_masses()) / units.kg
 
@@ -402,7 +417,7 @@ Start optimizing adsorbate structure...
         self.adsorbate.calc = self.model
         self.adsorbate_energy = self.adsorbate.get_potential_energy()
 
-    def npt(self, nsteps, time_step: float = 0.5, mode: str = "iso_shape"):
+    def npt(self, nsteps, time_step: float = 0.5, mode: str = "iso_shape", driver: str = "MTKNPT"):
         """
         Run a NPT simulation using the Berendsen thermostat and barostat.
 
@@ -415,12 +430,14 @@ Start optimizing adsorbate structure...
         mode : str, optional
             The mode of the NPT simulation (default is "iso_shape").
             Can be one of "iso_shape", "aniso_shape", or "aniso_flex".
+        driver : str, optional
+            The driver to use for the NPT simulation. Can be Berendsen, NoseHoover or MTKNPT (default is "MTKNPT").
         """
 
         allowed_modes = ["iso_shape", "aniso_shape", "aniso_flex"]
         assert mode in allowed_modes, f"Mode must be one of {allowed_modes}."
 
-        if mode == "iso_shape" or mode == "aniso_shape":
+        if (mode == "iso_shape" or mode == "aniso_shape") and driver == "Berendsen":
 
             new_state = nPT_Berendsen(
                 atoms=self.current_system,
@@ -437,7 +454,7 @@ Start optimizing adsorbate structure...
                 output_interval=self.save_every,
                 movie_interval=self.save_every,
             )
-        else:
+        elif driver == "NoseHoover":
 
             new_state = nPT_NoseHoover(
                 atoms=self.current_system,
@@ -454,6 +471,30 @@ Start optimizing adsorbate structure...
                 trajectory=self.trajectory,
                 output_interval=self.save_every,
                 movie_interval=self.save_every,
+            )
+
+        elif driver == "MTKNPT":
+
+            isotropic = True if (mode == "iso_flex" or mode == "iso_shape") else False
+
+            new_state = nPT_MTKNPT(
+                atoms=self.current_system,
+                model=self.model,
+                temperature=self.T,
+                pressure=self.P * 1e-5,
+                time_step=time_step,
+                num_md_steps=nsteps,
+                isotropic=isotropic,
+                out_folder=self.out_folder,
+                out_file=self.out_file,  # type: ignore
+                trajectory=self.trajectory,
+                output_interval=self.save_every,
+                movie_interval=self.save_every,
+            )
+
+        else:
+            raise ValueError(
+                f"Driver must be one of 'Berendsen', 'NoseHoover' or 'MTKNPT'. Not {driver}."
             )
 
         self.set_state(new_state)

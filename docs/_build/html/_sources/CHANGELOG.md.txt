@@ -1,14 +1,35 @@
 # Changelog
 
-## v[X.Y.Z] - YYYY-MM-DD (Unreleased)
+## v[0.4.5] - 2025-12-08 (Unreleased)
 
 ### New Features 🎉
 
+- Added the `Reinsertion` move to the GCMC simulation. This move allows for the reinsertion of an adsorbate molecule that has been previously deleted, providing a mechanism to recover from unfavorable deletions and improve sampling efficiency.
+- Added the `insert_molecules` method to the `GCMC` class. This method allows users to insert a specified number of adsorbate molecules into the simulation box at once, facilitating the initialization of the system with a desired loading.
+- Added excess uptake calculation to the GCMC simulation results.
+  - Added the `void_fraction` parameter to the `GCMC` class that allows users to specify the void fraction of the structure for calculating the excess uptake.
+  - Added the `get_bulk_phase_molar_density` on the `PengRobinsonEOS` class to calculate the bulk phase molar density needed for the excess uptake calculation.
+- Now it is possible to manually set the adsorbate and framework energy when initializing the `GCMC` and `Widom` classes. This allows users to provide pre-calculated energies for the adsorbate and framework.
+- Added the `nPT_MTKNPT` method on ase_utils for running NPT Molecular Dynamics (MD) simulations using the MTK NPT thermostat/barostat. This method is now the default for NPT MD simulations in the `BaseSimulator` class.
+
 ### Fixed 🐛
+
+- Remove the `max_overlap_tries` parameter from the GCMC class, as any value greater than 1 may cause problems on the GCMC simulation.
+- Fix conversion factor for 'nmol' in BaseSimulator to account for supercell dimensions
+- Remove the `save_frequency` parameter from the `Widom` class, to avoid confusion since the snapshots are now controlled by the `save_snapshots` parameter.
+- Changed the default value for the LLM parameter in the GCMC class to False.
+- Rename the `N_ads` attribute to `n_adsorbates` in both the `GCMC` and `Widom` classes for better clarity.
 
 ### Enhanced ✨
 
+- Change the json output file name on the `GCMC.save_results` method to `results_<T>_<P>.json` if no file name is provided by the user.
+- Add the `production_start` parameter to the `GCMC.equilibrate` method to allow users to specify the step from which the production analysis should begin. This provides greater flexibility in analyzing the simulation data and helps to exclude initial equilibration steps from the analysis, specially when running MD + GCMC simulations.
+- Add the `save_snapshots` parameter to the `Widom` class to allow users to control whether to save the simulation snapshots during the Widom insertion process. When set to `True`, the simulation state and results will be saved every step; when set to `False`, they will not be saved. By default, this parameter is set to `True`.
+- Now `move_weights` parameter is a property in the `GCMC` class, allowing for get and set methods to change the move weights after initialization.
+
 ### Documentation 📖
+
+- Att online documentation for the code at https://lipelopesoliveira.github.io/flames/
 
 ### Removed 🗑️
 
@@ -243,3 +264,15 @@
 ## v[0.1.0] - 2025-07-12
 
 - Initial release of the MLP Adsorption code, including the GCMC and Widom methods with basic functionality on the simulation of adsorption processes.
+
+## v[X.Y.Z] - YYYY-MM-DD (Unreleased)
+
+### New Features 🎉
+
+### Fixed 🐛
+
+### Enhanced ✨
+
+### Documentation 📖
+
+### Removed 🗑️

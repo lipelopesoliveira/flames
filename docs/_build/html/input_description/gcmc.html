@@ -8,7 +8,7 @@
         <link rel="prefetch" href="../_static/logo-dark-mode.png" as="image">
 
     <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.09.25 -->
-        <title>GCMC Class - FLAMES v0.4.4</title>
+        <title>GCMC Class - FLAMES v0.4.5</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=580074bf" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -165,7 +165,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">FLAMES v0.4.4</div></a>
+      <a href="../index.html"><div class="brand">FLAMES v0.4.5</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -261,10 +261,11 @@
 <p>The <code class="docutils literal notranslate"><span class="pre">GCMC</span></code> class serves as the main interface for handling Grand Canonical Monte Carlo (GCMC) simulation logic.</p>
 <dl class="py class">
 <dt class="sig sig-object py">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flames.gcmc.</span></span><span class="sig-name descname"><span class="pre">GCMC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framework_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adsorbate_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pressure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vdw_radii</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vdw_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_overlap_tries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_translation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2617993877991494</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_deltaE</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.555</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_frequency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_rejected</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_to_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fugacity_coeff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">automatic_supercell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criticalTemperature</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criticalPressure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acentricFactor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LLM</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">move_weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'deletion':</span> <span class="pre">0.25,</span> <span class="pre">'insertion':</span> <span class="pre">0.25,</span> <span class="pre">'rotation':</span> <span class="pre">0.25,</span> <span class="pre">'translation':</span> <span class="pre">0.25}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/gcmc.html#GCMC"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flames.gcmc.</span></span><span class="sig-name descname"><span class="pre">GCMC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framework_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adsorbate_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pressure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vdw_radii</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vdw_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_translation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.5707963267948966</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_deltaE</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.555</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_frequency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_rejected</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_to_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fugacity_coeff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">automatic_supercell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criticalTemperature</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criticalPressure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acentricFactor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">void_fraction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LLM</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">move_weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'deletion':</span> <span class="pre">0.2,</span> <span class="pre">'insertion':</span> <span class="pre">0.2,</span> <span class="pre">'reinsertion':</span> <span class="pre">0.2,</span> <span class="pre">'rotation':</span> <span class="pre">0.2,</span> <span class="pre">'translation':</span> <span class="pre">0.2}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/gcmc.html#GCMC"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseSimulator</span></code></p>
 <p>Base class for Grand Canonical Monte Carlo (GCMC) simulations using ASE.</p>
-<p>This class employs Monte Carlo simulations under the grand canonical ensemble (<span class="math notranslate nohighlight">\(\mu VT\)</span>) to study the adsorption of molecules in a framework material. It allows for movements such as insertion, deletion, translation, and rotation of adsorbate molecules within the framework.</p>
+<p>This class employs Monte Carlo simulations under the grand canonical ensemble (<span class="math notranslate nohighlight">\(\mu VT\)</span>) to study the adsorption of molecules in a framework material.
+It allows for movements such as insertion, deletion, translation, and rotation of adsorbate molecules within the framework.</p>
 <p>Currently, it supports any ASE-compatible calculator for energy calculations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -281,12 +282,11 @@ Should be an array of the same length as the number of atomic numbers in ASE.</p
 <li><p><strong>max_deltaE</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Maximum energy difference (in eV) to consider for acceptance criteria.
 This is used to avoid overflow due to problematic calculations. Default is <code class="docutils literal notranslate"><span class="pre">1.555</span></code> eV (approx. 150 kJ/mol).</p></li>
 <li><p><strong>vdw_factor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Factor to scale the Van der Waals radii. Default is <code class="docutils literal notranslate"><span class="pre">0.6</span></code>.</p></li>
-<li><p><strong>max_overlap_tries</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Maximum number of tries to insert/move a molecule without overlap. Default is <code class="docutils literal notranslate"><span class="pre">100</span></code>.</p></li>
-<li><p><strong>max_translation</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Maximum translation distance. Default is <code class="docutils literal notranslate"><span class="pre">1.0</span></code>.</p></li>
-<li><p><strong>max_rotation</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Maximum rotation angle (in radians). Default is <code class="docutils literal notranslate"><span class="pre">15</span></code> degrees (converted to radians).</p></li>
+<li><p><strong>max_translation</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Maximum translation distance. Default is <code class="docutils literal notranslate"><span class="pre">1.5</span></code>.</p></li>
+<li><p><strong>max_rotation</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Maximum rotation angle (in radians). Default is <code class="docutils literal notranslate"><span class="pre">90</span></code> degrees (converted to radians).</p></li>
 <li><p><strong>save_frequency</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Frequency at which to save the simulation state and results. Default is <code class="docutils literal notranslate"><span class="pre">100</span></code>.</p></li>
 <li><p><strong>save_rejected</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, saves the rejected moves in a trajectory file. Default is <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
-<li><p><strong>output_to_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, writes the output to a file named <code class="docutils literal notranslate"><span class="pre">GCMC_Output.out</span></code> in the <code class="docutils literal notranslate"><span class="pre">results</span></code> directory. Default is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>output_to_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, writes the output to a file named <code class="docutils literal notranslate"><span class="pre">output_{temperature}_{pressure}.out</span></code> in the <code class="docutils literal notranslate"><span class="pre">results</span></code> directory. Default is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
 <li><p><strong>output_folder</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – Folder to save the output files. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, a folder named <code class="docutils literal notranslate"><span class="pre">results_&lt;T&gt;_&lt;P&gt;</span></code> will be created.</p></li>
 <li><p><strong>debug</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, prints detailed debug information during the simulation. Default is <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
 <li><p><strong>fugacity_coeff</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Fugacity coefficient to correct the pressure. Default is <code class="docutils literal notranslate"><span class="pre">1.0</span></code>.
@@ -294,20 +294,23 @@ Only used if <code class="docutils literal notranslate"><span class="pre">critic
 <li><p><strong>random_seed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – Random seed for reproducibility. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code> and will generate a random seed automatically if not provided.</p></li>
 <li><p><strong>cutoff_radius</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Interaction potential cut-off radius used to estimate the minimum unit cell. Default is <code class="docutils literal notranslate"><span class="pre">6.0</span></code>.</p></li>
 <li><p><strong>automatic_supercell</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, automatically creates a supercell based on the cutoff radius. Default is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>max_length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – Maximum length (in Angstroms) for any side of the supercell. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, no maximum length is enforced.
+This can be used to limit the size of the supercell for computational efficiency. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
 <li><p><strong>criticalTemperature</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Critical temperature of the adsorbate in Kelvin.</p></li>
 <li><p><strong>criticalPressure</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Critical pressure of the adsorbate in Pascal.</p></li>
 <li><p><strong>acentricFactor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Acentric factor of the adsorbate.</p></li>
+<li><p><strong>void_fraction</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Void fraction of the adsorbate.</p></li>
 <li><p><strong>LLM</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Use Leftmost Local Minima (LLM) on the determination of the equilibration point by <a class="reference external" href="https://github.com/lipelopesoliveira/pyMSER">pyMSER</a>.
 This can underestimate the equilibration point in some situations, but generate good averages for well-behaved scenarios.</p></li>
-<li><p><strong>move_weights</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>, </em><em>optional</em>) – A dictionary containing the move weights for <code class="docutils literal notranslate"><span class="pre">'insertion'</span></code>, <code class="docutils literal notranslate"><span class="pre">'deletion'</span></code>, <code class="docutils literal notranslate"><span class="pre">'translation'</span></code>, and <code class="docutils literal notranslate"><span class="pre">'rotation'</span></code>.
+<li><p><strong>move_weights</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>, </em><em>optional</em>) – A dictionary containing the move weights for <code class="docutils literal notranslate"><span class="pre">'insertion'</span></code>, <code class="docutils literal notranslate"><span class="pre">'deletion'</span></code>, <code class="docutils literal notranslate"><span class="pre">'translation'</span></code>, <code class="docutils literal notranslate"><span class="pre">'rotation'</span></code>, and <code class="docutils literal notranslate"><span class="pre">'reinsertion'</span></code>.
 Default is equal weights for all moves.
-Example: <code class="docutils literal notranslate"><span class="pre">{'insertion':</span> <span class="pre">0.3,</span> <span class="pre">'deletion':</span> <span class="pre">0.3,</span> <span class="pre">'translation':</span> <span class="pre">0.2,</span> <span class="pre">'rotation':</span> <span class="pre">0.2}</span></code></p></li>
+Example: <code class="docutils literal notranslate"><span class="pre">{'insertion':</span> <span class="pre">0.3,</span> <span class="pre">'deletion':</span> <span class="pre">0.3,</span> <span class="pre">'translation':</span> <span class="pre">0.2,</span> <span class="pre">'rotation':</span> <span class="pre">0.2,</span> <span class="pre">'reinsertion':</span> <span class="pre">0.0}</span></code></p></li>
 </ul>
 </dd>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">equilibrate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_ADF</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uncertainty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'uSD'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/gcmc.html#GCMC.equilibrate"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-name descname"><span class="pre">equilibrate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_ADF</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uncertainty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'uSD'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">production_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/gcmc.html#GCMC.equilibrate"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Use pyMSER to get the equilibrated statistics of the simulation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -325,6 +328,7 @@ Options are:
 - “uSE”: uncorrelated Standard Error
 - “SD”: Standard Deviation
 - “SE”: Standard Error</p></li>
+<li><p><strong>production_start</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The step to start the production analysis from. Default is 0.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -390,6 +394,23 @@ Returns 0.0 if no molecules are adsorbed (N_ads == 0).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">insert_adsorbates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_adsorbates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_attempts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/gcmc.html#GCMC.insert_adsorbates"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Insert a given number of adsorbate molecules into the framework at random positions without overlap.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_molecules</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of adsorbate molecules to insert.</p></li>
+<li><p><strong>max_attempts</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Maximum number of attempts to insert the molecules without overlap. Default is 1000.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">load_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state_file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/gcmc.html#GCMC.load_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Load the state of the simulation from a file.</p>
 <dl class="field-list simple">
@@ -404,7 +425,7 @@ Returns 0.0 if no molecules are adsorbed (N_ads == 0).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">npt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nsteps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'iso_shape'</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">npt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nsteps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'iso_shape'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">driver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'MTKNPT'</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Run a NPT simulation using the Berendsen thermostat and barostat.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -413,6 +434,7 @@ Returns 0.0 if no molecules are adsorbed (N_ads == 0).</p>
 <li><p><strong>time_step</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Time step for the NPT simulation (default is 0.5 fs).</p></li>
 <li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – The mode of the NPT simulation (default is “iso_shape”).
 Can be one of “iso_shape”, “aniso_shape”, or “aniso_flex”.</p></li>
+<li><p><strong>driver</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – The driver to use for the NPT simulation. Can be Berendsen, NoseHoover or MTKNPT (default is “MTKNPT”).</p></li>
 </ul>
 </dd>
 </dl>
@@ -499,7 +521,7 @@ It also loads the uptake, total energy, and total adsorbates lists from the save
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">save_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GCMC_Results.json'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_ADF</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uncertainty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'uSD'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/gcmc.html#GCMC.save_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-name descname"><span class="pre">save_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_ADF</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uncertainty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'uSD'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/gcmc.html#GCMC.save_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Save a json file with the main results of the simulation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -529,11 +551,14 @@ Options are:
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">set_adsorbate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adsorbate_atoms</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">set_adsorbate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adsorbate_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adsorbate_energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Set the adsorbate structure for the simulation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>adsorbate_atoms</strong> (<em>ase.Atoms</em>) – The new adsorbate structure as an ASE Atoms object.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>adsorbate_atoms</strong> (<em>ase.Atoms</em>) – The new adsorbate structure as an ASE Atoms object.</p></li>
+<li><p><strong>adsorbate_energy</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – The energy of the adsorbate in eV. If None, the energy will be calculated using the provided model.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
@@ -543,11 +568,14 @@ Options are:
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">set_framework</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">framework_atoms</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">set_framework</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">framework_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framework_energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Set the framework structure for the simulation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>framework_atoms</strong> (<em>ase.Atoms</em>) – The new framework structure as an ASE Atoms object.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>framework_atoms</strong> (<em>ase.Atoms</em>) – The new framework structure as an ASE Atoms object.</p></li>
+<li><p><strong>framework_energy</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – The energy of the framework in eV. If None, the energy will be calculated using the provided model.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
@@ -572,7 +600,18 @@ Options are:
 <dl class="py method">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iteration</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/gcmc.html#GCMC.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
-<dd></dd></dl>
+<dd><p>Perform a single Grand Canonical Monte Carlo step.
+It will randomly select a move based on the move weights and attempt to perform it.
+The uptake, total energy, and total adsorbates lists are updated accordingly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>iteration</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The current iteration number.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py">
@@ -596,11 +635,27 @@ This method randomly selects an adsorbate molecule and try to apply the deletion
 <dd><p>Try to insert a new adsorbate molecule into the framework.
 This method randomly places the adsorbate in the framework and checks for van der Waals overlap.
 If there is no overlap, it calculates the new potential energy and decides whether to accept the insertion
-based on the acceptance criteria.
-If after a number of tries (self.max_overlap_tries) no valid position is found, the insertion is rejected.</p>
+based on the acceptance criteria.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>True if the insertion was accepted, False otherwise.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">try_reinsertion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/gcmc.html#GCMC.try_reinsertion"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Try to delete and reinsert an adsorbate molecule.
+This method randomly selects an adsorbate molecule, deletes it, and tries to reinsert it
+at a new random position within the framework.</p>
+<p>If there are no adsorbates, it returns False.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if the reinsertion was accepted, False otherwise.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)">bool</a></p>
@@ -640,6 +695,48 @@ It checks for van der Waals overlap and calculates the new potential energy.</p>
 </dl>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">base_iteration</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em></dt>
+<dd><p>Get the base iteration for the GCMC simulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The base iteration count.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">move_weights</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></em></dt>
+<dd><p>Get the move weights for the GCMC simulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dictionary containing the move weights for each type of movement.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_adsorbates</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em></dt>
+<dd><p>Get the number of adsorbates in the current system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The number of adsorbates.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -673,7 +770,7 @@ It checks for van der Waals overlap and calculates the new potential energy.</p>
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2025, Felipe Lopes de Oliveira
+                Copyright &#169; 2026, Felipe Lopes de Oliveira
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -700,7 +797,7 @@ It checks for van der Waals overlap and calculates the new potential energy.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=90733dfc"></script>
+</div><script src="../_static/documentation_options.js?v=340bb9e5"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
