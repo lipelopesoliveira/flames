@@ -41,6 +41,7 @@ def test_check_weights_non_numeric_value():
         "deletion": 1,
         "translation": "not a number",
         "rotation": 1,
+        "reinsertion": 1,
     }
     with pytest.raises(TypeError, match="move_weights\\['translation'\\] must be a number"):
         check_weights(move_weights)
@@ -55,6 +56,7 @@ def test_check_weights_negative_value():
         "deletion": 1,
         "translation": -1,
         "rotation": 1,
+        "reinsertion": 1,
     }
     with pytest.raises(ValueError, match="move_weights\\['translation'\\] must be non-negative"):
         check_weights(move_weights)
@@ -69,6 +71,7 @@ def test_check_weights_invalid_key():
         "deletion": 1,
         "translation": 1,
         "wrong_key": 1,
+        "reinsertion": 1,
     }
     with pytest.raises(MoveKeyError):
         check_weights(move_weights)
@@ -83,6 +86,7 @@ def test_check_weights_missing_one_key_warns():
         "deletion": 1,
         "translation": 1,
         # missing "rotation"
+        "reinsertion": 1,
     }
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
@@ -101,14 +105,14 @@ def test_check_weights_missing_multiple_keys_warns():
     move_weights = {
         "insertion": 1,
         "deletion": 1,
-        # missing: translation, rotation
+        # missing: translation, rotation, reinsertion
     }
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
         result = check_weights(move_weights)
 
-        # Should issue 2 warnings
-        assert len(w) == 2
+        # Should issue 3 warnings
+        assert len(w) == 3
         msgs = [str(wi.message) for wi in w]
         assert any("missing the key 'translation'" in msg for msg in msgs)
         assert any("missing the key 'rotation'" in msg for msg in msgs)
@@ -128,6 +132,7 @@ def test_check_weights_insertion_deletion_inequal():
         "deletion": 2,
         "translation": 1,
         "rotation": 1,
+        "reinsertion": 1,
     }
     with pytest.raises(InsertionDeletionError) as exc_info:
         check_weights(move_weights)
@@ -144,6 +149,7 @@ def test_check_weights_all_zero():
         "deletion": 0,
         "translation": 0,
         "rotation": 0,
+        "reinsertion": 0,
     }
     with pytest.raises(ZeroDivisionError):
         check_weights(move_weights)

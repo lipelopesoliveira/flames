@@ -80,7 +80,6 @@ Running on device: {self.sim.device}
 Constants used:
 Boltzmann constant:     {units.kB} eV/K
 Beta (1/kT):            {self.sim.beta:.3f} eV^-1
-Fugacity coefficient:   {self.sim.fugacity_coeff:.9f} (dimensionless)
 
 ===========================================================================
 
@@ -135,6 +134,29 @@ Atomic positions:
         for atom in self.sim.adsorbate:
             header += "  {:2} {:12.7f} {:12.7f} {:12.7f}\n".format(atom.symbol, *atom.position)
 
+        # Only prints if EOS parameters are set in the simulator
+        if _ := getattr(self.sim, "criticalTemperature", None):
+            header += f"""
+===========================================================================
+Equation of State Parameters:
+
+    Critical temparure [K]: {self.sim.criticalTemperature:.6f}
+    Critical pressure [Pa]: {self.sim.criticalPressure:.6f}
+    Acentric factor [-]:    {self.sim.acentricFactor:.6f}
+
+    Vapour=stable, Liquid=metastable
+
+    MolFraction:           1.0000000000 [-]
+    Compressibility:       {self.sim.eos.get_compressibility():.6f} [-]
+    Fugacity coeff.:       {self.sim.fugacity_coeff:.10f} [-]
+    Bulk phase pressure:   {self.sim.P * self.sim.fugacity_coeff:.6f} [Pa]
+
+    Density of the bulk fluid phase:      {self.sim.eos.get_bulk_phase_density():.6f} [kg/m^3]
+
+    Amount of excess molecules:        {self.sim.eos.get_bulk_phase_molar_density() * self.sim.V * self.sim.void_fraction:.10f} [-]
+
+"""
+
         header += """
 ===========================================================================
 Shortest distances:
@@ -168,11 +190,11 @@ Partial pressure:
             (
                 self.sim.current_total_energy
                 - self.sim.framework_energy
-                - self.sim.N_ads * self.sim.adsorbate_energy
+                - self.sim.n_adsorbates * self.sim.adsorbate_energy
             )
             / (units.kJ / units.mol)
-            / self.sim.N_ads
-            if self.sim.N_ads > 0
+            / self.sim.n_adsorbates
+            if self.sim.n_adsorbates > 0
             else 0
         )
         self._print(f"Restarting simulation from step {self.sim.base_iteration}...")
@@ -182,7 +204,7 @@ Partial pressure:
 Restart file requested.
 Loaded state with {len(state)} total atoms.
 Current total energy: {self.sim.current_total_energy:.3f} eV
-Current number of adsorbates: {self.sim.N_ads}
+Current number of adsorbates: {self.sim.n_adsorbates}
 Current average binding energy: {avg_binding_energy:.3f} kJ/mol
 ===========================================================================
 """
@@ -231,27 +253,33 @@ class GCMCLogger(BaseLogger):
 
     def print_run_header(self) -> None:
         """Prints the header for the main GCMC loop."""
-        header = """
+
+        header = "Movement statistics:\n"
+
+        for key, value in self.sim.move_weights.items():
+            header += f"  {key.capitalize():11}: {value:.3f}\n"
+
+        header += """
 ===========================================================================
 
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Starting GCMC simulation
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
- Iteration |  Number of  |  Uptake  |    Tot En.   |Av. Ads. En.|  Pacc  |  Pdel  |  Ptra  |  Prot  |  Time
-     -     |  Molecules  | [mmol/g] |     [eV]     |  [kJ/mol]  |    %   |    %   |   %    |   %    |   [s]
----------- | ----------- | -------- | ------------ | ---------- | ------ | ------ | ------ | ------ | ------"""
+ Iteration |  Number of  |  Uptake  |    Tot En.   |Av. Ads. En.|  Pacc  |  Pdel  |  Ptra  |  Prot  |  Prin  |  Time
+     -     |  Molecules  | [mmol/g] |     [eV]     |  [kJ/mol]  |    %   |    %   |   %    |   %    |   %    |   [s]
+---------- | ----------- | -------- | ------------ | ---------- | ------ | ------ | ------ | ------ | ------ | -------"""
         self._print(header)
 
     def print_step_info(self, step, average_ads_energy, step_time) -> None:
 
-        line_str = "{:^11}|{:^13}|{:>9.2f} |{:>13.4f} |{:>11.4f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:9.2f}"
+        line_str = "{:^11}|{:^13}|{:>9.2f} |{:>13.4f} |{:>11.4f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:9.2f}"
 
         self._print(
             line_str.format(
                 step,
-                self.sim.N_ads,
-                self.sim.N_ads * self.sim.conv_factors["mol/kg"],
+                self.sim.n_adsorbates,
+                self.sim.n_adsorbates * self.sim.conv_factors["mol/kg"],
                 self.sim.current_total_energy,
                 average_ads_energy,
                 (
@@ -272,6 +300,11 @@ Starting GCMC simulation
                 (
                     np.average(self.sim.mov_dict["rotation"]) * 100
                     if len(self.sim.mov_dict["rotation"]) > 0
+                    else 0
+                ),
+                (
+                    np.average(self.sim.mov_dict["reinsertion"]) * 100
+                    if len(self.sim.mov_dict["reinsertion"]) > 0
                     else 0
                 ),
                 step_time,
@@ -299,7 +332,7 @@ Restarting GCMC simulation from previous configuration...
 Loaded state with {n_atoms} total atoms.
 
 Current total energy: {self.sim.current_total_energy:.3f} eV
-Current number of adsorbates: {self.sim.N_ads}
+Current number of adsorbates: {self.sim.n_adsorbates}
 Current average binding energy: {average_ads_energy:.3f} kJ/mol
 
 Current steps are: {self.sim.base_iteration}
@@ -319,7 +352,7 @@ Current steps are: {self.sim.base_iteration}
             f"""
 =======================================================================================================
 Movement type: {movement}
-Current number of adsorbates: {self.sim.N_ads}
+Current number of adsorbates: {self.sim.n_adsorbates}
 Interaction energy: {deltaE} eV, {(deltaE / (units.kJ / units.mol))} kJ/mol
 Exponential factor:     {-self.sim.beta * deltaE:.3E}
 Exponential:            {np.exp(-self.sim.beta * deltaE):.3E}
@@ -345,6 +378,8 @@ Accepted: {rnd_number < acc}
 
         avg_uptake = eq_results["average"]
         std_uptake = eq_results["uncertainty"]
+
+        avg_uptake_excess = avg_uptake - self.sim.excess_nmol
 
         enthalpy, enthalpy_sd = pymser.calc_equilibrated_enthalpy(
             energy=np.array(self.sim.total_ads_list) / units.kB,  # Convert to K
@@ -381,6 +416,13 @@ Finishing GCMC simulation
     Average loading absolute [cm^3 (STP)/gr framework]   {avg_uptake * self.sim.conv_factors["cm^3 STP/gr"]:12.5f} +/- {std_uptake * self.sim.conv_factors["cm^3 STP/gr"]:12.5f} [-]
     Average loading absolute [cm^3 (STP)/cm^3 framework] {avg_uptake * self.sim.conv_factors["cm^3 STP/cm^3"]:12.5f} +/- {std_uptake * self.sim.conv_factors["cm^3 STP/cm^3"]:12.5f} [-]
     Average loading absolute [%wt framework]             {avg_uptake * self.sim.conv_factors["mg/g"] * 1e-1:12.5f} +/- {std_uptake * self.sim.conv_factors["mg/g"] * 1e-1:12.5f} [-]
+
+    Average excess absolute [molecules/unit cell]        {avg_uptake_excess:12.5f} +/- {std_uptake:12.5f} [-]
+    Average loading absolute [mol/kg framework]          {avg_uptake_excess * self.sim.conv_factors["mol/kg"]:12.5f} +/- {std_uptake * self.sim.conv_factors["mol/kg"]:12.5f} [-]
+    Average loading absolute [mg/g framework]            {avg_uptake_excess * self.sim.conv_factors["mg/g"]:12.5f} +/- {std_uptake * self.sim.conv_factors["mg/g"]:12.5f} [-]
+    Average loading absolute [cm^3 (STP)/gr framework]   {avg_uptake_excess * self.sim.conv_factors["cm^3 STP/gr"]:12.5f} +/- {std_uptake * self.sim.conv_factors["cm^3 STP/gr"]:12.5f} [-]
+    Average loading absolute [cm^3 (STP)/cm^3 framework] {avg_uptake_excess * self.sim.conv_factors["cm^3 STP/cm^3"]:12.5f} +/- {std_uptake * self.sim.conv_factors["cm^3 STP/cm^3"]:12.5f} [-]
+    Average loading absolute [%wt framework]             {avg_uptake_excess * self.sim.conv_factors["mg/g"] * 1e-1:12.5f} +/- {std_uptake * self.sim.conv_factors["mg/g"] * 1e-1:12.5f} [-]
 
 
     Enthalpy of adsorption: [kJ/mol]                     {enthalpy:12.5f} +/- {enthalpy_sd:12.5f} [kJ/mol]

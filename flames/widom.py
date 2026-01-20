@@ -1,7 +1,6 @@
 import datetime
 import json
 import os
-from typing import Union
 
 import ase
 import numpy as np
@@ -62,9 +61,9 @@ class Widom(BaseSimulator):
         Device to run the calculations on, either ``'cpu'`` or ``'cuda'``. Default is ``'cpu'``.
     :type device: str, optional
 
-    :param save_frequency:
-        Frequency at which to save the simulation state and results. Default is ``100``.
-    :type save_frequency: int, optional
+    :param save_snapshots:
+        Whether to save the simulation state and results. Default is ``True``.
+    :type save_snapshots: bool, optional
 
     :param save_rejected:
         If ``True``, saves the rejected moves in a trajectory file. Default is ``False``.
@@ -106,12 +105,12 @@ class Widom(BaseSimulator):
         max_overlap_tries: int = 1000,
         max_deltaE: float = 1.555,
         device: str = "cpu",
-        save_frequency: int = 100,
+        save_snapshots: bool = True,
         save_rejected: bool = False,
         output_to_file: bool = True,
-        output_folder: Union[str, None] = None,
+        output_folder: str | None = None,
         debug: bool = False,
-        random_seed: Union[int, None] = None,
+        random_seed: int | None = None,
         cutoff_radius: float = 6.0,
         automatic_supercell: bool = True,
     ) -> None:
@@ -129,7 +128,6 @@ class Widom(BaseSimulator):
             vdw_radii=vdw_radii,
             vdw_factor=vdw_factor,
             max_deltaE=max_deltaE,
-            save_frequency=save_frequency,
             save_rejected=save_rejected,
             output_to_file=output_to_file,
             output_folder=output_folder,
@@ -147,12 +145,11 @@ class Widom(BaseSimulator):
         self.minimum_configuration: ase.Atoms = self.framework.copy()
         self.minimum_energy: float = 0
         self.base_iteration = 0
-        self.N_ads = 0
+        self.n_adsorbates = 0
         self.int_energy_list = np.zeros(1, dtype=float)
 
         self.boltz_fac = np.exp(-self.beta * self.int_energy_list)
 
-        # kH = β <exp(-β ΔE)> [mol kg-1 Pa-1]
         self.kH = self._compute_kH(self.boltz_fac)
 
         self.kH_std_dv = 0.0
@@ -164,6 +161,7 @@ class Widom(BaseSimulator):
 
         self.max_overlap_tries = max_overlap_tries
         self.MAX_ENERGY_ERROR = 1000.0
+        self.save_snapshots = save_snapshots
 
     def _compute_kH(self, boltz_fac: np.ndarray) -> float:
         """
@@ -264,22 +262,17 @@ class Widom(BaseSimulator):
         if self.save_rejected:
             self.rejected_trajectory.write(atoms_trial)  # type: ignore
 
-    def _save_state(self, actual_iteration: int) -> None:
+    def _save_state(
+        self,
+    ) -> None:
         """
         Save the current state of the simulation if the iteration matches the save frequency.
-
-        Parameters
-        ----------
-        actual_iteration : int
-            The current iteration number.
         """
 
-        if actual_iteration % self.save_every == 0:
-
-            np.save(
-                os.path.join(self.out_folder, f"int_energy_{self.P:.5f}.npy"),
-                np.array(self.int_energy_list),
-            )
+        np.save(
+            os.path.join(self.out_folder, f"int_energy_{self.P:.5f}.npy"),
+            np.array(self.int_energy_list),
+        )
 
     def _save_minimum_configuration(self, deltaE: float, atoms_trial: ase.Atoms) -> None:
         """
@@ -454,11 +447,12 @@ class Widom(BaseSimulator):
 
         self._save_minimum_configuration(deltaE, atoms_trial)  # type: ignore
 
-        self.trajectory.write(atoms_trial)  # type: ignore
+        if self.save_snapshots:
+            self.trajectory.write(atoms_trial)  # type: ignore
 
         # Append int_energy_list
         self.update_statistics(deltaE)  # type: ignore
-        self._save_state(actual_iteration)
+        self._save_state()
 
         self.logger.print_iteration_info(
             [

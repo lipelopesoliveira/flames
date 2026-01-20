@@ -23,10 +23,10 @@ AdsorbatePath = "co2.xyz"
 
 model = mace_mp(
     model="medium-0b2",
-    dispersion=True,
+    dispersion=False,
     damping="zero",  # choices: ["zero", "bj", "zerom", "bjm"]
     dispersion_xc="pbe",
-    default_dtype="float64",
+    default_dtype="float32",
     device=device,
 )
 
@@ -55,7 +55,7 @@ gcmc = GCMC(
     vdw_radii=vdw_radii,
     vdw_factor=0.6,
     save_frequency=1,
-    debug=True,
+    debug=False,
     output_to_file=True,
     criticalTemperature=304.1282,
     criticalPressure=7377300.0,
