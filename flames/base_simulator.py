@@ -58,6 +58,14 @@ class BaseSimulator:
         Should be an array of the same length as the number of atomic numbers in ASE.
     :type vdw_radii: np.ndarray
 
+    :param framework_energy:
+        Total energy of the framework.
+    :type framework_energy: float
+
+    :param adsorbate_energy:
+        Total energy of the adsorbate.
+    :type adsorbate_energy: float
+
     :param vdw_factor:
         Factor to scale the Van der Waals radii. Default is ``0.6``.
     :type vdw_factor: float, optional
@@ -170,11 +178,12 @@ class BaseSimulator:
         self.device = device
 
         self.set_framework(framework_atoms, framework_energy=framework_energy)
-        self.set_adsorbate(adsorbate_atoms, adsorbate_energy=adsorbate_energy)
 
         self.current_system = self.framework.copy()
         self.current_system.calc = self.model
         self.current_total_energy = self.current_system.get_potential_energy()
+
+        self.set_adsorbate(adsorbate_atoms, adsorbate_energy=adsorbate_energy)
 
         # General definitions for simulation parameters
         self.T = temperature
@@ -202,7 +211,9 @@ class BaseSimulator:
             "% wt": self.adsorbate_mass / self.get_framework_mass() * 100,
         }
 
-        self.vdw: np.ndarray = vdw_radii * vdw_factor  # Adjust van der Waals radii to avoid overlap
+        self.vdw: np.ndarray = (
+            np.array(vdw_radii) * vdw_factor
+        )  # Adjust van der Waals radii to avoid overlap
 
         # Replace any NaN value by 1.5 on self.vdw to avoid potential problems
         self.vdw[np.isnan(self.vdw)] = 1.5
@@ -270,7 +281,10 @@ class BaseSimulator:
         self.framework_density = get_density(self.framework)
 
     def set_adsorbate(
-        self, adsorbate_atoms: ase.Atoms, adsorbate_energy: float | None = None
+        self,
+        adsorbate_atoms: ase.Atoms,
+        adsorbate_energy: float | None = None,
+        n_adsorbates: int = 0,
     ) -> None:
         """
         Set the adsorbate structure for the simulation.
@@ -281,6 +295,8 @@ class BaseSimulator:
             The new adsorbate structure as an ASE Atoms object.
         adsorbate_energy : float or None, optional
             The energy of the adsorbate in eV. If None, the energy will be calculated using the provided model.
+        n_adsorbates : int
+            Number of adsorbate molecules in the framework.
         """
         self.adsorbate = adsorbate_atoms
         self.adsorbate.set_tags(np.ones(len(self.adsorbate), dtype=int))
@@ -294,6 +310,8 @@ class BaseSimulator:
             self.adsorbate_energy = self.adsorbate.get_potential_energy()
         self.n_adsorbate_atoms = len(self.adsorbate)
         self.adsorbate_mass = np.sum(self.adsorbate.get_masses()) / units.kg
+        self.n_atoms_framework -= self.n_adsorbate_atoms * n_adsorbates
+        self.n_adsorbates = n_adsorbates
 
     def set_state(self, state: ase.Atoms) -> None:
         """
@@ -417,7 +435,13 @@ Start optimizing adsorbate structure...
         self.adsorbate.calc = self.model
         self.adsorbate_energy = self.adsorbate.get_potential_energy()
 
-    def npt(self, nsteps, time_step: float = 0.5, mode: str = "iso_shape", driver: str = "MTKNPT"):
+    def npt(
+        self,
+        nsteps,
+        time_step: float = 0.5,
+        mode: str = "iso_shape",
+        driver: str = "MTKNPT",
+    ):
         """
         Run a NPT simulation using the Berendsen thermostat and barostat.
 

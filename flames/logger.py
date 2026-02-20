@@ -426,6 +426,71 @@ Simulation duration: {datetime.datetime.now() - self.sim.start_time}
 """)
 
 
+class TMMCLogger(BaseLogger):
+    """
+    Handles all logging and printing for a TMMC simulation.
+    Separates the presentation logic from the simulation logic.
+    """
+
+    def print_run_header(self):
+        """Prints the header for the main TMMC loop."""
+        header = """
+===========================================================================
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Starting TMMC simulation
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Iteration  |  Number of  |    Tot En.   | Del. Energy  | Ins. Energy  |  Time
+     -     |  Molecules  |     [eV]     |     [eV]     |     [eV]     |   [s]
+---------- | ----------- | ------------ | ------------ | ------------ | -------"""
+        self._print(header)
+
+    def print_step_info(self, step, del_energy, ins_energy, step_time):
+        """Prints info on one TMMC step."""
+        line_str = "{:^11}|{:^13}|{:>13.4f} |{:>13.4f} |{:>13.4f} |{:7.2f}"
+        self._print(
+            line_str.format(
+                step,
+                self.sim.n_adsorbates,
+                self.sim.current_total_energy,
+                del_energy,
+                ins_energy,
+                step_time,
+            )
+        )
+
+    def print_load_state_info(self, n_atoms):
+        """Prints information about the loading state."""
+        self._print(f"""
+===========================================================================
+
+Restarting TMMC simulation from previous configuration...
+
+Loaded state with {n_atoms} total atoms.
+
+Current total energy: {self.sim.current_total_energy:.3f} eV
+Current number of adsorbates: {self.sim.n_adsorbates}
+
+Current steps are: {self.sim.base_iteration}
+
+===========================================================================
+""")
+
+    def print_restart_info(self) -> None:
+        """Prints information when a simulation is restarted."""
+        state = self.sim.current_system
+        self._print(f"Restarting simulation from step {self.sim.base_iteration}...")
+        self._print(f"""
+===========================================================================
+Restart file requested.
+Loaded state with {len(state)} total atoms.
+Current total energy: {self.sim.current_total_energy:.3f} eV
+Current number of adsorbates: {self.sim.n_adsorbates}
+===========================================================================
+""")
+
+
 class WidomLogger(BaseLogger):
     """
     Handles all logging and printing for a Widom insertion simulation.

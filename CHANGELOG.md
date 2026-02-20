@@ -1,6 +1,20 @@
 # Changelog
 
-## v[0.4.5] - 2025-12-08 (Unreleased)
+## v[0.4.5] - YYYY-MM-DD (Unreleased)
+
+### New Features 🎉
+
+- Added new `TMMC` class to perform transition matrix Monte Carlo simulations.
+
+### Fixed 🐛
+
+### Enhanced ✨
+
+### Documentation 📖
+
+### Removed 🗑️
+
+## v[0.4.5] - 2025-12-08
 
 ### New Features 🎉
 

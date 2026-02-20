@@ -29,7 +29,6 @@ dependencies = [
   "tqdm",
   "gemmi",
   "simplejson",
-  "mace-torch",
   "torch-dftd",
   "pymser"
 ]
@@ -50,6 +49,7 @@ dev = [
     "pytest",
     "pytest-sphinx",
     "pytest-cov",
+    "mace-torch==0.3.12",
     "twine>=1.11.0",
     "build",
     "setuptools",
