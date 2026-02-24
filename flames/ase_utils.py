@@ -245,10 +245,11 @@ def nVT_Berendsen(
     num_md_steps: int = 1000000,
     output_interval: int = 100,
     movie_interval: int = 1,
-    taut: float = 1.0,
     out_folder: str = ".",
     out_file: TextIO = sys.stdout,
-    trajectory=None,
+    mc_trajectory=None,
+    set_momenta: bool = True,
+    **kwargs,
 ) -> ase.Atoms:
     """
     Run NVT molecular dynamics simulation using the Berendsen thermostat.
@@ -271,12 +272,16 @@ def nVT_Berendsen(
         The interval for logging output (default is 100 steps).
     movie_interval : int, optional
         The interval for saving trajectory frames (default is 1 step).
-    taut : float, optional
-        The time constant for the Berendsen thermostat in femtoseconds (default is 1.0 fs).
     out_folder : str, optional
         The folder where the output files will be saved (default is the current directory).
     out_file : TextIO, optional
         The output file to write the simulation log to (default is sys.stdout).
+    mc_trajectory : ase.io.trajectory.Trajectory
+        Trajectory of the underlying MC simulation.
+    set_momenta : bool, optional
+            Whether to set the atomic momenta to a Maxwell-Boltzmann distribution of the simulation temperature.
+    kwargs : optional
+            Arguments passed to the ase molecular dynamics class.
 
     Returns
     -------
@@ -285,6 +290,16 @@ def nVT_Berendsen(
     """
 
     atoms.calc = model
+
+    dyn_params = {
+        "atoms": atoms,
+        "timestep": time_step * units.fs,
+        "temperature_K": temperature,
+        "taut": 1.0 * units.fs,
+        "loginterval": output_interval,
+        "append_trajectory": True,
+    }
+    dyn_params.update(kwargs)
 
     header = """
 ===========================================================================
@@ -299,7 +314,14 @@ def nVT_Berendsen(
         Time Constant (taut): {:.2f} fs
 
 ===========================================================================
-""".format(temperature, time_step, num_md_steps, output_interval, movie_interval, taut)
+""".format(
+        dyn_params["temperature_K"],
+        dyn_params["timestep"] / units.fs,
+        num_md_steps,
+        dyn_params["loginterval"],
+        movie_interval,
+        dyn_params["taut"] / units.fs,
+    )
 
     print(header, file=out_file, flush=True)
 
@@ -307,38 +329,37 @@ def nVT_Berendsen(
         i for i in os.listdir(out_folder) if i.startswith("NVT-Berendsen") and i.endswith(".traj")
     ]
     traj_filename = os.path.join(
-        out_folder, f"NVT-Berendsen_{temperature:.2f}K_{len(existing_md_traj)}.traj"
+        out_folder, f"NVT-Berendsen_{dyn_params['temperature_K']:.2f}K_{len(existing_md_traj)}.traj"
     )
     log_filename = os.path.join(
-        out_folder, f"NVT-Berendsen_{temperature:.2f}K_{len(existing_md_traj)}.log"
+        out_folder, f"NVT-Berendsen_{dyn_params['temperature_K']:.2f}K_{len(existing_md_traj)}.log"
     )
+    if "trajectory" not in kwargs:
+        kwargs["trajectory"] = mc_trajectory if mc_trajectory else traj_filename
 
-    # Set the momenta corresponding to the given "temperature"
-    MaxwellBoltzmannDistribution(atoms, temperature_K=temperature, force_temp=True)
-    # Set zero total momentum to avoid drifting
-    Stationary(atoms)
+    if set_momenta:
+        # Set the momenta corresponding to the given "temperature"
+        MaxwellBoltzmannDistribution(
+            atoms, temperature_K=dyn_params["temperature_K"], force_temp=True
+        )
+        # Set zero total momentum to avoid drifting
+        Stationary(atoms)
 
     # run Berendsen MD
-    dyn = NVTBerendsen(
-        atoms=atoms,
-        timestep=time_step * units.fs,
-        temperature_K=temperature,
-        taut=taut * units.fs,
-        loginterval=output_interval,
-        trajectory=trajectory if trajectory else traj_filename,
-    )
+    dyn = NVTBerendsen(**dyn_params)
 
     # Print statements
     def print_md_log() -> None:
         step = dyn.get_number_of_steps()
         etot = atoms.get_total_energy()
+        epot = atoms.get_potential_energy()
         temp_K = atoms.get_temperature()
         stress = atoms.get_stress(include_ideal_gas=True) / units.GPa
         stress_ave = (stress[0] + stress[1] + stress[2]) / 3.0
         elapsed_time = (datetime.datetime.now() - start_time).total_seconds()
         print(
-            "  {:>7}  | {:13.6f}  |  {:11.3f}  |  {:7.2f} | {:9.1f}".format(
-                step, etot, temp_K, stress_ave, elapsed_time
+            "  {:>7}  | {:13.6f}  | {:13.6f}  |  {:11.3f}  |  {:7.2f} | {:9.1f}".format(
+                step, epot, etot, temp_K, stress_ave, elapsed_time
             ),
             file=out_file,
             flush=True,
@@ -353,17 +374,17 @@ def nVT_Berendsen(
     # Now run the dynamics
     start_time = datetime.datetime.now()
     print(
-        "    Step   |  Total Energy  |  Temperature  |  Stress  | Elapsed Time ",
+        "    Step   |  Pot. Energy   |  Total Energy  |  Temperature  |  Stress  | Elapsed Time ",
         file=out_file,
         flush=True,
     )
     print(
-        "    [-]    |      [eV]      |      [K]      |   [GPa]  |     [s]      ",
+        "    [-]    |      [eV]      |      [eV]      |      [K]      |   [GPa]  |     [s]      ",
         file=out_file,
         flush=True,
     )
     print(
-        " --------- | -------------- | ------------- | -------- | -------------",
+        " --------- | -------------- | -------------- | ------------- | -------- | -------------",
         file=out_file,
         flush=True,
     )
@@ -392,17 +413,16 @@ def nPT_Berendsen(
     model: Calculator,
     temperature: float,
     pressure: float = 0.0,
-    compressibility: float = 1e-3,
     time_step: float = 0.5,
     num_md_steps: int = 1000000,
     output_interval: int = 100,
     movie_interval: int = 10,
-    taut: float = 10.0,
-    taup: float = 500.0,
     isotropic: bool = True,
     out_folder: str = ".",
     out_file: TextIO = sys.stdout,
-    trajectory=None,
+    mc_trajectory=None,
+    set_momenta: bool = True,
+    **kwargs,
 ) -> ase.Atoms:
     """
     Run NPT molecular dynamics simulation using the Berendsen thermostat and barostat.
@@ -429,10 +449,6 @@ def nPT_Berendsen(
         The interval for logging output (default is 100 steps).
     movie_interval : int, optional
         The interval for saving trajectory frames (default is 1 step).
-    taut : float, optional
-        The time constant for the Berendsen thermostat in femtoseconds (default is 10.0 fs).
-    taup : float, optional
-        The time constant for the Berendsen barostat in femtoseconds (default is 500.0 fs).
     isotropic : bool, optional
         If True, the barostat is isotropic, i.e., the unit cell changes equally in all directions
         Default is True.
@@ -440,6 +456,12 @@ def nPT_Berendsen(
         The folder where the output files will be saved (default is the current directory).
     out_file : TextIO, optional
         The output file to write the simulation log to (default is sys.stdout).
+    mc_trajectory : ase.io.trajectory.Trajectory
+        Trajectory of the underlying MC simulation.
+    set_momenta : bool, optional
+            Whether to set the atomic momenta to a Maxwell-Boltzmann distribution of the simulation temperature.
+    kwargs : optional
+            Arguments passed to the ase molecular dynamics class.
 
     Returns
     -------
@@ -448,34 +470,50 @@ def nPT_Berendsen(
     """
 
     atoms.calc = model
+
+    dyn_params = {
+        "atoms": atoms,
+        "timestep": time_step * units.fs,
+        "temperature_K": temperature,
+        "pressure_au": pressure * units.bar,
+        "compressibility_au": 1e-4 / units.bar,
+        "taut": 10.0 * units.fs,
+        "taup": 500.0 * units.fs,
+        "loginterval": output_interval,
+        "append_trajectory": True,
+    }
+    dyn_params.update(**kwargs)
+
     header = """
 ======================================================================================
     Starting NPT MD Simulation using Berendsen Thermostat/Barostat
 
     Parameters:
         Temperature: {:.2f} K
-        Pressure: {:.2f} Pa
+        Pressure: {:.2f} bar
         Isotropic: {}
-        Compressibility: {:.2f} bar-1
+        Compressibility: {:.7f} bar-1
         Time Constant (taut): {:.2f} fs
+        Time Constant (taup): {:.2f} fs
         Time Step: {:.2f} fs
         Number of MD Steps: {}
         Output Interval: {} steps
         Movie Interval: {} steps
 
 ======================================================================================
-    Step   |  Total Energy  |  Temperature  |  Stress  |   Volume    | Elapsed Time
-    [-]    |      [eV]      |      [K]      |   [GPa]  |    [A^3]    |      [s]
- --------- | -------------- | ------------- | -------- | ----------- | -------------
+    Step   |  Pot. Energy   |  Total Energy  |  Temperature  |  Stress  |   Volume    | Elapsed Time
+    [-]    |      [eV]      |      [eV]      |      [K]      |   [GPa]  |    [A^3]    |      [s]
+ --------- | -------------- | -------------- | ------------- | -------- | ----------- | -------------
 """.format(
-        temperature,
-        pressure,
+        dyn_params["temperature_K"],
+        dyn_params["pressure_au"] / units.bar,
         isotropic,
-        compressibility,
-        taut,
-        time_step,
+        dyn_params["compressibility_au"] * units.bar,
+        dyn_params["taut"] / units.fs,
+        dyn_params["taup"] / units.fs,
+        dyn_params["timestep"] / units.fs,
         num_md_steps,
-        output_interval,
+        dyn_params["loginterval"],
         movie_interval,
     )
 
@@ -485,30 +523,22 @@ def nPT_Berendsen(
         i for i in os.listdir(out_folder) if i.startswith("NPT-Berendsen") and i.endswith(".traj")
     ]
     traj_filename = os.path.join(
-        out_folder, f"NPT-Berendsen_{temperature:.2f}K_{len(existing_md_traj)}.traj"
+        out_folder, f"NPT-Berendsen_{dyn_params['temperature_K']:.2f}K_{len(existing_md_traj)}.traj"
     )
     log_filename = os.path.join(
-        out_folder, f"NPT-Berendsen_{temperature:.2f}K_{len(existing_md_traj)}.log"
+        out_folder, f"NPT-Berendsen_{dyn_params['temperature_K']:.2f}K_{len(existing_md_traj)}.log"
     )
+    if "trajectory" not in kwargs:
+        kwargs["trajectory"] = mc_trajectory if mc_trajectory else traj_filename
 
-    # Set the momenta corresponding to the given "temperature"
-    MaxwellBoltzmannDistribution(atoms, temperature_K=temperature, force_temp=True)
+    if set_momenta:
+        # Set the momenta corresponding to the given "temperature"
+        MaxwellBoltzmannDistribution(
+            atoms, temperature_K=dyn_params["temperature_K"], force_temp=True
+        )
 
-    # Set zero total momentum to avoid drifting
-    Stationary(atoms)
-
-    # Common parameters for both dynamics types
-    dyn_params = {
-        "atoms": atoms,
-        "timestep": time_step * units.fs,
-        "temperature_K": temperature,
-        "pressure_au": pressure * units.bar,
-        "compressibility_au": compressibility / units.bar,
-        "taut": taut * units.fs,
-        "taup": taup * units.fs,
-        "loginterval": movie_interval,
-        "trajectory": trajectory if trajectory else traj_filename,
-    }
+        # Set zero total momentum to avoid drifting
+        Stationary(atoms)
 
     # Select the appropriate dynamics class based on isotropic flag
     dyn_class = NPTBerendsen if isotropic else Inhomogeneous_NPTBerendsen
@@ -517,6 +547,7 @@ def nPT_Berendsen(
     # Print statements
     def print_md_log():
         step = dyn.get_number_of_steps()
+        epot = atoms.get_potential_energy()
         etot = atoms.get_total_energy()
         temp_K = atoms.get_temperature()
         stress = atoms.get_stress(include_ideal_gas=True) / units.GPa
@@ -524,8 +555,8 @@ def nPT_Berendsen(
         volume = atoms.get_volume()
         elapsed_time = (datetime.datetime.now() - start_time).total_seconds()
         print(
-            "  {:>7}  | {:13.6f}  |  {:11.3f}  |  {:7.2f} | {:11.2f} | {:9.1f}".format(
-                step, etot, temp_K, stress_ave, volume, elapsed_time
+            "  {:>7}  | {:13.6f}  | {:13.6f}  |  {:11.3f}  |  {:7.2f} | {:11.2f} | {:9.1f}".format(
+                step, epot, etot, temp_K, stress_ave, volume, elapsed_time
             ),
             file=out_file,
             flush=True,
@@ -568,12 +599,11 @@ def nPT_NoseHoover(
     num_md_steps: int = 1000000,
     output_interval: int = 100,
     movie_interval: int = 10,
-    ttime: float = 25.0,
-    ptime: float = 75.0,
-    B_guess: float = 30.0,
     out_folder: str = ".",
     out_file: TextIO = sys.stdout,
-    trajectory=None,
+    mc_trajectory=None,
+    set_momenta: bool = True,
+    **kwargs,
 ) -> ase.Atoms:
     """
     Constant pressure/stress and temperature dynamics.
@@ -599,16 +629,16 @@ def nPT_NoseHoover(
         The interval for logging output (default is 100 steps).
     movie_interval : int, optional
         The interval for saving trajectory frames (default is 1 step).
-    ttime : float, optional
-        Characteristic timescale of the thermostat, in femtoseconds. Set to None to disable the thermostat.
-        Default is 25.0 fs.
-    ptime : float, optional
-        A constant in the barostat differential equation in femtoseconds. Set to None to disable the barostat.
-        Default is 500.0 fs.
     out_folder : str, optional
         The folder where the output files will be saved (default is the current directory).
     out_file : TextIO, optional
         The output file to write the simulation log to (default is sys.stdout).
+    mc_trajectory : ase.io.trajectory.Trajectory
+        Trajectory of the underlying MC simulation.
+    set_momenta : bool, optional
+            Whether to set the atomic momenta to a Maxwell-Boltzmann distribution of the simulation temperature.
+    kwargs : optional
+            Arguments passed to the ase molecular dynamics class.
 
     Returns
     -------
@@ -616,38 +646,46 @@ def nPT_NoseHoover(
         The final atomic structure after the MD simulation.
     """
 
-    # Calculate the pressure factor based on the time constant and bulk modulus
-    pfactor = (ptime * units.fs) ** 2 * B_guess * units.GPa
-
     atoms.calc = model
+
+    dyn_params = {
+        "atoms": atoms,
+        "timestep": time_step * units.fs,
+        "temperature_K": temperature,
+        "ttime": 25.0 * units.fs,
+        "pfactor": (75.0 * units.fs) ** 2 * 30.0 * units.GPa,
+        "externalstress": pressure * units.bar,
+        "loginterval": output_interval,
+        "append_trajectory": True,
+    }
+    dyn_params.update(**kwargs)
+
     header = """
 ======================================================================================
     Starting NPT MD Simulation using Nose-Hoover/Parrinello-Rahman Thermostat/Barostat
 
     Parameters:
         Temperature: {:.2f} K
-        Pressure: {:.2f} Pa
+        Pressure: {:.2f} bar
         Time Constant (ttime): {:.2f} fs
-        Pressure Factor (pfactor): {:.2f} fs
-        Guess of Bulk Modulus (B_guess): {:.2f} GPa
+        Pressure Factor (pfactor): {:.2f}
         Time Step: {:.2f} fs
         Number of MD Steps: {}
         Output Interval: {} steps
         Movie Interval: {} steps
 
 ======================================================================================
-    Step   |  Total Energy  |  Temperature  |  Stress  |   Volume    | Elapsed Time
-    [-]    |      [eV]      |      [K]      |   [GPa]  |    [A^3]    |      [s]
- --------- | -------------- | ------------- | -------- | ----------- | -------------
+    Step   |  Pot. Energy   |  Total Energy  |  Temperature  |  Stress  |   Volume    | Elapsed Time
+    [-]    |      [eV]      |      [eV]      |      [K]      |   [GPa]  |    [A^3]    |      [s]
+ --------- | -------------- | -------------- | ------------- | -------- | ----------- | -------------
 """.format(
-        temperature,
-        pressure,
-        ttime,
-        pfactor,
-        B_guess,
-        time_step,
+        dyn_params["temperature_K"],
+        dyn_params["externalstress"] / units.bar,
+        dyn_params["ttime"] / units.fs,
+        dyn_params["pfactor"],
+        dyn_params["timestep"] / units.fs,
         num_md_steps,
-        output_interval,
+        dyn_params["loginterval"],
         movie_interval,
     )
 
@@ -660,35 +698,30 @@ def nPT_NoseHoover(
     ]
     traj_filename = os.path.join(
         out_folder,
-        f"NPT-Nose-Hoover-Parrinello-Rahman_{temperature:.2f}K_{len(existing_md_traj)}.traj",
+        f"NPT-Nose-Hoover-Parrinello-Rahman_{dyn_params['temperature_K']:.2f}K_{len(existing_md_traj)}.traj",
     )
     log_filename = os.path.join(
         out_folder,
-        f"NPT-Nose-Hoover-Parrinello-Rahman_{temperature:.2f}K_{len(existing_md_traj)}.log",
+        f"NPT-Nose-Hoover-Parrinello-Rahman_{dyn_params['temperature_K']:.2f}K_{len(existing_md_traj)}.log",
     )
+    if "trajectory" not in kwargs:
+        kwargs["trajectory"] = mc_trajectory if mc_trajectory else traj_filename
 
-    # Set the momenta corresponding to the given "temperature"
-    MaxwellBoltzmannDistribution(atoms, temperature_K=temperature, force_temp=True)
+    if set_momenta:
+        # Set the momenta corresponding to the given "temperature"
+        MaxwellBoltzmannDistribution(
+            atoms, temperature_K=dyn_params["temperature_K"], force_temp=True
+        )
 
-    # Set zero total momentum to avoid drifting
-    Stationary(atoms)
+        # Set zero total momentum to avoid drifting
+        Stationary(atoms)
 
-    dyn = NPT(
-        atoms=atoms,
-        timestep=time_step * units.fs,
-        temperature_K=temperature,
-        ttime=ttime * units.fs,
-        pfactor=pfactor,
-        externalstress=pressure * units.bar,
-        trajectory=trajectory if trajectory else traj_filename,
-        logfile=log_filename,
-        loginterval=output_interval,
-        append_trajectory=True,
-    )
+    dyn = NPT(**dyn_params)
 
     # Print statements
     def print_md_log():
         step = dyn.get_number_of_steps()
+        epot = atoms.get_potential_energy()
         etot = atoms.get_total_energy()
         temp_K = atoms.get_temperature()
         stress = atoms.get_stress(include_ideal_gas=True) / units.GPa
@@ -696,8 +729,8 @@ def nPT_NoseHoover(
         volume = atoms.get_volume()
         elapsed_time = (datetime.datetime.now() - start_time).total_seconds()
         print(
-            "  {:>7}  | {:13.6f}  |  {:11.3f}  |  {:7.2f} | {:11.2f} | {:9.1f}".format(
-                step, etot, temp_K, stress_ave, volume, elapsed_time
+            "  {:>7}  | {:13.6f}  | {:13.6f}  |  {:11.3f}  |  {:7.2f} | {:11.2f} | {:9.1f}".format(
+                step, epot, etot, temp_K, stress_ave, volume, elapsed_time
             ),
             file=out_file,
             flush=True,
@@ -740,16 +773,12 @@ def nPT_MTKNPT(
     num_md_steps: int = 1000000,
     output_interval: int = 100,
     movie_interval: int = 10,
-    tdamp: float = 50.0,
-    pdamp: float = 500.0,
-    tchain: int = 3,
-    pchain: int = 3,
-    tloop: int = 1,
-    ploop: int = 1,
     isotropic: bool = False,
     out_folder: str = ".",
     out_file: TextIO = sys.stdout,
-    trajectory=None,
+    mc_trajectory=None,
+    set_momenta: bool = True,
+    **kwargs,
 ) -> ase.Atoms:
     """
     Constant pressure/stress and temperature dynamics.
@@ -774,24 +803,16 @@ def nPT_MTKNPT(
         The interval for logging output (default is 100 steps).
     movie_interval : int, optional
         The interval for saving trajectory frames (default is 1 step).
-    tdamp: float
-        The characteristic time scale for the thermostat in ASE time units.
-        Typically, it is set to 100 times of `timestep`.
-    pdamp: float
-        The characteristic time scale for the barostat in ASE time units.
-        Typically, it is set to 1000 times of `timestep`.
-    tchain: int
-        The number of thermostat variables in the Nose-Hoover thermostat.
-    pchain: int
-        The number of barostat variables in the MTK barostat.
-    tloop: int
-        The number of sub-steps in thermostat integration.
-    ploop: int
-        The number of sub-steps in barostat integration.
     out_folder : str, optional
         The folder where the output files will be saved (default is the current directory).
     out_file : TextIO, optional
         The output file to write the simulation log to (default is sys.stdout).
+    mc_trajectory : ase.io.trajectory.Trajectory
+        Trajectory of the underlying MC simulation.
+    set_momenta : bool, optional
+            Whether to set the atomic momenta to a Maxwell-Boltzmann distribution of the simulation temperature.
+    kwargs : optional
+            Arguments passed to the ase molecular dynamics class.
 
     Returns
     -------
@@ -800,13 +821,30 @@ def nPT_MTKNPT(
     """
 
     atoms.calc = model
+
+    dyn_params = {
+        "atoms": atoms,
+        "timestep": time_step * units.fs,
+        "temperature_K": temperature,
+        "tdamp": 50.0 * units.fs,
+        "pdamp": 500.0 * units.fs,
+        "tchain": 3,
+        "pchain": 3,
+        "tloop": 1,
+        "ploop": 1,
+        "pressure_au": pressure * units.bar,
+        "loginterval": output_interval,
+        "append_trajectory": True,
+    }
+    dyn_params.update(**kwargs)
+
     header = """
 ======================================================================================
     Starting NPT MD Simulation using Martyna-Tobias-Klein (MTK) Thermostat/Barostat
 
     Parameters:
         Temperature: {:.2f} K
-        Pressure: {:.2f} Pa
+        Pressure: {:.2f} bar
         Thermostat Damping Time (tdamp): {:.2f} fs
         Barostat Damping Time (pdamp): {:.2f} fs
         Number of Thermostat Chains (tchain): {}
@@ -819,21 +857,21 @@ def nPT_MTKNPT(
         Movie Interval: {} steps
 
 ======================================================================================
-    Step   |  Total Energy  |  Temperature  |  Stress  |   Volume    | Elapsed Time
-    [-]    |      [eV]      |      [K]      |   [GPa]  |    [A^3]    |      [s]
- --------- | -------------- | ------------- | -------- | ----------- | -------------
+    Step   |  Pot. Energy   |  Total Energy  |  Temperature  |  Stress  |   Volume    | Elapsed Time
+    [-]    |      [eV]      |      [eV]      |      [K]      |   [GPa]  |    [A^3]    |      [s]
+ --------- | -------------- | -------------- | ------------- | -------- | ----------- | -------------
 """.format(
-        temperature,
-        pressure,
-        tdamp,
-        pdamp,
-        tchain,
-        pchain,
-        tloop,
-        ploop,
-        time_step,
+        dyn_params["temperature_K"],
+        dyn_params["pressure_au"] / units.bar,
+        dyn_params["tdamp"] / units.fs,
+        dyn_params["pdamp"] / units.fs,
+        dyn_params["tchain"],
+        dyn_params["pchain"],
+        dyn_params["tloop"],
+        dyn_params["ploop"],
+        dyn_params["timestep"] / units.fs,
         num_md_steps,
-        output_interval,
+        dyn_params["loginterval"],
         movie_interval,
     )
 
@@ -846,41 +884,32 @@ def nPT_MTKNPT(
     ]
     traj_filename = os.path.join(
         out_folder,
-        f"NPT-Martyna-Tobias-Klein_{temperature:.2f}K_{len(existing_md_traj)}.traj",
+        f"NPT-Martyna-Tobias-Klein_{dyn_params['temperature_K']:.2f}K_{len(existing_md_traj)}.traj",
     )
     log_filename = os.path.join(
         out_folder,
-        f"NPT-Martyna-Tobias-Klein_{temperature:.2f}K_{len(existing_md_traj)}.log",
+        f"NPT-Martyna-Tobias-Klein_{dyn_params['temperature_K']:.2f}K_{len(existing_md_traj)}.log",
     )
+    if "trajectory" not in kwargs:
+        kwargs["trajectory"] = mc_trajectory if mc_trajectory else traj_filename
 
-    # Set the momenta corresponding to the given "temperature"
-    MaxwellBoltzmannDistribution(atoms, temperature_K=temperature, force_temp=True)
+    if set_momenta:
+        # Set the momenta corresponding to the given "temperature"
+        MaxwellBoltzmannDistribution(
+            atoms, temperature_K=dyn_params["temperature_K"], force_temp=True
+        )
 
-    # Set zero total momentum to avoid drifting
-    Stationary(atoms)
+        # Set zero total momentum to avoid drifting
+        Stationary(atoms)
 
     driver = IsotropicMTKNPT if not isotropic else MTKNPT
 
-    dyn = driver(
-        atoms=atoms,
-        timestep=time_step * units.fs,
-        temperature_K=temperature,
-        pressure_au=pressure * units.bar,
-        tdamp=tdamp * units.fs,
-        pdamp=pdamp * units.fs,
-        tchain=tchain,
-        pchain=pchain,
-        tloop=tloop,
-        ploop=ploop,
-        trajectory=trajectory if trajectory else traj_filename,
-        logfile=log_filename,
-        loginterval=output_interval,
-        append_trajectory=True,
-    )
+    dyn = driver(**dyn_params)
 
     # Print statements
     def print_md_log():
         step = dyn.get_number_of_steps()
+        epot = atoms.get_potential_energy()
         etot = atoms.get_total_energy()
         temp_K = atoms.get_temperature()
         stress = atoms.get_stress(include_ideal_gas=True) / units.GPa
@@ -888,8 +917,8 @@ def nPT_MTKNPT(
         volume = atoms.get_volume()
         elapsed_time = (datetime.datetime.now() - start_time).total_seconds()
         print(
-            "  {:>7}  | {:13.6f}  |  {:11.3f}  |  {:7.2f} | {:11.2f} | {:9.1f}".format(
-                step, etot, temp_K, stress_ave, volume, elapsed_time
+            "  {:>7}  | {:13.6f}  | {:13.6f}  |  {:11.3f}  |  {:7.2f} | {:11.2f} | {:9.1f}".format(
+                step, epot, etot, temp_K, stress_ave, volume, elapsed_time
             ),
             file=out_file,
             flush=True,
