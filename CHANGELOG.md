@@ -10,6 +10,8 @@
 
 ### Enhanced ✨
 
+- Added `**kwargs`, exposing the interface to the underlying molecular dynamics classes of ase, and some other parameters to the `nvt` and `npt` functions of the Monte Carlo simulation classes to allow adjustments of the previously hard-coded parameters.
+
 ### Documentation 📖
 
 ### Removed 🗑️

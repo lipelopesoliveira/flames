@@ -441,6 +441,10 @@ Start optimizing adsorbate structure...
         time_step: float = 0.5,
         mode: str = "iso_shape",
         driver: str = "MTKNPT",
+        set_momenta: bool = True,
+        output_interval: int = 100,
+        movie_interval: int = 100,
+        **kwargs,
     ):
         """
         Run a NPT simulation using the Berendsen thermostat and barostat.
@@ -456,6 +460,14 @@ Start optimizing adsorbate structure...
             Can be one of "iso_shape", "aniso_shape", or "aniso_flex".
         driver : str, optional
             The driver to use for the NPT simulation. Can be Berendsen, NoseHoover or MTKNPT (default is "MTKNPT").
+        set_momenta : bool, optional
+            Whether to set the atomic momenta to a Maxwell-Boltzmann distribution of the simulation temperature.
+        output_interval : int, optional
+            The interval for logging output (default is 100 steps).
+        movie_interval : int, optional
+            The interval for saving trajectory frames (default is 100 step).
+        kwargs : optional
+            Arguments passed to the ase molecular dynamics class.
         """
 
         allowed_modes = ["iso_shape", "aniso_shape", "aniso_flex"]
@@ -468,15 +480,16 @@ Start optimizing adsorbate structure...
                 model=self.model,
                 temperature=self.T,
                 pressure=self.P * 1e-5,
-                compressibility=1e-4,
                 time_step=time_step,
                 num_md_steps=nsteps,
                 isotropic=True if mode == "iso_shape" else False,
                 out_folder=self.out_folder,
                 out_file=self.out_file,  # type: ignore
-                trajectory=self.trajectory,
-                output_interval=self.save_every,
-                movie_interval=self.save_every,
+                output_interval=output_interval,
+                movie_interval=movie_interval,
+                mc_trajectory=self.trajectory,
+                set_momenta=set_momenta,
+                **kwargs,
             )
         elif driver == "NoseHoover":
 
@@ -487,14 +500,13 @@ Start optimizing adsorbate structure...
                 pressure=self.P * 1e-5,
                 time_step=time_step,
                 num_md_steps=nsteps,
-                ttime=25.0,
-                ptime=75.0,
-                B_guess=30,
                 out_folder=self.out_folder,
                 out_file=self.out_file,  # type: ignore
-                trajectory=self.trajectory,
-                output_interval=self.save_every,
-                movie_interval=self.save_every,
+                output_interval=output_interval,
+                movie_interval=movie_interval,
+                mc_trajectory=self.trajectory,
+                set_momenta=set_momenta,
+                **kwargs,
             )
 
         elif driver == "MTKNPT":
@@ -511,9 +523,11 @@ Start optimizing adsorbate structure...
                 isotropic=isotropic,
                 out_folder=self.out_folder,
                 out_file=self.out_file,  # type: ignore
-                trajectory=self.trajectory,
-                output_interval=self.save_every,
-                movie_interval=self.save_every,
+                output_interval=output_interval,
+                movie_interval=movie_interval,
+                mc_trajectory=self.trajectory,
+                set_momenta=set_momenta,
+                **kwargs,
             )
 
         else:
@@ -525,7 +539,15 @@ Start optimizing adsorbate structure...
 
         self.set_framework(new_state[: self.n_atoms_framework].copy())  # type: ignore
 
-    def nvt(self, nsteps, time_step: float = 0.5):
+    def nvt(
+        self,
+        nsteps,
+        time_step: float = 0.5,
+        set_momenta: bool = True,
+        output_interval: int = 100,
+        movie_interval: int = 100,
+        **kwargs,
+    ):
         """
         Run a NVT simulation using the Berendsen thermostat.
 
@@ -535,8 +557,15 @@ Start optimizing adsorbate structure...
             Number of steps to run the NVT simulation.
         time_step : float, optional
             Time step for the NVT simulation (default is 0.5 fs).
+        set_momenta : bool, optional
+            Whether to set the atomic momenta to a Maxwell-Boltzmann distribution of the simulation temperature.
+        output_interval : int, optional
+            The interval for logging output (default is 100 steps).
+        movie_interval : int, optional
+            The interval for saving trajectory frames (default is 100 step).
+        kwargs : optional
+            Arguments passed to the ase molecular dynamics class.
         """
-
         new_state = nVT_Berendsen(
             atoms=self.current_system,
             model=self.model,
@@ -545,9 +574,11 @@ Start optimizing adsorbate structure...
             num_md_steps=nsteps,
             out_folder=self.out_folder,
             out_file=self.out_file,  # type: ignore
-            trajectory=self.trajectory,
-            output_interval=self.save_every,
-            movie_interval=self.save_every,
+            output_interval=output_interval,
+            movie_interval=movie_interval,
+            mc_trajectory=self.trajectory,
+            set_momenta=set_momenta,
+            **kwargs,
         )
 
         self.set_state(new_state)
