@@ -175,10 +175,10 @@ Conversion factors:
     Conversion factor molecules/unit cell -> %wt:            {self.sim.conv_factors['mg/g'] * 1e-1:.9f}
 
 Partial pressure:
-        {self.sim.P:>25.15f} Pascal
-        {self.sim.P / 1e5:>25.15f} bar
-        {self.sim.P / 101325:>25.15f} atm
-        {self.sim.P / (101325 * 760):>25.15f} Torr
+        {self.sim.P * self.sim.fugacity_coeff:>25.15f} Pascal
+        {self.sim.P * self.sim.fugacity_coeff / 1e5:>25.15f} bar
+        {self.sim.P * self.sim.fugacity_coeff / 101325:>25.15f} atm
+        {self.sim.P * self.sim.fugacity_coeff / (101325 * 760):>25.15f} Torr
 ===========================================================================
 """
         self._print(header)
