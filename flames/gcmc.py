@@ -71,6 +71,14 @@ class GCMC(BaseSimulator):
         Factor to scale the Van der Waals radii. Default is ``0.6``.
     :type vdw_factor: float, optional
 
+    :param framework_energy:
+        Pre-calculated potential energy of the empty framework in eV. If not provided, it will be calculated during initialization.
+    :type framework_energy: float or None, optional
+
+    :param adsorbate_energy:
+        Pre-calculated potential energy of the adsorbate molecule in eV. If not provided, it will be calculated during initialization.
+    :type adsorbate_energy: float or None, optional
+
     :param max_translation:
         Maximum translation distance. Default is ``1.5``.
     :type max_translation: float, optional
@@ -160,6 +168,8 @@ class GCMC(BaseSimulator):
         device: str,
         vdw_radii: np.ndarray,
         vdw_factor: float = 0.6,
+        framework_energy: float | None = None,
+        adsorbate_energy: float | None = None,
         max_translation: float = 1.5,
         max_rotation: float = np.radians(90),
         max_deltaE: float = 1.555,
@@ -198,6 +208,8 @@ class GCMC(BaseSimulator):
             device=device,
             vdw_radii=vdw_radii,
             vdw_factor=vdw_factor,
+            framework_energy=framework_energy,
+            adsorbate_energy=adsorbate_energy,
             max_deltaE=max_deltaE,
             save_frequency=save_frequency,
             save_rejected=save_rejected,
@@ -923,7 +935,7 @@ class GCMC(BaseSimulator):
             overlaped = check_overlap(
                 atoms=temp,
                 group1_indices=np.arange(len(atoms_trial)),
-                group2_indices=np.arange(start=len(atoms_trial), stop=len(temp)),
+                group2_indices=np.arange(len(atoms_trial), stop=len(temp)),
                 vdw_radii=self.vdw,
             )
 

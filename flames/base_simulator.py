@@ -1,3 +1,4 @@
+from copy import deepcopy
 import os
 from typing import TextIO
 
@@ -179,9 +180,13 @@ class BaseSimulator:
 
         self.set_framework(framework_atoms, framework_energy=framework_energy)
 
-        self.current_system = self.framework.copy()
+        self.current_system = deepcopy(framework_atoms)
         self.current_system.calc = self.model
-        self.current_total_energy = self.current_system.get_potential_energy()
+
+        if framework_energy:
+            self.current_total_energy = framework_energy * np.prod(self.ideal_supercell)
+        else:
+            self.current_total_energy = self.framework_energy
 
         self.set_adsorbate(adsorbate_atoms, adsorbate_energy=adsorbate_energy)
 
