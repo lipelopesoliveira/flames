@@ -8,6 +8,8 @@
 
 ### Fixed 🐛
 
+- Fixed a bug in the MD classes that was causing the `output_interval` and `movie_interval` parameters to be mixed up, resulting in incorrect logging intervals for the MD simulations. Now the `output_interval` is correctly used for logging the MD simulation data, while the `movie_interval` is used for controlling the frequency of snapshot saving.
+
 ### Documentation 📖
 
 ### Removed 🗑️
