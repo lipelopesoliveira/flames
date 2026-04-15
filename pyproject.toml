@@ -50,7 +50,7 @@ dev = [
     "pytest-sphinx",
     "pytest-cov",
     "mace-torch==0.3.12",
-    "twine>=1.11.0",
+    "twine>=6.2.0",
     "build",
     "setuptools",
     "wheel",
