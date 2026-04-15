@@ -198,8 +198,7 @@ Partial pressure:
             else 0
         )
         self._print(f"Restarting simulation from step {self.sim.base_iteration}...")
-        self._print(
-            f"""
+        self._print(f"""
 ===========================================================================
 Restart file requested.
 Loaded state with {len(state)} total atoms.
@@ -207,16 +206,14 @@ Current total energy: {self.sim.current_total_energy:.3f} eV
 Current number of adsorbates: {self.sim.n_adsorbates}
 Current average binding energy: {avg_binding_energy:.3f} kJ/mol
 ===========================================================================
-"""
-        )
+""")
 
     def print_debug_movement(self, movement, deltaE, prefactor, acc, rnd_number) -> None:
         """
         Print debug information about the current state of the simulation.
         This method is called to provide detailed information about the current state of the system.
         """
-        self._print(
-            f"""
+        self._print(f"""
 =======================================================================================================
 Movement type: {movement}
 Interaction energy: {deltaE} eV, {(deltaE / (units.kJ / units.mol))} kJ/mol
@@ -227,8 +224,7 @@ Acceptance probability: {acc:.3f}
 Random number:          {rnd_number:.3f}
 Accepted: {rnd_number < acc}
 =======================================================================================================
-"""
-        )
+""")
 
 
 class GCMCLogger(BaseLogger):
@@ -313,18 +309,15 @@ Starting GCMC simulation
 
     def print_optimization_start(self, target: str) -> None:
         """Prints a header for framework or adsorbate optimization."""
-        self._print(
-            f"""
+        self._print(f"""
 ===========================================================================
 Start optimizing {target} structure...
 ===========================================================================
-"""
-        )
+""")
 
     def print_load_state_info(self, n_atoms, average_ads_energy):
         """Prints information about the loading state."""
-        self._print(
-            f"""
+        self._print(f"""
 ===========================================================================
 
 Restarting GCMC simulation from previous configuration...
@@ -338,8 +331,7 @@ Current average binding energy: {average_ads_energy:.3f} kJ/mol
 Current steps are: {self.sim.base_iteration}
 
 ===========================================================================
-"""
-        )
+""")
 
     def print_iteration_info(self, iteration_data: dict) -> None:
         """Prints a single log line for a GCMC iteration."""
@@ -348,8 +340,7 @@ Current steps are: {self.sim.base_iteration}
 
     def print_debug_movement(self, movement, deltaE, prefactor, acc, rnd_number) -> None:
         """Prints detailed debug information for a single MC move."""
-        self._print(
-            f"""
+        self._print(f"""
 =======================================================================================================
 Movement type: {movement}
 Current number of adsorbates: {self.sim.n_adsorbates}
@@ -361,8 +352,7 @@ Acceptance probability: {acc:.3f}
 Random number:          {rnd_number:.3f}
 Accepted: {rnd_number < acc}
 =======================================================================================================
-"""
-        )
+""")
 
     def print_summary(self) -> None:
         """Prints the final summary of the simulation results."""
@@ -390,8 +380,7 @@ Accepted: {rnd_number < acc}
             ac_time=int(eq_results["ac_time"]),
         )
 
-        self._print(
-            f"""
+        self._print(f"""
 ===========================================================================
 
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -434,8 +423,7 @@ GCMC simulation finished successfully!
 Simulation finished at {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 Simulation duration: {datetime.datetime.now() - self.sim.start_time}
 ===========================================================================
-"""
-        )
+""")
 
 
 class TMMCLogger(BaseLogger):
@@ -474,8 +462,7 @@ Iteration  |  Number of  |    Tot En.   | Del. Energy  | Ins. Energy  |  Time
 
     def print_load_state_info(self, n_atoms):
         """Prints information about the loading state."""
-        self._print(
-            f"""
+        self._print(f"""
 ===========================================================================
 
 Restarting TMMC simulation from previous configuration...
@@ -488,23 +475,20 @@ Current number of adsorbates: {self.sim.n_adsorbates}
 Current steps are: {self.sim.base_iteration}
 
 ===========================================================================
-"""
-        )
+""")
 
     def print_restart_info(self) -> None:
         """Prints information when a simulation is restarted."""
         state = self.sim.current_system
         self._print(f"Restarting simulation from step {self.sim.base_iteration}...")
-        self._print(
-            f"""
+        self._print(f"""
 ===========================================================================
 Restart file requested.
 Loaded state with {len(state)} total atoms.
 Current total energy: {self.sim.current_total_energy:.3f} eV
 Current number of adsorbates: {self.sim.n_adsorbates}
 ===========================================================================
-"""
-        )
+""")
 
 
 class WidomLogger(BaseLogger):
@@ -555,8 +539,7 @@ Iteration  |  dE (eV)  |  dE (kJ/mol)  | kH [mol kg-1 Pa-1]  |  dH (kJ/mol) | Ti
         This method is called at the end of the simulation to display the final results and elapsed time.
         """
 
-        self._print(
-            f"""
+        self._print(f"""
 ===========================================================================
 
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -575,5 +558,4 @@ Simulation finished successfully!
 Simulation finished at {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 Simulation duration: {datetime.datetime.now() - self.sim.start_time}
 ===========================================================================
-"""
-        )
+""")
