@@ -6,6 +6,8 @@
 
 ### Enhanced ✨
 
+- Changed the `BaseSimulator` class to multiply the total energy by the supercell size when calculating the adsorption energy. This change ensures that the adsorption energy is correctly calculated based on the total energy of the system, which includes contributions from all atoms in the supercell.
+
 ### Fixed 🐛
 
 - Fixed a bug in the MD classes that was causing the `output_interval` and `movie_interval` parameters to be mixed up, resulting in incorrect logging intervals for the MD simulations. Now the `output_interval` is correctly used for logging the MD simulation data, while the `movie_interval` is used for controlling the frequency of snapshot saving.
