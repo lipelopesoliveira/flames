@@ -475,6 +475,21 @@ def nPT_Berendsen(
 
     atoms.calc = model
 
+    existing_md_traj = [
+        i for i in os.listdir(out_folder) if i.startswith("NPT-Berendsen") and i.endswith(".traj")
+    ]
+    traj_filename = os.path.join(
+        out_folder, f"NPT-Berendsen_{temperature:.2f}K_{len(existing_md_traj)}.traj"
+    )
+
+    traj_file = Trajectory(filename=traj_filename, mode="a", atoms=atoms)
+
+    log_filename = os.path.join(
+        out_folder, f"NPT-Berendsen_{temperature:.2f}K_{len(existing_md_traj)}.log"
+    )
+    if "trajectory" not in kwargs:
+        kwargs["trajectory"] = mc_trajectory if mc_trajectory else traj_file
+
     dyn_params = {
         "atoms": atoms,
         "timestep": time_step * units.fs,
@@ -517,23 +532,11 @@ def nPT_Berendsen(
         dyn_params["taup"] / units.fs,
         dyn_params["timestep"] / units.fs,
         num_md_steps,
+        output_interval,
         dyn_params["loginterval"],
-        movie_interval,
     )
 
     print(header, file=out_file, flush=True)
-
-    existing_md_traj = [
-        i for i in os.listdir(out_folder) if i.startswith("NPT-Berendsen") and i.endswith(".traj")
-    ]
-    traj_filename = os.path.join(
-        out_folder, f"NPT-Berendsen_{dyn_params['temperature_K']:.2f}K_{len(existing_md_traj)}.traj"
-    )
-    log_filename = os.path.join(
-        out_folder, f"NPT-Berendsen_{dyn_params['temperature_K']:.2f}K_{len(existing_md_traj)}.log"
-    )
-    if "trajectory" not in kwargs:
-        kwargs["trajectory"] = mc_trajectory if mc_trajectory else traj_filename
 
     if set_momenta:
         # Set the momenta corresponding to the given "temperature"
@@ -566,10 +569,10 @@ def nPT_Berendsen(
             flush=True,
         )
 
-    dyn.attach(print_md_log, interval=output_interval)
+    dyn.attach(print_md_log, interval=movie_interval)
     dyn.attach(
         MDLogger(dyn, atoms, log_filename, header=True, stress=True, peratom=False, mode="a"),
-        interval=movie_interval,
+        interval=output_interval,
     )
 
     # Now run the dynamics
@@ -652,6 +655,25 @@ def nPT_NoseHoover(
 
     atoms.calc = model
 
+    existing_md_traj = [
+        i
+        for i in os.listdir(out_folder)
+        if i.startswith("NPT-Nose-Hoover-Parrinello-Rahman") and i.endswith(".traj")
+    ]
+    traj_filename = os.path.join(
+        out_folder,
+        f"NPT-Nose-Hoover-Parrinello-Rahman_{temperature:.2f}K_{len(existing_md_traj)}.traj",
+    )
+
+    traj_file = Trajectory(filename=traj_filename, mode="a", atoms=atoms)
+
+    log_filename = os.path.join(
+        out_folder,
+        f"NPT-Nose-Hoover-Parrinello-Rahman_{temperature:.2f}K_{len(existing_md_traj)}.log",
+    )
+    if "trajectory" not in kwargs:
+        kwargs["trajectory"] = mc_trajectory if mc_trajectory else traj_file
+
     dyn_params = {
         "atoms": atoms,
         "timestep": time_step * units.fs,
@@ -689,27 +711,11 @@ def nPT_NoseHoover(
         dyn_params["pfactor"],
         dyn_params["timestep"] / units.fs,
         num_md_steps,
+        output_interval,
         dyn_params["loginterval"],
-        movie_interval,
     )
 
     print(header, file=out_file, flush=True)
-
-    existing_md_traj = [
-        i
-        for i in os.listdir(out_folder)
-        if i.startswith("NPT-Nose-Hoover-Parrinello-Rahman") and i.endswith(".traj")
-    ]
-    traj_filename = os.path.join(
-        out_folder,
-        f"NPT-Nose-Hoover-Parrinello-Rahman_{dyn_params['temperature_K']:.2f}K_{len(existing_md_traj)}.traj",
-    )
-    log_filename = os.path.join(
-        out_folder,
-        f"NPT-Nose-Hoover-Parrinello-Rahman_{dyn_params['temperature_K']:.2f}K_{len(existing_md_traj)}.log",
-    )
-    if "trajectory" not in kwargs:
-        kwargs["trajectory"] = mc_trajectory if mc_trajectory else traj_filename
 
     if set_momenta:
         # Set the momenta corresponding to the given "temperature"
@@ -740,10 +746,10 @@ def nPT_NoseHoover(
             flush=True,
         )
 
-    dyn.attach(print_md_log, interval=output_interval)
+    dyn.attach(print_md_log, interval=movie_interval)
     dyn.attach(
         MDLogger(dyn, atoms, log_filename, header=True, stress=True, peratom=False, mode="a"),
-        interval=movie_interval,
+        interval=output_interval,
     )
 
     # Now run the dynamics
@@ -826,6 +832,25 @@ def nPT_MTKNPT(
 
     atoms.calc = model
 
+    existing_md_traj = [
+        i
+        for i in os.listdir(out_folder)
+        if i.startswith("NPT-Martyna-Tobias-Klein") and i.endswith(".traj")
+    ]
+    traj_filename = os.path.join(
+        out_folder,
+        f"NPT-Martyna-Tobias-Klein_{temperature:.2f}K_{len(existing_md_traj)}.traj",
+    )
+
+    traj_file = Trajectory(filename=traj_filename, mode="a", atoms=atoms)
+
+    log_filename = os.path.join(
+        out_folder,
+        f"NPT-Martyna-Tobias-Klein_{temperature:.2f}K_{len(existing_md_traj)}.log",
+    )
+    if "trajectory" not in kwargs:
+        kwargs["trajectory"] = mc_trajectory if mc_trajectory else traj_file
+
     dyn_params = {
         "atoms": atoms,
         "timestep": time_step * units.fs,
@@ -875,27 +900,11 @@ def nPT_MTKNPT(
         dyn_params["ploop"],
         dyn_params["timestep"] / units.fs,
         num_md_steps,
+        output_interval,
         dyn_params["loginterval"],
-        movie_interval,
     )
 
     print(header, file=out_file, flush=True)
-
-    existing_md_traj = [
-        i
-        for i in os.listdir(out_folder)
-        if i.startswith("NPT-Martyna-Tobias-Klein") and i.endswith(".traj")
-    ]
-    traj_filename = os.path.join(
-        out_folder,
-        f"NPT-Martyna-Tobias-Klein_{dyn_params['temperature_K']:.2f}K_{len(existing_md_traj)}.traj",
-    )
-    log_filename = os.path.join(
-        out_folder,
-        f"NPT-Martyna-Tobias-Klein_{dyn_params['temperature_K']:.2f}K_{len(existing_md_traj)}.log",
-    )
-    if "trajectory" not in kwargs:
-        kwargs["trajectory"] = mc_trajectory if mc_trajectory else traj_filename
 
     if set_momenta:
         # Set the momenta corresponding to the given "temperature"
@@ -928,10 +937,10 @@ def nPT_MTKNPT(
             flush=True,
         )
 
-    dyn.attach(print_md_log, interval=output_interval)
+    dyn.attach(print_md_log, interval=movie_interval)
     dyn.attach(
         MDLogger(dyn, atoms, log_filename, header=True, stress=True, peratom=False, mode="a"),
-        interval=movie_interval,
+        interval=output_interval,
     )
 
     # Now run the dynamics
@@ -1015,9 +1024,8 @@ def unwrap_positions(positions, cell, pbc=True, ref_atom=0):
     # deltas.shape = (n, 3)
     deltas = fractional_positions - ref_f_pos
 
-    # Apply unwrapping logic
-    # For periodic directions, find the closest image by
-    # subtracting the nearest integer.
+    # Apply unwrapping logic:
+    # For periodic directions, find the closest image by subtracting the nearest integer.
     # np.rint(x) rounds x to the nearest integer.
     for i in range(3):
         if pbc[i]:
