@@ -265,7 +265,6 @@ class Widom(BaseSimulator):
 
         if len(self.int_energy_list) <= n:
             return 0.0
-        
 
         cv_int_energy_list = random_n_splits(self.int_energy_list, n, self.rnd_generator)
         cv_boltz_fac = np.exp(-self.beta * cv_int_energy_list)
