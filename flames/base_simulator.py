@@ -226,14 +226,14 @@ class BaseSimulator:
         # Use an max deltaE to avoid errors on the model
         self.max_deltaE = max_deltaE
 
-    def get_ideal_supercell(self) -> list[int]:
+    def get_ideal_supercell(self) -> np.ndarray:
         """
         Get the ideal supercell dimensions based on the cutoff radius.
 
         Returns
         -------
-        list[int]
-            A list of three integers representing the number of unit cells in each dimension.
+        np.ndarray
+            An array of three integers representing the number of unit cells in each dimension.
         """
         return calculate_unit_cells(self.framework.get_cell(), cutoff=self.cutoff)
 
@@ -266,7 +266,7 @@ class BaseSimulator:
 
         self.ideal_supercell = self.get_ideal_supercell()
 
-        if self.ideal_supercell != [1, 1, 1] and self.automatic_supercell:
+        if not np.array_equal(self.ideal_supercell, np.array([1, 1, 1])) and self.automatic_supercell:
             self.framework = make_supercell(self.framework, np.eye(3) * self.ideal_supercell)
 
         self.cell = np.array(self.framework.get_cell())

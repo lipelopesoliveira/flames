@@ -100,7 +100,7 @@ def get_perpendicular_lengths(cell: Cell) -> tuple[float, float, float]:
     return cx, cy, cz
 
 
-def calculate_unit_cells(cell: Cell, cutoff: float = 12.6) -> list[int]:
+def calculate_unit_cells(cell: Cell, cutoff: float = 12.6) -> np.ndarray:
     """
     Calculate the number of unit cell repetitions so that all supercell lengths are larger than
     twice the interaction potential cut-off radius.
@@ -120,14 +120,14 @@ def calculate_unit_cells(cell: Cell, cutoff: float = 12.6) -> list[int]:
 
     Returns
     -------
-    supercell : list[int]
-        (3,1) list containg the number of repeating units in `x`, `y`, `z` directions.
+    supercell : np.ndarray
+        (3,1) array containing the number of repeating units in `x`, `y`, `z` directions.
     """
 
     cx, cy, cz = get_perpendicular_lengths(cell)
 
     # Calculate UnitCells array
-    supercell = [int(i) for i in np.ceil(2.0 * cutoff / np.array([cx, cy, cz]))]
+    supercell = np.array([int(i) for i in np.ceil(2.0 * cutoff / np.array([cx, cy, cz]))])
 
     return supercell
 
