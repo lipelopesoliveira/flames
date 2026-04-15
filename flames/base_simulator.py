@@ -184,9 +184,9 @@ class BaseSimulator:
         self.current_system.calc = self.model
 
         if framework_energy:
-            self.current_total_energy = framework_energy * np.prod(self.ideal_supercell)
+            self.current_total_energy = framework_energy * np.prod(self.ideal_supercell)  # type: ignore
         else:
-            self.current_total_energy = self.framework_energy
+            self.current_total_energy = self.framework_energy  # type: ignore
 
         self.set_adsorbate(adsorbate_atoms, adsorbate_energy=adsorbate_energy)
 
@@ -266,7 +266,10 @@ class BaseSimulator:
 
         self.ideal_supercell = self.get_ideal_supercell()
 
-        if not np.array_equal(self.ideal_supercell, np.array([1, 1, 1])) and self.automatic_supercell:
+        if (
+            not np.array_equal(self.ideal_supercell, np.array([1, 1, 1]))
+            and self.automatic_supercell
+        ):
             self.framework = make_supercell(self.framework, np.eye(3) * self.ideal_supercell)
 
         self.cell = np.array(self.framework.get_cell())
