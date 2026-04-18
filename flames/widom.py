@@ -44,6 +44,14 @@ class Widom(BaseSimulator):
         Van der Waals radii of the atoms in the framework and adsorbate.
     :type vdw_radii: np.ndarray
 
+    :param framework_energy:
+        Pre-calculated potential energy of the empty framework in eV. If not provided, it will be calculated during initialization.
+    :type framework_energy: float or None, optional
+
+    :param adsorbate_energy:
+        Pre-calculated potential energy of the adsorbate molecule in eV. If not provided, it will be calculated during initialization.
+    :type adsorbate_energy: float or None, optional
+
     :param vdw_factor:
         Factor to scale the Van der Waals radii. Default is ``0.6``.
     :type vdw_factor: float, optional
@@ -101,6 +109,8 @@ class Widom(BaseSimulator):
         temperature: float,
         model: calculator.Calculator,
         vdw_radii: np.ndarray,
+        framework_energy: float | None = None,
+        adsorbate_energy: float | None = None,
         vdw_factor: float = 0.6,
         max_overlap_tries: int = 1000,
         max_deltaE: float = 1.555,
@@ -125,6 +135,8 @@ class Widom(BaseSimulator):
             temperature=temperature,
             pressure=0.0,
             device=device,
+            framework_energy=framework_energy,
+            adsorbate_energy=adsorbate_energy,
             vdw_radii=vdw_radii,
             vdw_factor=vdw_factor,
             max_deltaE=max_deltaE,
@@ -181,7 +193,7 @@ class Widom(BaseSimulator):
 
         return self.beta * boltz_fac.mean() * units.J / (units.mol * self.framework_density * 1e3)
 
-    def _compute_kH_std(self, boltz_fac: np.ndarray) -> float:
+    def _compute_kH_std(self, boltz_fac: np.ndarray, n: int = 5) -> float:
         """
         Compute the standard deviation of the Henry coefficient (kH) using the Boltzmann factors.
 
@@ -191,15 +203,23 @@ class Widom(BaseSimulator):
         ----------
         boltz_fac : np.ndarray
             Array of Boltzmann factors corresponding to the integral energies.
+        n : int, optional
+            Number of splits for cross-validation to estimate the standard deviation (default is 5).
 
         Returns
         -------
             float: The standard deviation of the Henry coefficient in mol kg-1 Pa-1
         """
 
+        # Calculate standard deviation using cross-validation
+        if len(self.int_energy_list) <= n:
+            return 0.0
+
+        cv_boltz_fac = random_n_splits(boltz_fac, n, self.rnd_generator)
+
         return (
             self.beta
-            * boltz_fac.mean(axis=-1)
+            * cv_boltz_fac.mean(axis=-1)
             * (units.J / units.mol)
             / (self.framework_density * 1e3)
         ).std()
@@ -225,7 +245,7 @@ class Widom(BaseSimulator):
             units.kJ / units.mol
         )
 
-    def _compute_Qst_std(self, int_energy_list: np.ndarray, boltz_fac: np.ndarray) -> float:
+    def _compute_Qst_std(self, int_energy_list: np.ndarray, n: int = 5) -> float:
         """
         Compute the standard deviation of the adsorption energy (Qst) using the integral energy list and Boltzmann factors.
 
@@ -235,16 +255,23 @@ class Widom(BaseSimulator):
         ----------
         int_energy_list : np.ndarray
             Array of integral energies from the Widom insertions.
-        boltz_fac : np.ndarray
-            Array of Boltzmann factors corresponding to the integral energies.
+        n : int, optional
+            Number of splits for cross-validation to estimate the standard deviation (default is 5).
 
         Returns
         -------
             float: The standard deviation of Qst energy in kJ/mol
         """
+
+        if len(self.int_energy_list) <= n:
+            return 0.0
+
+        cv_int_energy_list = random_n_splits(self.int_energy_list, n, self.rnd_generator)
+        cv_boltz_fac = np.exp(-self.beta * cv_int_energy_list)
+
         return (
             (
-                (int_energy_list * boltz_fac).mean(axis=-1) / boltz_fac.mean(axis=-1)
+                (cv_int_energy_list * cv_boltz_fac).mean(axis=-1) / cv_boltz_fac.mean(axis=-1)
                 - units.kB * self.T
             )
             / (units.kJ / units.mol)
@@ -315,15 +342,8 @@ class Widom(BaseSimulator):
         self.Qst = self._compute_Qst(self.int_energy_list, self.boltz_fac)
 
         # Calculate standard deviation using cross-validation
-        if len(self.int_energy_list) > 5:
-            cv_int_energy_list = random_n_splits(self.int_energy_list, 5, self.rnd_generator)
-
-            cv_boltz_fac = np.exp(-self.beta * cv_int_energy_list)
-
-            # Calculate standard deviation using cross-validation
-            self.kH_std_dv = self._compute_kH_std(cv_boltz_fac)
-
-            self.Qst_std_dv = self._compute_Qst_std(cv_int_energy_list, cv_boltz_fac)
+        self.kH_std_dv = self._compute_kH_std(self.boltz_fac, 5)
+        self.Qst_std_dv = self._compute_Qst_std(self.int_energy_list, 5)
 
     def save_results(self, file_name: str = "Widom_Results.json") -> None:
         """
@@ -365,8 +385,16 @@ class Widom(BaseSimulator):
             os.path.join(self.out_folder, f"int_energy_{self.P:.5f}.npy")
         )
 
+        self.boltz_fac = np.exp(-self.beta * self.int_energy_list)
+
         # Set the base iteration to the length of the uptake list
         self.base_iteration = len(self.int_energy_list)
+
+        self.Qst = self._compute_Qst(self.int_energy_list, self.boltz_fac)
+        self.Qst_std_dv = self._compute_Qst_std(self.int_energy_list)
+
+        self.kH = self._compute_kH(self.boltz_fac)
+        self.kH_std_dv = self._compute_kH_std(self.boltz_fac)
 
         self.logger.print_restart_info()
 

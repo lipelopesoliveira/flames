@@ -1,4 +1,5 @@
 import os
+from copy import deepcopy
 from typing import TextIO
 
 import ase
@@ -179,9 +180,13 @@ class BaseSimulator:
 
         self.set_framework(framework_atoms, framework_energy=framework_energy)
 
-        self.current_system = self.framework.copy()
+        self.current_system = deepcopy(framework_atoms)
         self.current_system.calc = self.model
-        self.current_total_energy = self.current_system.get_potential_energy()
+
+        if framework_energy:
+            self.current_total_energy = framework_energy * np.prod(self.ideal_supercell)  # type: ignore
+        else:
+            self.current_total_energy = self.framework_energy  # type: ignore
 
         self.set_adsorbate(adsorbate_atoms, adsorbate_energy=adsorbate_energy)
 
@@ -221,14 +226,14 @@ class BaseSimulator:
         # Use an max deltaE to avoid errors on the model
         self.max_deltaE = max_deltaE
 
-    def get_ideal_supercell(self) -> list[int]:
+    def get_ideal_supercell(self) -> np.ndarray:
         """
         Get the ideal supercell dimensions based on the cutoff radius.
 
         Returns
         -------
-        list[int]
-            A list of three integers representing the number of unit cells in each dimension.
+        np.ndarray
+            An array of three integers representing the number of unit cells in each dimension.
         """
         return calculate_unit_cells(self.framework.get_cell(), cutoff=self.cutoff)
 
@@ -261,7 +266,10 @@ class BaseSimulator:
 
         self.ideal_supercell = self.get_ideal_supercell()
 
-        if self.ideal_supercell != [1, 1, 1] and self.automatic_supercell:
+        if (
+            not np.array_equal(self.ideal_supercell, np.array([1, 1, 1]))
+            and self.automatic_supercell
+        ):
             self.framework = make_supercell(self.framework, np.eye(3) * self.ideal_supercell)
 
         self.cell = np.array(self.framework.get_cell())

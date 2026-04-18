@@ -1,16 +1,35 @@
 # Changelog
 
-## v[0.4.5] - YYYY-MM-DD (Unreleased)
+## v[0.4.6] - 2026-04-14 (Unreleased)
 
 ### New Features 🎉
 
-- Added new `TMMC` class to perform transition matrix Monte Carlo simulations.
+### Enhanced ✨
+
+- Changed the `BaseSimulator` class to multiply the total energy by the supercell size when calculating the adsorption energy. This change ensures that the adsorption energy is correctly calculated based on the total energy of the system, which includes contributions from all atoms in the supercell.
 
 ### Fixed 🐛
 
+- Fixed a bug in the MD classes that was causing the `output_interval` and `movie_interval` parameters to be mixed up, resulting in incorrect logging intervals for the MD simulations. Now the `output_interval` is correctly used for logging the MD simulation data, while the `movie_interval` is used for controlling the frequency of snapshot saving.
+
+### Documentation 📖
+
+### Removed 🗑️
+
+## v[0.4.5] - 2026-04-14
+
+### New Features 🎉
+
+- Core implemenation of the `TMMC` class allowing to run transition matrix Monte Carlo insertion/deletion moves on-top of a `GCMC` or MD simulation.
+- Added tests for the `Widom` and the `GCMC` class, likewise to the `TMMC` class. With those tests the overall test coverage increases to 58%.
+
 ### Enhanced ✨
 
-- Added `**kwargs`, exposing the interface to the underlying molecular dynamics classes of ase, and some other parameters to the `nvt` and `npt` functions of the Monte Carlo simulation classes to allow adjustments of the previously hard-coded parameters.
+- Added `**kwargs` to expose the interface of the underlying `ase` MD classes allowing the user to pass on parameters via that overwrite the default values.
+- Added the parameters `output_interval` and `movie_interval` to decouple those parameters from the `save_every` attribute.
+- Added the `set_momenta` parameter to switch on/off the initialization of atomic momenta based on the input temperature.
+
+### Fixed 🐛
 
 ### Documentation 📖
 

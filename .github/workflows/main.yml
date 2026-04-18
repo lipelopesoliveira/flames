@@ -55,7 +55,7 @@ jobs:
               name: Style
               run: |
                 isort --check .
-                black --check .
+                black --target-version=py310 --check .
 
           - python: "3.10"
             task:
