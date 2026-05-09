@@ -334,11 +334,18 @@ def read_cif(file_name: str, partial_charges_tag: str = "_atom_site_charge") -> 
 
     try:
         partial_charges = np.array(cif.find_values(partial_charges_tag)).astype(float)
+
+        if len(partial_charges) == 0:
+            partial_charges = np.zeros(len(atom_site_type_symbol))
+        
     except Exception:
         partial_charges = np.zeros(len(atom_site_type_symbol))
 
     struc = ase.Atoms(
-        symbols=atom_site_type_symbol, scaled_positions=atom_site_frac, cell=cellpar, pbc=True
+        symbols=atom_site_type_symbol,
+        scaled_positions=atom_site_frac,
+        cell=cellpar,
+        pbc=True
     )
 
     struc.set_initial_charges(partial_charges)
