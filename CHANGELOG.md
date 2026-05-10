@@ -9,6 +9,7 @@
 - Changed the `BaseSimulator` class to multiply the total energy by the supercell size when calculating the adsorption energy. This change ensures that the adsorption energy is correctly calculated based on the total energy of the system, which includes contributions from all atoms in the supercell.
 - Created a new `CustomLennardJones` calculator based on JIT for improved performance in calculating Lennard-Jones interactions.
 - Created a new `EwaldSum` calculator based on JIT for improved performance in calculating electrostatic interactions.
+- Add workarounds for loading and saving labels in ASE's Trajectory since it does not support custom arrays. Now the labels are saved in the `info` attribute of the Trajectory and loaded back into the Atoms object when reading the trajectory.
 
 ### Fixed 🐛
 

@@ -444,9 +444,14 @@ class GCMC(BaseSimulator):
         else:
             state: ase.Atoms = read(state_file)  # type: ignore
 
+        # Workaround to load the labels from Trajectory.info since ASE's Trajectory does not support custom arrays
+        if 'labels' in state.info.keys():
+            state.set_array('labels', state.info['labels'])
+
         self.set_state(state)
 
         self.n_adsorbates = int((len(state) - self.n_atoms_framework) / len(self.adsorbate))
+
         average_binding_energy = (
             (
                 self.current_total_energy
@@ -786,6 +791,9 @@ class GCMC(BaseSimulator):
     def _save_state(self, actual_iteration: int) -> None:
 
         if actual_iteration % self.save_every == 0:
+            # Workaround to save the labels in Trajectory.info since ASE's Trajectory does not support custom arrays
+            if 'labels' in self.current_system.arrays.keys():
+                self.current_system.info['labels'] = self.current_system.get_array('labels')
 
             self.trajectory.write(self.current_system)  # type: ignore
 
