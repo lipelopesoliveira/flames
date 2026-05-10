@@ -7,10 +7,15 @@
 ### Enhanced ✨
 
 - Changed the `BaseSimulator` class to multiply the total energy by the supercell size when calculating the adsorption energy. This change ensures that the adsorption energy is correctly calculated based on the total energy of the system, which includes contributions from all atoms in the supercell.
+- Created a new `CustomLennardJones` calculator based on JIT for improved performance in calculating Lennard-Jones interactions.
+- Created a new `EwaldSum` calculator based on JIT for improved performance in calculating electrostatic interactions.
 
 ### Fixed 🐛
 
 - Fixed a bug in the MD classes that was causing the `output_interval` and `movie_interval` parameters to be mixed up, resulting in incorrect logging intervals for the MD simulations. Now the `output_interval` is correctly used for logging the MD simulation data, while the `movie_interval` is used for controlling the frequency of snapshot saving.
+- Fixed a bug in the `BaseSimulator` class where the `set_state` method was not properly updating the current system state, which could lead to inconsistencies in the simulation. Now the `set_state` method correctly updates the current system state with the provided state, ensuring that the simulation runs with the correct configuration.
+- Handle better when the cif file does not have partial charges.
+- Fixed the LennardJones parameters for the `UFF` force field.
 
 ### Documentation 📖
 
