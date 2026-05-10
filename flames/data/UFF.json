@@ -1,0 +1,378 @@
+{
+    "C": {
+        "sigma": 3.43085,
+        "epsilon": 52.83806
+    },
+    "O": {
+        "sigma": 3.11815,
+        "epsilon": 30.19317
+    },
+    "H": {
+        "sigma": 2.57113,
+        "epsilon": 22.14166
+    },
+    "N": {
+        "sigma": 3.26069,
+        "epsilon": 34.72215
+    },
+    "F": {
+        "sigma": 2.99698,
+        "epsilon": 25.16098
+    },
+    "Na": {
+        "sigma": 2.65755,
+        "epsilon": 15.09659
+    },
+    "Mg": {
+        "sigma": 2.69141,
+        "epsilon": 55.85737
+    },
+    "Al": {
+        "sigma": 4.00815,
+        "epsilon": 254.12588
+    },
+    "Si": {
+        "sigma": 3.82641,
+        "epsilon": 202.29427
+    },
+    "P": {
+        "sigma": 3.69456,
+        "epsilon": 153.48197
+    },
+    "S": {
+        "sigma": 3.59478,
+        "epsilon": 137.88216
+    },
+    "Cl": {
+        "sigma": 3.51638,
+        "epsilon": 114.23084
+    },
+    "K": {
+        "sigma": 3.39611,
+        "epsilon": 17.61269
+    },
+    "Ca": {
+        "sigma": 3.02816,
+        "epsilon": 119.76626
+    },
+    "Sc": {
+        "sigma": 2.93551,
+        "epsilon": 9.56117
+    },
+    "Ti": {
+        "sigma": 2.8286,
+        "epsilon": 8.55473
+    },
+    "V": {
+        "sigma": 2.80099,
+        "epsilon": 8.05151
+    },
+    "Cr": {
+        "sigma": 2.93187,
+        "epsilon": 7.54829
+    },
+    "Mn": {
+        "sigma": 2.63795,
+        "epsilon": 6.54185
+    },
+    "Fe": {
+        "sigma": 2.5943,
+        "epsilon": 6.54185
+    },
+    "Co": {
+        "sigma": 2.55866,
+        "epsilon": 7.04507
+    },
+    "Ni": {
+        "sigma": 2.52481,
+        "epsilon": 7.54829
+    },
+    "Cu": {
+        "sigma": 3.11369,
+        "epsilon": 2.5161
+    },
+    "Zn": {
+        "sigma": 2.46155,
+        "epsilon": 62.39923
+    },
+    "Zr": {
+        "sigma": 2.78317,
+        "epsilon": 34.72215
+    },
+    "Mo": {
+        "sigma": 2.71902,
+        "epsilon": 29.68995
+    },
+    "Be": {
+        "sigma": 2.44552,
+        "epsilon": 42.77366
+    },
+    "B": {
+        "sigma": 3.63754,
+        "epsilon": 90.57952
+    },
+    "Ga": {
+        "sigma": 3.90481,
+        "epsilon": 208.83612
+    },
+    "Ge": {
+        "sigma": 3.81305,
+        "epsilon": 190.72022
+    },
+    "As": {
+        "sigma": 3.7685,
+        "epsilon": 155.49485
+    },
+    "Se": {
+        "sigma": 3.74623,
+        "epsilon": 146.4369
+    },
+    "Br": {
+        "sigma": 3.73197,
+        "epsilon": 126.30811
+    },
+    "Rb": {
+        "sigma": 3.66516,
+        "epsilon": 20.12878
+    },
+    "Sr": {
+        "sigma": 3.24376,
+        "epsilon": 118.2566
+    },
+    "Y": {
+        "sigma": 2.98006,
+        "epsilon": 36.23181
+    },
+    "Nb": {
+        "sigma": 2.81969,
+        "epsilon": 29.68995
+    },
+    "Tc": {
+        "sigma": 2.67091,
+        "epsilon": 24.15454
+    },
+    "Ru": {
+        "sigma": 2.63973,
+        "epsilon": 28.1803
+    },
+    "Rh": {
+        "sigma": 2.60944,
+        "epsilon": 26.67064
+    },
+    "Pd": {
+        "sigma": 2.58272,
+        "epsilon": 24.15454
+    },
+    "Ag": {
+        "sigma": 2.80455,
+        "epsilon": 18.1159
+    },
+    "Cd": {
+        "sigma": 2.53728,
+        "epsilon": 114.73406
+    },
+    "In": {
+        "sigma": 3.97608,
+        "epsilon": 301.42852
+    },
+    "Sn": {
+        "sigma": 3.91283,
+        "epsilon": 285.3255
+    },
+    "Sb": {
+        "sigma": 3.93777,
+        "epsilon": 225.94559
+    },
+    "Te": {
+        "sigma": 3.98232,
+        "epsilon": 200.28139
+    },
+    "Cs": {
+        "sigma": 4.02419,
+        "epsilon": 22.64488
+    },
+    "Ba": {
+        "sigma": 3.299,
+        "epsilon": 183.17192
+    },
+    "La": {
+        "sigma": 3.13775,
+        "epsilon": 8.55473
+    },
+    "Ce": {
+        "sigma": 3.16804,
+        "epsilon": 6.54185
+    },
+    "Pr": {
+        "sigma": 3.21258,
+        "epsilon": 5.0322
+    },
+    "Nd": {
+        "sigma": 3.18496,
+        "epsilon": 5.0322
+    },
+    "Pm": {
+        "sigma": 3.16002,
+        "epsilon": 4.52898
+    },
+    "Sm": {
+        "sigma": 3.13596,
+        "epsilon": 4.02576
+    },
+    "Eu": {
+        "sigma": 3.11191,
+        "epsilon": 4.02576
+    },
+    "Gd": {
+        "sigma": 3.00055,
+        "epsilon": 4.52898
+    },
+    "Tb": {
+        "sigma": 3.07449,
+        "epsilon": 3.52254
+    },
+    "Dy": {
+        "sigma": 3.054,
+        "epsilon": 3.52254
+    },
+    "Ho": {
+        "sigma": 3.03707,
+        "epsilon": 3.52254
+    },
+    "Er": {
+        "sigma": 3.02104,
+        "epsilon": 3.52254
+    },
+    "Tm": {
+        "sigma": 3.00589,
+        "epsilon": 3.01932
+    },
+    "Yb": {
+        "sigma": 2.98897,
+        "epsilon": 114.73406
+    },
+    "Lu": {
+        "sigma": 3.24287,
+        "epsilon": 20.632
+    },
+    "Hf": {
+        "sigma": 2.79831,
+        "epsilon": 36.23181
+    },
+    "Ta": {
+        "sigma": 2.82415,
+        "epsilon": 40.76079
+    },
+    "W": {
+        "sigma": 2.73417,
+        "epsilon": 33.71571
+    },
+    "Re": {
+        "sigma": 2.63171,
+        "epsilon": 33.21249
+    },
+    "Os": {
+        "sigma": 2.7796,
+        "epsilon": 18.61912
+    },
+    "Ir": {
+        "sigma": 2.53015,
+        "epsilon": 36.73503
+    },
+    "Pt": {
+        "sigma": 2.45354,
+        "epsilon": 40.25757
+    },
+    "Au": {
+        "sigma": 2.93373,
+        "epsilon": 19.62556
+    },
+    "Hg": {
+        "sigma": 2.40988,
+        "epsilon": 193.73954
+    },
+    "Tl": {
+        "sigma": 3.87274,
+        "epsilon": 342.18931
+    },
+    "Pb": {
+        "sigma": 3.82819,
+        "epsilon": 333.63458
+    },
+    "Bi": {
+        "sigma": 3.89323,
+        "epsilon": 260.66774
+    },
+    "Po": {
+        "sigma": 4.19524,
+        "epsilon": 163.54636
+    },
+    "At": {
+        "sigma": 4.23177,
+        "epsilon": 142.91436
+    },
+    "Rn": {
+        "sigma": 4.24513,
+        "epsilon": 124.79845
+    },
+    "Ra": {
+        "sigma": 3.27583,
+        "epsilon": 203.30071
+    },
+    "Ac": {
+        "sigma": 3.09855,
+        "epsilon": 16.60625
+    },
+    "Th": {
+        "sigma": 3.02549,
+        "epsilon": 13.08371
+    },
+    "Pa": {
+        "sigma": 3.05044,
+        "epsilon": 11.07083
+    },
+    "U": {
+        "sigma": 3.0246,
+        "epsilon": 11.07083
+    },
+    "Np": {
+        "sigma": 3.05044,
+        "epsilon": 9.56117
+    },
+    "Pu": {
+        "sigma": 3.05044,
+        "epsilon": 8.05151
+    },
+    "Am": {
+        "sigma": 3.01213,
+        "epsilon": 7.04507
+    },
+    "Cm": {
+        "sigma": 2.96313,
+        "epsilon": 6.54185
+    },
+    "Bk": {
+        "sigma": 2.97471,
+        "epsilon": 6.54185
+    },
+    "Cf": {
+        "sigma": 2.95155,
+        "epsilon": 6.54185
+    },
+    "Es": {
+        "sigma": 2.93907,
+        "epsilon": 6.03863
+    },
+    "Fm": {
+        "sigma": 2.92749,
+        "epsilon": 6.03863
+    },
+    "Md": {
+        "sigma": 2.9168,
+        "epsilon": 5.53542
+    },
+    "No": {
+        "sigma": 2.89364,
+        "epsilon": 5.53542
+    }
+}
