@@ -180,7 +180,7 @@ class BaseSimulator:
 
         self.set_framework(framework_atoms, framework_energy=framework_energy)
 
-        self.current_system = deepcopy(framework_atoms)
+        self.current_system = deepcopy(self.framework)
         self.current_system.calc = self.model
 
         if framework_energy:
@@ -316,6 +316,7 @@ class BaseSimulator:
             self.adsorbate_energy = adsorbate_energy
         else:
             self.adsorbate_energy = self.adsorbate.get_potential_energy()
+
         self.n_adsorbate_atoms = len(self.adsorbate)
         self.adsorbate_mass = np.sum(self.adsorbate.get_masses()) / units.kg
         self.n_atoms_framework -= self.n_adsorbate_atoms * n_adsorbates
