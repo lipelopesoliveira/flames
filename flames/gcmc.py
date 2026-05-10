@@ -408,11 +408,13 @@ class GCMC(BaseSimulator):
 
         # Check if the len of all restart elements are the same:
         if not (len(uptake_restart) == len(total_energy_restart) == len(total_ads_restart)):
-            raise ValueError(f"""
+            raise ValueError(
+                f"""
             The lengths of uptake, total energy, and total adsorbates lists do not match.
             Please check the saved files.
             Found lengths: {len(uptake_restart)}, {len(total_energy_restart)}, {len(total_ads_restart)}
-            for uptake, total energy, and total ads respectively.""")
+            for uptake, total energy, and total ads respectively."""
+            )
 
         self.uptake_list = uptake_restart
         self.total_energy_list = total_energy_restart
@@ -445,8 +447,8 @@ class GCMC(BaseSimulator):
             state: ase.Atoms = read(state_file)  # type: ignore
 
         # Workaround to load the labels from Trajectory.info since ASE's Trajectory does not support custom arrays
-        if 'labels' in state.info.keys():
-            state.set_array('labels', state.info['labels'])
+        if "labels" in state.info.keys():
+            state.set_array("labels", state.info["labels"])
 
         self.set_state(state)
 
@@ -792,8 +794,8 @@ class GCMC(BaseSimulator):
 
         if actual_iteration % self.save_every == 0:
             # Workaround to save the labels in Trajectory.info since ASE's Trajectory does not support custom arrays
-            if 'labels' in self.current_system.arrays.keys():
-                self.current_system.info['labels'] = self.current_system.get_array('labels')
+            if "labels" in self.current_system.arrays.keys():
+                self.current_system.info["labels"] = self.current_system.get_array("labels")
 
             self.trajectory.write(self.current_system)  # type: ignore
 

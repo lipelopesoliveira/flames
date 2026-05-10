@@ -8,7 +8,9 @@ set_num_threads(NUM_THREADS_TO_USE)
 
 
 @njit(fastmath=True)
-def compute_lj_numba(i_idx, j_idx, distances, sigma_vec, epsilon_vec, cutoff, shifted) -> tuple[float, np.ndarray]:
+def compute_lj_numba(
+    i_idx, j_idx, distances, sigma_vec, epsilon_vec, cutoff, shifted
+) -> tuple[float, np.ndarray]:
     total_energy = 0.0
     energies = np.zeros(len(sigma_vec))
 
@@ -26,7 +28,7 @@ def compute_lj_numba(i_idx, j_idx, distances, sigma_vec, epsilon_vec, cutoff, sh
         s_over_r = sig / r
         s3 = s_over_r * s_over_r * s_over_r
         s6 = s3 * s3
-        
+
         u = 4.0 * eps * (s6 * s6 - s6)
 
         if shifted:
@@ -43,73 +45,76 @@ def compute_lj_numba(i_idx, j_idx, distances, sigma_vec, epsilon_vec, cutoff, sh
 
     return total_energy, energies
 
-@njit(fastmath=True, inline='always')
+
+@njit(fastmath=True, inline="always")
 def fast_mic_sq(dx, dy, dz, cell, inv_cell) -> tuple[float, float, float]:
     """Fractional coordinate rounding. Fastest, but vulnerable to acute angles."""
     # Convert to fractional
     fx = dx * inv_cell[0, 0] + dy * inv_cell[1, 0] + dz * inv_cell[2, 0]
     fy = dx * inv_cell[0, 1] + dy * inv_cell[1, 1] + dz * inv_cell[2, 1]
     fz = dx * inv_cell[0, 2] + dy * inv_cell[1, 2] + dz * inv_cell[2, 2]
-    
+
     # Nearest image shift
     fx -= np.round(fx)
     fy -= np.round(fy)
     fz -= np.round(fz)
-    
+
     # Convert back to Cartesian
     rx = fx * cell[0, 0] + fy * cell[1, 0] + fz * cell[2, 0]
     ry = fx * cell[0, 1] + fy * cell[1, 1] + fz * cell[2, 1]
     rz = fx * cell[0, 2] + fy * cell[1, 2] + fz * cell[2, 2]
-    
-    return rx*rx + ry*ry + rz*rz
+
+    return rx * rx + ry * ry + rz * rz
 
 
-@njit(fastmath=True, inline='always')
+@njit(fastmath=True, inline="always")
 def robust_mic_sq(dx, dy, dz, cell) -> float:
     """27-image explicit search. Slower, but perfect for skewed triclinic cells."""
     min_r_sq = 1e20
-    
+
     for sx in range(-1, 2):
         for sy in range(-1, 2):
             for sz in range(-1, 2):
                 rx = dx + sx * cell[0, 0] + sy * cell[1, 0] + sz * cell[2, 0]
                 ry = dy + sx * cell[0, 1] + sy * cell[1, 1] + sz * cell[2, 1]
                 rz = dz + sx * cell[0, 2] + sy * cell[1, 2] + sz * cell[2, 2]
-                
-                r_sq = rx*rx + ry*ry + rz*rz
+
+                r_sq = rx * rx + ry * ry + rz * rz
                 if r_sq < min_r_sq:
                     min_r_sq = r_sq
-                    
+
     return min_r_sq
 
 
-@njit(fastmath=True,)
+@njit(
+    fastmath=True,
+)
 def numba_neighbor_list(positions, cell, inv_cell, cutoff, use_robust_mic=True):
     n = positions.shape[0]
     cutoff_sq = cutoff * cutoff
-    
+
     # Pre-allocate arrays
-    max_pairs = n * 200 
+    max_pairs = n * 200
     i_out = np.empty(max_pairs, dtype=np.int32)
     j_out = np.empty(max_pairs, dtype=np.int32)
     d_out = np.empty(max_pairs, dtype=np.float64)
-    
+
     idx = 0
-    
+
     for i in range(n):
         for j in range(i + 1, n):
-            
+
             # Raw distance vector
             dx = positions[j, 0] - positions[i, 0]
             dy = positions[j, 1] - positions[i, 1]
             dz = positions[j, 2] - positions[i, 2]
-            
+
             # --- The MIC Toggle ---
             if use_robust_mic:
                 r_sq = robust_mic_sq(dx, dy, dz, cell)
             else:
                 r_sq = fast_mic_sq(dx, dy, dz, cell, inv_cell)
-            
+
             # --- Cutoff & Array Management ---
             if r_sq <= cutoff_sq:
                 # Dynamic Reallocation (Safety Net)
@@ -118,30 +123,31 @@ def numba_neighbor_list(positions, cell, inv_cell, cutoff, use_robust_mic=True):
                     new_i = np.empty(max_pairs, dtype=np.int32)
                     new_j = np.empty(max_pairs, dtype=np.int32)
                     new_d = np.empty(max_pairs, dtype=np.float64)
-                    
+
                     new_i[:idx] = i_out[:idx]
                     new_j[:idx] = j_out[:idx]
                     new_d[:idx] = d_out[:idx]
-                    
+
                     i_out = new_i
                     j_out = new_j
                     d_out = new_d
-                    
+
                 d = np.sqrt(r_sq)
-                
+
                 # i -> j
                 i_out[idx] = i
                 j_out[idx] = j
                 d_out[idx] = d
                 idx += 1
-                
+
                 # j -> i
                 i_out[idx] = j
                 j_out[idx] = i
                 d_out[idx] = d
                 idx += 1
-                
+
     return i_out[:idx], j_out[:idx], d_out[:idx]
+
 
 class CustomLennardJones(Calculator):
     """
@@ -157,7 +163,7 @@ class CustomLennardJones(Calculator):
 
     ``r_ij = | r_j - r_i | = | d_ij |``
 
-   
+
     We have to ensure that the potential goes to zero smoothly as an atom moves
     across the cutoff threshold, otherwise the potential is not continuous.
     In cases where the cutoff is so large that u_ij is very small at the cutoff
@@ -169,7 +175,7 @@ class CustomLennardJones(Calculator):
 
     which ensures that it is precisely zero at the cutoff. However, this means
     that the energy effectively depends on the cutoff, which might lead to
-    unexpected results! 
+    unexpected results!
     """
 
     implemented_properties = ["energy", "energies"]
@@ -213,7 +219,7 @@ class CustomLennardJones(Calculator):
 
         if properties is None:
             properties = self.implemented_properties
-        
+
         Calculator.calculate(self, atoms, properties, system_changes)
 
         np.seterr(invalid="ignore")
@@ -225,7 +231,7 @@ class CustomLennardJones(Calculator):
                 for i, label in enumerate(self.atoms.arrays["labels"])  # type: ignore
             ]
         else:
-            labels = self.atoms.get_chemical_symbols() # type: ignore
+            labels = self.atoms.get_chemical_symbols()  # type: ignore
 
         sigma_vec = np.array([self.lj_params[s]["sigma"] for s in labels])
         epsilon_vec = np.array([self.lj_params[s]["epsilon"] * units.kB for s in labels])
@@ -235,21 +241,19 @@ class CustomLennardJones(Calculator):
         cell = self.atoms.cell.array  # type: ignore
 
         # Numba JIT Neighbor List
-        i, j, d = numba_neighbor_list(positions,
-                                      cell,
-                                      np.linalg.inv(cell),
-                                      self.vdw_cutoff,
-                                      use_robust_mic=True)
+        i, j, d = numba_neighbor_list(
+            positions, cell, np.linalg.inv(cell), self.vdw_cutoff, use_robust_mic=True
+        )
 
         # Numba JIT Energy Math
         total_e_k, atomic_e_k = compute_lj_numba(
-            i_idx=i, 
-            j_idx=j, 
-            distances=d, 
-            sigma_vec=sigma_vec, 
-            epsilon_vec=epsilon_vec, 
-            cutoff=self.vdw_cutoff, 
-            shifted=self.shifted
+            i_idx=i,
+            j_idx=j,
+            distances=d,
+            sigma_vec=sigma_vec,
+            epsilon_vec=epsilon_vec,
+            cutoff=self.vdw_cutoff,
+            shifted=self.shifted,
         )
 
         self.results["energy"] = total_e_k
