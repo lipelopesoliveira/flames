@@ -1,6 +1,6 @@
 # Changelog
 
-## v[0.4.6] - 2026-04-14 (Unreleased)
+## v[0.4.7] - 2026-04-14 (Unreleased)
 
 ### New Features 🎉
 
@@ -22,7 +22,7 @@
 
 ### Removed 🗑️
 
-## v[0.4.5] - 2026-04-14
+## v[0.4.6] - 2026-04-14
 
 ### New Features 🎉
 
