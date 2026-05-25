@@ -129,7 +129,7 @@ class CustomEwald(Calculator):
         # if the cell volume/shape changes (e.g., during NPT trial moves)
         self._cached_cell = None
         self.alpha = None
-        self.grid_limits = (None, None, None)
+        self.grid_limits = (1, 1, 1)
         self.recip_cell = None
         self.volume = None
 
@@ -177,7 +177,7 @@ class CustomEwald(Calculator):
         nx, ny, nz = self.grid_limits
 
         # 3. Real-Space Component
-        inv_cell = np.linalg.inv(cell)
+        # inv_cell = np.linalg.inv(cell)
         # i_idx, j_idx, distances = numba_neighbor_list(
         #    positions, cell, inv_cell, self.cutoff, use_robust_mic=True
         # )

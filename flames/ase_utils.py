@@ -223,9 +223,7 @@ def crystalOptimization(
     Space Group Number: {}
     Space Group Symbol: {}
     Lattice type: {}
-    """.format(
-                    symm.number, symm.international, atoms.cell.get_bravais_lattice().longname
-                ),
+    """.format(symm.number, symm.international, atoms.cell.get_bravais_lattice().longname),
                 file=out_file,
                 flush=True,
             )
