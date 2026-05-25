@@ -80,18 +80,18 @@ def compute_ewald_recip(positions, charges, recip_cell, nx, ny, nz, alpha, volum
     # A single flattened parallel loop for maximum load-balancing
     for idx in prange(total_k_points):
         # Mathematically unpack the 1D index back into 3D (h, k, l) coordinates
-        h = (idx // (dim_y * dim_z)) - nx
+        h_idx = (idx // (dim_y * dim_z)) - nx
         rem = idx % (dim_y * dim_z)
-        k = (rem // dim_z) - ny
-        l = (rem % dim_z) - nz
+        k_idx = (rem // dim_z) - ny
+        l_idx = (rem % dim_z) - nz
 
         # Skip the infinite self-interaction term at k=0
-        if h == 0 and k == 0 and l == 0:
+        if h_idx == 0 and k_idx == 0 and l_idx == 0:
             continue
 
-        kx = h * recip_cell[0, 0] + k * recip_cell[1, 0] + l * recip_cell[2, 0]
-        ky = h * recip_cell[0, 1] + k * recip_cell[1, 1] + l * recip_cell[2, 1]
-        kz = h * recip_cell[0, 2] + k * recip_cell[1, 2] + l * recip_cell[2, 2]
+        kx = h_idx * recip_cell[0, 0] + k_idx * recip_cell[1, 0] + l_idx * recip_cell[2, 0]
+        ky = h_idx * recip_cell[0, 1] + k_idx * recip_cell[1, 1] + l_idx * recip_cell[2, 1]
+        kz = h_idx * recip_cell[0, 2] + k_idx * recip_cell[1, 2] + l_idx * recip_cell[2, 2]
 
         k_sq = kx * kx + ky * ky + kz * kz
 
