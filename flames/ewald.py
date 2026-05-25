@@ -5,7 +5,7 @@ from ase import units
 from ase.calculators.calculator import Calculator, all_changes
 from numba import njit, prange
 
-from flames.lennard_jones import numba_neighbor_list
+# from flames.lennard_jones import numba_neighbor_list
 
 
 @njit(fastmath=True, parallel=True)
