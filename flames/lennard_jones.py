@@ -2,12 +2,13 @@ import numpy as np
 from ase import units
 from ase.calculators.calculator import Calculator, all_changes
 from numba import njit, set_num_threads
+from vesin import NeighborList
 
-NUM_THREADS_TO_USE = 4
+NUM_THREADS_TO_USE = 1
 set_num_threads(NUM_THREADS_TO_USE)
 
 
-@njit(fastmath=True)
+@njit(fastmath=True, parallel=False, cache=True)
 def compute_lj_numba(
     i_idx, j_idx, distances, sigma_vec, epsilon_vec, cutoff, shifted
 ) -> tuple[float, np.ndarray]:
@@ -241,9 +242,12 @@ class CustomLennardJones(Calculator):
         cell = self.atoms.cell.array  # type: ignore
 
         # Numba JIT Neighbor List
-        i, j, d = numba_neighbor_list(
-            positions, cell, np.linalg.inv(cell), self.vdw_cutoff, use_robust_mic=True
-        )
+        # i, j, d = numba_neighbor_list(
+        #    positions, cell, np.linalg.inv(cell), self.vdw_cutoff, use_robust_mic=True
+        # )
+
+        calculator = NeighborList(cutoff=self.vdw_cutoff, full_list=True)
+        i, j, d = calculator.compute(points=positions, box=cell, periodic=True, quantities="ijd")
 
         # Numba JIT Energy Math
         total_e_k, atomic_e_k = compute_lj_numba(
