@@ -74,6 +74,14 @@ def compute_gnp_precomputed(
 
 # --- ASE Calculator ---
 class CustomGNP(Calculator):
+    """
+    Custom Generalized Nonbonded Potential (GNP) calculator based on the ASE interface, based 
+    on the work of Luo and Goddard III, J. Chem. Theory Comput. 2025, 21, 1, 499-515.
+    DOI: 10.1021/acs.jctc.4c01435
+    
+    Energy is evaluated as:
+    E = exp(-(r - beta) / s) - C6 / (R^6 + r^6)
+    """
     implemented_properties = ["energy", "energies", "free_energy"]
     default_parameters = {
         "vdw_cutoff": 12.0,

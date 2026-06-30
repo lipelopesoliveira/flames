@@ -78,13 +78,12 @@ def compute_gnp_numba(
 # --- ASE Calculator ---
 class CustomGNP(Calculator):
     """
-    Custom Generalized Nonbonded Potential (GNP) calculator based on the ASE interface.
+    Custom Generalized Nonbonded Potential (GNP) calculator based on the ASE interface, based 
+    on the work of Luo and Goddard III, J. Chem. Theory Comput. 2025, 21, 1, 499-515.
+    DOI: 10.1021/acs.jctc.4c01435
     
     Energy is evaluated as:
     E = exp(-(r - beta) / s) - C6 / (R^6 + r^6)
-    
-    The internal calculation expects/computes kcal/mol but returns eV to comply
-    with standard ASE units.
     """
 
     implemented_properties = ["energy", "energies", "free_energy"]
