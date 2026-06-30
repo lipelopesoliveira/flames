@@ -22,9 +22,9 @@ class GNPParameters:
         atom_types = {element: TypeParameters(**params) for element, params in parameters_dict.items()}
         return cls(atom_type=atom_types)
 
-# --- Numba JIT Kernel (Precomputed + Half-List) ---
+# --- Numba JIT Kernel (Optimized) ---
 @njit(fastmath=True, parallel=False, cache=True)
-def compute_gnp_halflist(
+def compute_gnp_precomputed(
     i_idx, j_idx, distances, type_indices,
     s_mix_mat, beta_mix_mat, r_mix_mat, c6_mix_mat, u_shift_mat,
     shifted
@@ -34,12 +34,13 @@ def compute_gnp_halflist(
     n_atoms = len(type_indices)
     energies = np.zeros(n_atoms, dtype=np.float64)
 
-    # Loop over unique interacting pairs (half-list)
+    # Loop over all interacting pairs
     for k in range(len(i_idx)):
         i = i_idx[k]
         j = j_idx[k]
         r = distances[k]
 
+        # Get integer types for matrix lookup
         t_i = type_indices[i]
         t_j = type_indices[j]
 
@@ -64,14 +65,10 @@ def compute_gnp_halflist(
         if shifted:
             u -= u_shift_mat[t_i, t_j]
 
-        # --- No Double Counting Logic ---
-        # Add the full pairwise energy to the total system energy
-        total_energy += u
-        
-        # Split the pairwise energy equally between the two participating atoms
+        # Divide by 2 because the neighbor list includes both i->j and j->i
         u_half = u / 2.0
+        total_energy += u_half
         energies[i] += u_half
-        energies[j] += u_half
 
     return total_energy, energies
 
@@ -91,10 +88,11 @@ class CustomGNP(Calculator):
         self.vdw_cutoff = kwargs.get("vdw_cutoff", 12.0)
         self.shifted = kwargs.get("shifted", True)
         
-        # Cache for atom type indices
+        # Cache for atom type indices to avoid rebuilding arrays on every step
         self._cached_labels = None
         self._type_indices = None
 
+        # Precompute the math matrices during initialization
         self._precompute_matrices()
 
     def _precompute_matrices(self):
@@ -102,18 +100,22 @@ class CustomGNP(Calculator):
         labels = list(self.gnp_params.atom_type.keys())
         n_types = len(labels)
         
+        # Map string labels to integer IDs (e.g., "O" -> 0, "H" -> 1)
         self.label_to_id = {label: idx for idx, label in enumerate(labels)}
 
+        # Initialize matrices
         self.s_mix_mat = np.zeros((n_types, n_types), dtype=np.float64)
         self.beta_mix_mat = np.zeros((n_types, n_types), dtype=np.float64)
         self.R_mix_mat = np.zeros((n_types, n_types), dtype=np.float64)
         self.C6_mix_mat = np.zeros((n_types, n_types), dtype=np.float64)
         self.u_shift_mat = np.zeros((n_types, n_types), dtype=np.float64)
 
+        # Cutoff constants for shift calculation
         cutoff = self.vdw_cutoff
         rc3 = cutoff * cutoff * cutoff
         rc6 = rc3 * rc3
 
+        # Populate matrices with mixed parameters
         for i, lab_i in enumerate(labels):
             for j, lab_j in enumerate(labels):
                 pi = self.gnp_params.atom_type[lab_i]
@@ -138,6 +140,7 @@ class CustomGNP(Calculator):
                 
                 self.u_shift_mat[i, j] = e_pr_shift + e_ld_shift
 
+
     def calculate(self, atoms=None, properties=None, system_changes=all_changes):
         if properties is None:
             properties = self.implemented_properties
@@ -145,6 +148,7 @@ class CustomGNP(Calculator):
         Calculator.calculate(self, atoms, properties, system_changes)
         np.seterr(invalid="ignore")
 
+        # Use custom atom labels if available, otherwise fall back to chemical symbols
         if "labels" in self.atoms.arrays:  # type: ignore
             labels = [
                 self.atoms.symbols[i] if str(label) == "0" else label  # type: ignore
@@ -153,23 +157,25 @@ class CustomGNP(Calculator):
         else:
             labels = self.atoms.get_chemical_symbols()  # type: ignore
 
-        # Convert labels to integer array only if they change
+        # ---------------------------------------------------------------------
+        # Dynamic Caching: Convert labels to integer array only if they change
+        # ---------------------------------------------------------------------
         if self._cached_labels != labels:
             self._cached_labels = labels
             self._type_indices = np.array(
                 [self.label_to_id[sym] for sym in labels], dtype=np.int32
             )
 
+        # Extract positions and cell data
         positions = self.atoms.positions  # type: ignore
         cell = self.atoms.cell.array  # type: ignore
 
-        # --- IMPORTANT CHANGE: full_list=False ---
-        # Vesin will now only return unique i-j pairs (e.g., i < j)
-        calculator = NeighborList(cutoff=self.vdw_cutoff, full_list=False)
+        # Vesin Neighbor List calculation
+        calculator = NeighborList(cutoff=self.vdw_cutoff, full_list=True)
         i, j, d = calculator.compute(points=positions, box=cell, periodic=True, quantities="ijd")
 
-        # Numba JIT Energy Math
-        total_e_kcal, atomic_e_kcal = compute_gnp_halflist(
+        # Numba JIT Energy Math (returns kcal/mol)
+        total_e_kcal, atomic_e_kcal = compute_gnp_precomputed(
             i_idx=i,
             j_idx=j,
             distances=d,
@@ -185,6 +191,10 @@ class CustomGNP(Calculator):
         # Convert kcal/mol -> eV
         kcal_to_eV = units.kcal / units.mol
         
-        self.results["energy"] = total_e_kcal * kcal_to_eV
-        self.results["energies"] = atomic_e_kcal * kcal_to_eV
-        self.results["free_energy"] = self.results["energy"]
+        total_e_eV = total_e_kcal * kcal_to_eV
+        atomic_e_eV = atomic_e_kcal * kcal_to_eV
+
+        # Store in ASE results dictionary
+        self.results["energy"] = total_e_eV
+        self.results["energies"] = atomic_e_eV
+        self.results["free_energy"] = total_e_eV
