@@ -333,6 +333,11 @@ def read_cif(file_name: str, partial_charges_tag: str = "_atom_site_charge") -> 
     atom_site_frac = np.array([atom_site_fract_x, atom_site_fract_y, atom_site_fract_z]).T
 
     try:
+        atom_site_label = list(cif.find_values("_atom_site_label"))
+    except Exception:
+        atom_site_label = atom_site_type_symbol
+
+    try:
         partial_charges = np.array(cif.find_values(partial_charges_tag)).astype(float)
 
         if len(partial_charges) == 0:
@@ -346,5 +351,7 @@ def read_cif(file_name: str, partial_charges_tag: str = "_atom_site_charge") -> 
     )
 
     struc.set_initial_charges(partial_charges)
+
+    struc.arrays['labels'] = np.array(atom_site_label, dtype=object)
 
     return struc

@@ -136,7 +136,7 @@ class CustomGNP(Calculator):
                 for i, label in enumerate(self.atoms.arrays["labels"])  # type: ignore
             ]
         else:
-            labels = self.atoms.get_chemical_symbols()  # type: ignore
+            labels = self.atoms.info.get("labels", self.atoms.get_chemical_symbols())  # type: ignore
 
         # Dataclass Unpacking for Numba
         s_vec = np.array([self.gnp_params.atom_type[sym].s for sym in labels], dtype=np.float64)
