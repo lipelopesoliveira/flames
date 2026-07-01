@@ -1,30 +1,37 @@
+from dataclasses import dataclass
+
 import numpy as np
 from ase import units
 from ase.calculators.calculator import Calculator, all_changes
 from numba import njit
 from vesin import NeighborList
 
-from dataclasses import dataclass
 
 # --- User's Dataclass Definitions ---
 @dataclass(slots=True)
 class TypeParameters:
     """Class for storing element parameters."""
+
     s: float
     beta: float
     R: float
     C6: float
 
+
 @dataclass(slots=True)
 class GNPParameters:
     """Class for storing GNP parameters for multiple elements."""
+
     atom_type: dict[str, TypeParameters]
 
     @classmethod
-    def from_dict(cls, parameters_dict: dict[str, dict[str, float]]) -> 'GNPParameters':
+    def from_dict(cls, parameters_dict: dict[str, dict[str, float]]) -> "GNPParameters":
         """Create GNPParameters from a dictionary."""
-        atom_types = {element: TypeParameters(**params) for element, params in parameters_dict.items()}
+        atom_types = {
+            element: TypeParameters(**params) for element, params in parameters_dict.items()
+        }
         return cls(atom_type=atom_types)
+
 
 # --- Numba JIT Kernel ---
 @njit(fastmath=True, parallel=False, cache=True)
@@ -63,7 +70,7 @@ def compute_gnp_numba(
             rc3 = cutoff * cutoff * cutoff
             rc6 = rc3 * rc3
             e_ld_shift = -c6_mix / (R6 + rc6)
-            
+
             u_shift = e_pr_shift + e_ld_shift
             u -= u_shift
 
@@ -78,10 +85,10 @@ def compute_gnp_numba(
 # --- ASE Calculator ---
 class CustomGNP(Calculator):
     """
-    Custom Generalized Nonbonded Potential (GNP) calculator based on the ASE interface, based 
+    Custom Generalized Nonbonded Potential (GNP) calculator based on the ASE interface, based
     on the work of Luo and Goddard III, J. Chem. Theory Comput. 2025, 21, 1, 499-515.
     DOI: 10.1021/acs.jctc.4c01435
-    
+
     Energy is evaluated as:
     E = exp(-(r - beta) / s) - C6 / (R^6 + r^6)
     """
@@ -105,7 +112,7 @@ class CustomGNP(Calculator):
             Whether to shift the potential to zero at the cutoff. Default is True.
         """
         Calculator.__init__(self, **kwargs)
-        
+
         self.gnp_params: GNPParameters = gnp_parameters
         self.vdw_cutoff = kwargs.get("vdw_cutoff", 12.0)
         self.shifted = kwargs.get("shifted", True)
@@ -133,7 +140,9 @@ class CustomGNP(Calculator):
 
         # Dataclass Unpacking for Numba
         s_vec = np.array([self.gnp_params.atom_type[sym].s for sym in labels], dtype=np.float64)
-        beta_vec = np.array([self.gnp_params.atom_type[sym].beta for sym in labels], dtype=np.float64)
+        beta_vec = np.array(
+            [self.gnp_params.atom_type[sym].beta for sym in labels], dtype=np.float64
+        )
         r_vec = np.array([self.gnp_params.atom_type[sym].R for sym in labels], dtype=np.float64)
         c6_vec = np.array([self.gnp_params.atom_type[sym].C6 for sym in labels], dtype=np.float64)
 
@@ -160,7 +169,7 @@ class CustomGNP(Calculator):
 
         # Convert kcal/mol -> eV
         kcal_to_eV = units.kcal / units.mol
-        
+
         total_e_eV = total_e_kcal * kcal_to_eV
         atomic_e_eV = atomic_e_kcal * kcal_to_eV
 

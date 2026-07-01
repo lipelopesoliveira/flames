@@ -1,9 +1,11 @@
+from dataclasses import dataclass
+
 import numpy as np
 from ase import units
 from ase.calculators.calculator import Calculator, all_changes
 from numba import njit
 from vesin import NeighborList
-from dataclasses import dataclass
+
 
 # --- User's Dataclass Definitions ---
 @dataclass(slots=True)
@@ -13,23 +15,34 @@ class TypeParameters:
     R: float
     C6: float
 
+
 @dataclass(slots=True)
 class GNPParameters:
     atom_type: dict[str, TypeParameters]
 
     @classmethod
-    def from_dict(cls, parameters_dict: dict[str, dict[str, float]]) -> 'GNPParameters':
-        atom_types = {element: TypeParameters(**params) for element, params in parameters_dict.items()}
+    def from_dict(cls, parameters_dict: dict[str, dict[str, float]]) -> "GNPParameters":
+        atom_types = {
+            element: TypeParameters(**params) for element, params in parameters_dict.items()
+        }
         return cls(atom_type=atom_types)
+
 
 # --- Numba JIT Kernel (Optimized) ---
 @njit(fastmath=True, parallel=False, cache=True)
 def compute_gnp_precomputed(
-    i_idx, j_idx, distances, type_indices,
-    s_mix_mat, beta_mix_mat, r_mix_mat, c6_mix_mat, u_shift_mat,
-    shifted
+    i_idx,
+    j_idx,
+    distances,
+    type_indices,
+    s_mix_mat,
+    beta_mix_mat,
+    r_mix_mat,
+    c6_mix_mat,
+    u_shift_mat,
+    shifted,
 ) -> tuple[float, np.ndarray]:
-    
+
     total_energy = 0.0
     n_atoms = len(type_indices)
     energies = np.zeros(n_atoms, dtype=np.float64)
@@ -72,16 +85,18 @@ def compute_gnp_precomputed(
 
     return total_energy, energies
 
+
 # --- ASE Calculator ---
 class CustomGNP(Calculator):
     """
-    Custom Generalized Nonbonded Potential (GNP) calculator based on the ASE interface, based 
+    Custom Generalized Nonbonded Potential (GNP) calculator based on the ASE interface, based
     on the work of Luo and Goddard III, J. Chem. Theory Comput. 2025, 21, 1, 499-515.
     DOI: 10.1021/acs.jctc.4c01435
-    
+
     Energy is evaluated as:
     E = exp(-(r - beta) / s) - C6 / (R^6 + r^6)
     """
+
     implemented_properties = ["energy", "energies", "free_energy"]
     default_parameters = {
         "vdw_cutoff": 12.0,
@@ -91,11 +106,11 @@ class CustomGNP(Calculator):
 
     def __init__(self, gnp_parameters: GNPParameters, **kwargs):
         Calculator.__init__(self, **kwargs)
-        
+
         self.gnp_params: GNPParameters = gnp_parameters
         self.vdw_cutoff = kwargs.get("vdw_cutoff", 12.0)
         self.shifted = kwargs.get("shifted", True)
-        
+
         # Cache for atom type indices to avoid rebuilding arrays on every step
         self._cached_labels = None
         self._type_indices = None
@@ -107,7 +122,7 @@ class CustomGNP(Calculator):
         """Builds 2D arrays of pre-mixed parameters for instant Numba lookup."""
         labels = list(self.gnp_params.atom_type.keys())
         n_types = len(labels)
-        
+
         # Map string labels to integer IDs (e.g., "O" -> 0, "H" -> 1)
         self.label_to_id = {label: idx for idx, label in enumerate(labels)}
 
@@ -145,9 +160,8 @@ class CustomGNP(Calculator):
                 R6 = R3 * R3
                 e_pr_shift = np.exp(-(cutoff - beta_m) / s_m)
                 e_ld_shift = -c6_m / (R6 + rc6)
-                
-                self.u_shift_mat[i, j] = e_pr_shift + e_ld_shift
 
+                self.u_shift_mat[i, j] = e_pr_shift + e_ld_shift
 
     def calculate(self, atoms=None, properties=None, system_changes=all_changes):
         if properties is None:
@@ -170,9 +184,7 @@ class CustomGNP(Calculator):
         # ---------------------------------------------------------------------
         if self._cached_labels != labels:
             self._cached_labels = labels
-            self._type_indices = np.array(
-                [self.label_to_id[sym] for sym in labels], dtype=np.int32
-            )
+            self._type_indices = np.array([self.label_to_id[sym] for sym in labels], dtype=np.int32)
 
         # Extract positions and cell data
         positions = self.atoms.positions  # type: ignore
@@ -198,7 +210,7 @@ class CustomGNP(Calculator):
 
         # Convert kcal/mol -> eV
         kcal_to_eV = units.kcal / units.mol
-        
+
         total_e_eV = total_e_kcal * kcal_to_eV
         atomic_e_eV = atomic_e_kcal * kcal_to_eV
 
