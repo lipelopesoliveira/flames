@@ -352,6 +352,6 @@ def read_cif(file_name: str, partial_charges_tag: str = "_atom_site_charge") -> 
 
     struc.set_initial_charges(partial_charges)
 
-    struc.arrays['labels'] = np.array(atom_site_label, dtype=object)
+    struc.arrays["labels"] = np.array(atom_site_label, dtype=object)
 
     return struc
