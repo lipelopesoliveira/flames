@@ -10,12 +10,13 @@
 - Created a new `CustomLennardJones` calculator based on JIT for improved performance in calculating Lennard-Jones interactions.
 - Created a new `EwaldSum` calculator based on JIT for improved performance in calculating electrostatic interactions.
 - Add workarounds for loading and saving labels in ASE's Trajectory since it does not support custom arrays. Now the labels are saved in the `info` attribute of the Trajectory and loaded back into the Atoms object when reading the trajectory.
+- Create new `CustomGNP` calculator to implemente the Generalized Nonbonded Potential (GNP) based on the work of Luo and Goddard III, J. Chem. Theory Comput. 2025, 21, 1, 499-515.
 
 ### Fixed 🐛
 
 - Fixed a bug in the MD classes that was causing the `output_interval` and `movie_interval` parameters to be mixed up, resulting in incorrect logging intervals for the MD simulations. Now the `output_interval` is correctly used for logging the MD simulation data, while the `movie_interval` is used for controlling the frequency of snapshot saving.
 - Fixed a bug in the `BaseSimulator` class where the `set_state` method was not properly updating the current system state, which could lead to inconsistencies in the simulation. Now the `set_state` method correctly updates the current system state with the provided state, ensuring that the simulation runs with the correct configuration.
-- Handle better when the cif file does not have partial charges.
+- Improve behavior when the cif file does not have partial charges.
 - Fixed the LennardJones parameters for the `UFF` force field.
 
 ### Documentation 📖
