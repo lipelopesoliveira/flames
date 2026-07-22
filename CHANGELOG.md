@@ -11,6 +11,7 @@
 - Created a new `EwaldSum` calculator based on JIT for improved performance in calculating electrostatic interactions.
 - Add workarounds for loading and saving labels in ASE's Trajectory since it does not support custom arrays. Now the labels are saved in the `info` attribute of the Trajectory and loaded back into the Atoms object when reading the trajectory.
 - Create new `CustomGNP` calculator to implemente the Generalized Nonbonded Potential (GNP) based on the work of Luo and Goddard III, J. Chem. Theory Comput. 2025, 21, 1, 499-515.
+- Now a message is printed when the `GCMC` tries to restart a simulation from a trajectory file that is empty or corrupted. This message informs the user that the last state of the simulation cannot be loaded, and that the simulation will start from scratch.
 
 ### Fixed 🐛
 

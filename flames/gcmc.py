@@ -27,7 +27,7 @@ class GCMC(BaseSimulator):
     """
     Base class for Grand Canonical Monte Carlo (GCMC) simulations using ASE.
 
-    This class employs Monte Carlo simulations under the grand canonical ensemble (:math:`\mu VT`) to study the adsorption of molecules in a framework material.
+    This class employs Monte Carlo simulations under the grand canonical ensemble (:math:`μVT`) to study the adsorption of molecules in a framework material.
     It allows for movements such as insertion, deletion, translation, and rotation of adsorbate molecules within the framework.
 
     Currently, it supports any ASE-compatible calculator for energy calculations.
@@ -408,11 +408,13 @@ class GCMC(BaseSimulator):
 
         # Check if the len of all restart elements are the same:
         if not (len(uptake_restart) == len(total_energy_restart) == len(total_ads_restart)):
-            raise ValueError(f"""
+            raise ValueError(
+                f"""
             The lengths of uptake, total energy, and total adsorbates lists do not match.
             Please check the saved files.
             Found lengths: {len(uptake_restart)}, {len(total_energy_restart)}, {len(total_ads_restart)}
-            for uptake, total energy, and total ads respectively.""")
+            for uptake, total energy, and total ads respectively."""
+            )
 
         self.uptake_list = uptake_restart
         self.total_energy_list = total_energy_restart
@@ -423,7 +425,26 @@ class GCMC(BaseSimulator):
 
         self.logger.print_restart_info()
 
-        self.load_state(os.path.join(self.out_folder, "Movies", "Trajectory.traj"))
+        if os.path.exists(os.path.join(self.out_folder, "Movies", "Trajectory.traj")):
+            try:
+                self.load_state(os.path.join(self.out_folder, "Movies", "Trajectory.traj"))
+            except Exception as e:
+                self.logger._print(
+                    "=" * 76
+                    + "\n"
+                    + "WARNING: Error occurred while loading trajectory file:\n"
+                    + str(e) + "\n"
+                    + "Cannot load the last state of the simulation.\n"
+                    + "This is likely due to empty or corrupted trajectory file.\n"
+                    + "Simulation will start from scratch.\n"
+                    + "=" * 76
+                    + "\n"
+                )
+        else:
+            raise FileNotFoundError(
+                f"ERROR: Trajectory file '{os.path.join(self.out_folder, 'Movies', 'Trajectory.traj')}' does not exist. "
+                + "Cannot load the last state of the simulation."
+            )
 
     def load_state(self, state_file: str) -> None:
         """

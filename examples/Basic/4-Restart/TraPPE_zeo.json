@@ -1,0 +1,18 @@
+{
+    "O": {
+        "sigma": 3.30,
+        "epsilon": 53.0000
+    },
+    "Si": {
+        "sigma": 2.30,
+        "epsilon": 22.0000
+    },
+    "C_ch4": {
+        "sigma": 3.72,
+        "epsilon": 158.50000
+    },
+    "H_ch4": {
+        "sigma": 3.72,
+        "epsilon": 0.0
+    }
+}

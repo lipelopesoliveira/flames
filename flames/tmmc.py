@@ -11,10 +11,7 @@ from tqdm import tqdm
 from flames import VERSION
 from flames.base_simulator import BaseSimulator
 from flames.logger import TMMCLogger
-from flames.operations import (
-    check_overlap,
-    random_mol_insertion,
-)
+from flames.operations import check_overlap, random_mol_insertion
 
 
 class TMMC(BaseSimulator):
@@ -238,15 +235,19 @@ class TMMC(BaseSimulator):
 
         # Check if the len of all restart elements are the same:
         if self.n_adsorbates == 0 and len(del_energy_restart) != 0:
-            raise ValueError("""
+            raise ValueError(
+                """
             For 0 adsorbates the length of the deletion energy list should be zero.
-            Please check the saved files.""")
+            Please check the saved files."""
+            )
         elif self.n_adsorbates > 0 and len(del_energy_restart) != len(ins_energy_restart):
-            raise ValueError(f"""
+            raise ValueError(
+                f"""
             The lengths of insertion and deletion energy lists do not match.
             Please check the saved files.
             Found lengths: {len(ins_energy_restart)}, {len(del_energy_restart)}
-            for insertion, and deletion energy respectively.""")
+            for insertion, and deletion energy respectively."""
+            )
 
         self.total_ins_energy_list = ins_energy_restart
         self.total_del_energy_list = del_energy_restart
