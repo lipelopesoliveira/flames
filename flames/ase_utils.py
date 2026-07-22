@@ -369,7 +369,7 @@ def nVT_Berendsen(
             flush=True,
         )
 
-    dyn.attach(print_md_log, interval=movie_interval)
+    dyn.attach(print_md_log, interval=output_interval)
     dyn.attach(
         MDLogger(dyn, atoms, log_filename, header=True, stress=True, peratom=False, mode="a"),
         interval=output_interval,
@@ -498,7 +498,7 @@ def nPT_Berendsen(
         "compressibility_au": 1e-4 / units.bar,
         "taut": 10.0 * units.fs,
         "taup": 500.0 * units.fs,
-        "loginterval": output_interval,
+        "loginterval": movie_interval,
         "append_trajectory": True,
     }
     dyn_params.update(**kwargs)
@@ -569,7 +569,7 @@ def nPT_Berendsen(
             flush=True,
         )
 
-    dyn.attach(print_md_log, interval=movie_interval)
+    dyn.attach(print_md_log, interval=output_interval)
     dyn.attach(
         MDLogger(dyn, atoms, log_filename, header=True, stress=True, peratom=False, mode="a"),
         interval=output_interval,
@@ -681,7 +681,7 @@ def nPT_NoseHoover(
         "ttime": 25.0 * units.fs,
         "pfactor": (75.0 * units.fs) ** 2 * 30.0 * units.GPa,
         "externalstress": pressure * units.bar,
-        "loginterval": output_interval,
+        "loginterval": movie_interval,
         "append_trajectory": True,
     }
     dyn_params.update(**kwargs)
@@ -746,7 +746,7 @@ def nPT_NoseHoover(
             flush=True,
         )
 
-    dyn.attach(print_md_log, interval=movie_interval)
+    dyn.attach(print_md_log, interval=output_interval)
     dyn.attach(
         MDLogger(dyn, atoms, log_filename, header=True, stress=True, peratom=False, mode="a"),
         interval=output_interval,
@@ -862,7 +862,7 @@ def nPT_MTKNPT(
         "tloop": 1,
         "ploop": 1,
         "pressure_au": pressure * units.bar,
-        "loginterval": output_interval,
+        "loginterval": movie_interval,
         "append_trajectory": True,
     }
     dyn_params.update(**kwargs)
@@ -937,7 +937,7 @@ def nPT_MTKNPT(
             flush=True,
         )
 
-    dyn.attach(print_md_log, interval=movie_interval)
+    dyn.attach(print_md_log, interval=output_interval)
     dyn.attach(
         MDLogger(dyn, atoms, log_filename, header=True, stress=True, peratom=False, mode="a"),
         interval=output_interval,
