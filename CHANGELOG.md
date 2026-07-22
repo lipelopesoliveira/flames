@@ -1,5 +1,24 @@
 # Changelog
 
+## v[0.4.8] - 2026-07-22
+
+### New Features 🎉
+
+- Now it is possible to use a different calculator for the MD simulation in the `BaseSimulator` class. The `calculator` parameter can be provided to the `npt` and `nvt` methods, allowing users to specify a different calculator for energy calculations during the MD simulation. If not provided, the default model will be used.
+
+### Enhanced ✨
+
+### Fixed 🐛
+
+- Fixed a bug in the ase_utils.py file where the `output_interval` and `movie_interval` parameters were mixed up, resulting in incorrect logging intervals for the MD simulations. Now the `output_interval` is correctly used for logging the MD simulation data, while the `movie_interval` is used for controlling the frequency of snapshot saving.
+
+### Documentation 📖
+
+- Add an example on how to use a different calculator for the MD simulation in the `GCMC` class.
+
+### Removed 🗑️
+
+
 ## v[0.4.7] - 2026-07-22
 
 ### New Features 🎉
