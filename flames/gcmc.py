@@ -408,13 +408,11 @@ class GCMC(BaseSimulator):
 
         # Check if the len of all restart elements are the same:
         if not (len(uptake_restart) == len(total_energy_restart) == len(total_ads_restart)):
-            raise ValueError(
-                f"""
+            raise ValueError(f"""
             The lengths of uptake, total energy, and total adsorbates lists do not match.
             Please check the saved files.
             Found lengths: {len(uptake_restart)}, {len(total_energy_restart)}, {len(total_ads_restart)}
-            for uptake, total energy, and total ads respectively."""
-            )
+            for uptake, total energy, and total ads respectively.""")
 
         self.uptake_list = uptake_restart
         self.total_energy_list = total_energy_restart
@@ -433,7 +431,8 @@ class GCMC(BaseSimulator):
                     "=" * 76
                     + "\n"
                     + "WARNING: Error occurred while loading trajectory file:\n"
-                    + str(e) + "\n"
+                    + str(e)
+                    + "\n"
                     + "Cannot load the last state of the simulation.\n"
                     + "This is likely due to empty or corrupted trajectory file.\n"
                     + "Simulation will start from scratch.\n"
