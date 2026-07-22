@@ -31,6 +31,21 @@ tutorials/basic_isotherm
 ```{toctree}
 :maxdepth: 2
 :hidden:
+:caption: Tutorials: Intermediate
+
+```
+
+```{toctree}
+:maxdepth: 2
+:hidden:
+:caption: Tutorials: Advanced
+
+tutorials/advanced_hybrid_gcmc_md_mixed_calc
+```
+
+```{toctree}
+:maxdepth: 2
+:hidden:
 :caption: Theoretical Background
 
 theoretical_background/widom
