@@ -453,6 +453,7 @@ Start optimizing adsorbate structure...
         set_momenta: bool = True,
         output_interval: int = 100,
         movie_interval: int = 100,
+        calculator: calculator.Calculator | None = None,
         **kwargs,
     ):
         """
@@ -475,6 +476,8 @@ Start optimizing adsorbate structure...
             The interval for logging output (default is 100 steps).
         movie_interval : int, optional
             The interval for saving trajectory frames (default is 100 step).
+        calculator : ase.calculators.calculator.Calculator or None, optional
+            The calculator to use for energy calculations. If None, the default model will be used.
         kwargs : optional
             Arguments passed to the ase molecular dynamics class.
         """
@@ -482,11 +485,14 @@ Start optimizing adsorbate structure...
         allowed_modes = ["iso_shape", "aniso_shape", "aniso_flex"]
         assert mode in allowed_modes, f"Mode must be one of {allowed_modes}."
 
+        if not calculator:
+            calculator = self.model
+
         if (mode == "iso_shape" or mode == "aniso_shape") and driver == "Berendsen":
 
             new_state = nPT_Berendsen(
                 atoms=self.current_system,
-                model=self.model,
+                model=calculator,
                 temperature=self.T,
                 pressure=self.P * 1e-5,
                 time_step=time_step,
@@ -504,7 +510,7 @@ Start optimizing adsorbate structure...
 
             new_state = nPT_NoseHoover(
                 atoms=self.current_system,
-                model=self.model,
+                model=calculator,
                 temperature=self.T,
                 pressure=self.P * 1e-5,
                 time_step=time_step,
@@ -524,7 +530,7 @@ Start optimizing adsorbate structure...
 
             new_state = nPT_MTKNPT(
                 atoms=self.current_system,
-                model=self.model,
+                model=calculator,
                 temperature=self.T,
                 pressure=self.P * 1e-5,
                 time_step=time_step,
@@ -555,6 +561,7 @@ Start optimizing adsorbate structure...
         set_momenta: bool = True,
         output_interval: int = 100,
         movie_interval: int = 100,
+        calculator: calculator.Calculator | None = None,
         **kwargs,
     ):
         """
@@ -572,12 +579,17 @@ Start optimizing adsorbate structure...
             The interval for logging output (default is 100 steps).
         movie_interval : int, optional
             The interval for saving trajectory frames (default is 100 step).
+        calculator : ase.calculators.calculator.Calculator or None, optional
+            The calculator to use for energy calculations. If None, the default model will be used.
         kwargs : optional
             Arguments passed to the ase molecular dynamics class.
         """
+        if not calculator:
+            calculator = self.model
+
         new_state = nVT_Berendsen(
             atoms=self.current_system,
-            model=self.model,
+            model=calculator,
             temperature=self.T,
             time_step=time_step,
             num_md_steps=nsteps,
