@@ -1,0 +1,210 @@
+{
+    "H": {
+        "sigma": 2.84642,
+        "epsilon": 7.648938
+    },
+    "B": {
+        "sigma": 3.58141,
+        "epsilon": 47.8058
+    },
+    "C": {
+        "sigma": 3.47299,
+        "epsilon": 47.8562
+    },
+    "N": {
+        "sigma": 3.26256,
+        "epsilon": 38.9492
+    },
+    "O": {
+        "sigma": 3.03315,
+        "epsilon": 48.1581
+    },
+    "F": {
+        "sigma": 3.0932,
+        "epsilon": 36.4834
+    },
+    "P": {
+        "sigma": 3.69723,
+        "epsilon": 161.0303
+    },
+    "S": {
+        "sigma": 3.59032,
+        "epsilon": 173.1075
+    },
+    "Cl": {
+        "sigma": 3.51932,
+        "epsilon": 142.5621
+    },
+    "Ga": {
+        "sigma": 3.91105,
+        "epsilon": 201.2878
+    },
+    "Ge": {
+        "sigma": 3.80414,
+        "epsilon": 201.2878
+    },
+    "As": {
+        "sigma": 3.69723,
+        "epsilon": 206.32
+    },
+    "Se": {
+        "sigma": 3.59032,
+        "epsilon": 216.3844
+    },
+    "Br": {
+        "sigma": 3.51905,
+        "epsilon": 186.1912
+    },
+    "In": {
+        "sigma": 4.08923,
+        "epsilon": 276.7707
+    },
+    "Sn": {
+        "sigma": 3.98232,
+        "epsilon": 276.7708
+    },
+    "Sb": {
+        "sigma": 3.87541,
+        "epsilon": 276.7708
+    },
+    "Te": {
+        "sigma": 3.7685,
+        "epsilon": 286.8352
+    },
+    "I": {
+        "sigma": 3.69723,
+        "epsilon": 256.642
+    },
+    "He": {
+        "sigma": 2.64,
+        "epsilon": 10.9
+    },
+    "O_co2": {
+        "sigma": 3.05,
+        "epsilon": 79.0
+    },
+    "C_co2": {
+        "sigma": 2.8,
+        "epsilon": 27.0
+    },
+    "N_n2": {
+        "sigma": 3.306,
+        "epsilon": 38.298
+    },
+    "N_com": {
+        "sigma": 0.0,
+        "epsilon": 0.0
+    },
+    "O_o2": {
+        "sigma": 3.045,
+        "epsilon": 53.023
+    },
+    "O_com": {
+        "sigma": 0.0,
+        "epsilon": 0.0
+    },
+    "Ar": {
+        "sigma": 3.38,
+        "epsilon": 124.07
+    },
+    "CH4": {
+        "sigma": 3.73,
+        "epsilon": 148.0
+    },
+    "H_h2": {
+        "sigma": 0.0,
+        "epsilon": 0.0
+    },
+    "H_com": {
+        "sigma": 2.72,
+        "epsilon": 10.0
+    },
+    "C_co": {
+        "sigma": 3.636,
+        "epsilon": 16.141
+    },
+    "CO_com": {
+        "sigma": 0.0,
+        "epsilon": 0.0
+    },
+    "O_co": {
+        "sigma": 2.979,
+        "epsilon": 98.014
+    },
+    "Ow_T5ew": {
+        "sigma": 3.097,
+        "epsilon": 89.633
+    },
+    "Lw_T5ew": {
+        "sigma": 0.0,
+        "epsilon": 0.0
+    },
+    "Hw_T5ew": {
+        "sigma": 0.0,
+        "epsilon": 0.0
+    },
+    "Ow_T4ew": {
+        "sigma": 3.16435,
+        "epsilon": 81.89897
+    },
+    "Lw_T4ew": {
+        "sigma": 0.0,
+        "epsilon": 0.0
+    },
+    "Hw_T4ew": {
+        "sigma": 0.0,
+        "epsilon": 0.0
+    },
+    "Ow_T4": {
+        "sigma": 3.1536,
+        "epsilon": 77.99902
+    },
+    "Lw_T4": {
+        "sigma": 0.0,
+        "epsilon": 0.0
+    },
+    "Hw_T4": {
+        "sigma": 0.0,
+        "epsilon": 0.0
+    },
+    "Ow_T5": {
+        "sigma": 3.12,
+        "epsilon": 80.57
+    },
+    "Lw_T5": {
+        "sigma": 0.0,
+        "epsilon": 0.0
+    },
+    "Hw_T5": {
+        "sigma": 0.0,
+        "epsilon": 0.0
+    },
+    "S_so2": {
+        "sigma": 3.39,
+        "epsilon": 73.8
+    },
+    "O_so2": {
+        "sigma": 3.05,
+        "epsilon": 79.0
+    },
+    "C_ch4EH": {
+        "sigma": 3.31,
+        "epsilon": 0.01
+    },
+    "M_ch4EH": {
+        "sigma": 3.31,
+        "epsilon": 15.3
+    },
+    "H_ch4EH": {
+        "sigma": 0.0,
+        "epsilon": 0.0
+    },
+    "C_ch4UA": {
+        "sigma": 3.73,
+        "epsilon": 148.0
+    },
+    "H_ch4UA": {
+        "sigma": 0.0,
+        "epsilon": 0.0
+    }
+}
