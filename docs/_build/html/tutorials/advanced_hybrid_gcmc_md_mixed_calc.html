@@ -3,12 +3,12 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Transition Matrix Monte Carlo (TMMC) Simulation" href="tmmc.html"><link rel="prev" title="Widom test particle insertion method" href="widom.html">
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Widom test particle insertion method" href="../theoretical_background/widom.html"><link rel="prev" title="GCMC Adsorption Isotherm" href="basic_isotherm.html">
         <link rel="prefetch" href="../_static/logo-light-mode.png" as="image">
         <link rel="prefetch" href="../_static/logo-dark-mode.png" as="image">
 
     <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 9.1.0 and Furo 2025.09.25 -->
-        <title>Grand-Canonical Monte Carlo (GCMC) Simulation - FLAMES v0.4.8</title>
+        <title>Mixed calculators for GCMC/MD simulations - FLAMES v0.4.8</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=580074bf" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -204,20 +204,20 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Tutorials: Basic</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/basic_widom.html">Widom insertion</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/basic_gcmc.html">GCMC Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/basic_restart.html">Restarting Simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/basic_isotherm.html">GCMC Adsorption Isotherm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_widom.html">Widom insertion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_gcmc.html">GCMC Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_restart.html">Restarting Simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_isotherm.html">GCMC Adsorption Isotherm</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Tutorials: Advanced</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/advanced_hybrid_gcmc_md_mixed_calc.html">Mixed calculators for GCMC/MD simulations</a></li>
+<ul class="current">
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Mixed calculators for GCMC/MD simulations</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Theoretical Background</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="widom.html">Widom test particle insertion method</a></li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Grand-Canonical Monte Carlo (GCMC) Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tmmc.html">Transition Matrix Monte Carlo (TMMC) Simulation</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../theoretical_background/widom.html">Widom test particle insertion method</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../theoretical_background/gcmc.html">Grand-Canonical Monte Carlo (GCMC) Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../theoretical_background/tmmc.html">Transition Matrix Monte Carlo (TMMC) Simulation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Simulator Description</span></p>
 <ul>
@@ -252,7 +252,7 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="../_sources/theoretical_background/gcmc.rst.txt" title="View this page">
+  <a class="muted-link" href="../_sources/tutorials/advanced_hybrid_gcmc_md_mixed_calc.rst.txt" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
@@ -270,74 +270,119 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="grand-canonical-monte-carlo-gcmc-simulation">
-<h1>Grand-Canonical Monte Carlo (GCMC) Simulation<a class="headerlink" href="#grand-canonical-monte-carlo-gcmc-simulation" title="Link to this heading">¶</a></h1>
-<section id="brief-introduction-about-gcmc-simulation">
-<h2>Brief introduction about GCMC simulation<a class="headerlink" href="#brief-introduction-about-gcmc-simulation" title="Link to this heading">¶</a></h2>
-<p>In the Grand-Canonical ensemble, the volume <span class="math notranslate nohighlight">\(V\)</span>, the temperature <span class="math notranslate nohighlight">\(T\)</span>, and chemical potential <span class="math notranslate nohighlight">\(\mu\)</span> establish the thermodynamical equilibrium between the system and a bulk reservoir.
-The Metropolis Monte Carlo method can be used within the Grand-Canonical ensemble to simulate the adsorption of molecules on nanoporous materials.</p>
-<p>The configurational space can be evaluated throughout a set of random movements such as insertion, deletion, translation, and rotation. The acceptance probability rule for these movements to ensure a Boltzmann distribution of the states are:</p>
-<ul class="simple">
-<li><p>Insertion: A molecule is inserted into a random position</p></li>
-</ul>
-<div class="math-wrapper docutils container">
-<div class="math notranslate nohighlight">
-\[P_{acc}(N \rightarrow N+1) = \min \left[ 1, \frac{\beta f V}{N + 1} e^{-\beta \Delta U}\right]\]</div>
+          <section id="mixed-calculators-for-gcmc-md-simulations">
+<h1>Mixed calculators for GCMC/MD simulations<a class="headerlink" href="#mixed-calculators-for-gcmc-md-simulations" title="Link to this heading">¶</a></h1>
+<p>This example explores the use of different calculators for the GCMC and MD simulations.
+The GCMC simulation will use a classical force field (DREIDING) using the custom <cite>LennarJones</cite> calculator,
+while the MD simulation will use the <cite>mace</cite> calculator.
+This is useful when you want to introduce some dynamics in the system using a MLP calculator for the MD simulation,
+but you still want to use a classical force field calculator for the GCMC simulation.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This model is used here just as an example, you should look carefully into the mace documentation to undestand how the potential work and which one is the best for your specific case.</p>
 </div>
-<ul class="simple">
-<li><p>Deletion: A random molecule is deleted from the system</p></li>
-</ul>
-<div class="math-wrapper docutils container">
-<div class="math notranslate nohighlight">
-\[P_{acc}(N \rightarrow N - 1) = \min \left[ 1, \frac{N}{\beta f V} e^{-\beta \Delta U}\right]\]</div>
+<p>The script below will run the simulation at 298 K (25°C).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">ase</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.constraints</span><span class="w"> </span><span class="kn">import</span> <span class="n">FixBondLengths</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">vdw_radii</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">read</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mace.calculators</span><span class="w"> </span><span class="kn">import</span> <span class="n">mace_mp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numba</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_num_threads</span><span class="p">,</span> <span class="n">set_num_threads</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">flames.gcmc</span><span class="w"> </span><span class="kn">import</span> <span class="n">GCMC</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flames.lennard_jones</span><span class="w"> </span><span class="kn">import</span> <span class="n">CustomLennardJones</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flames.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_cif</span>
+
+<span class="n">NUM_THREADS_TO_USE</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">set_num_threads</span><span class="p">(</span><span class="n">NUM_THREADS_TO_USE</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">get_num_threads</span><span class="p">())</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;DREIDING.json&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">lj_params</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+
+<span class="n">calc1</span> <span class="o">=</span> <span class="n">CustomLennardJones</span><span class="p">(</span><span class="n">lj_params</span><span class="p">,</span> <span class="n">vdw_cutoff</span><span class="o">=</span><span class="mf">12.8</span><span class="p">,</span> <span class="n">shifted</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">calc2</span> <span class="o">=</span> <span class="n">mace_mp</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;medium-0b2&quot;</span><span class="p">,</span>
+    <span class="n">dispersion</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">damping</span><span class="o">=</span><span class="s2">&quot;zero&quot;</span><span class="p">,</span>  <span class="c1"># choices: [&quot;zero&quot;, &quot;bj&quot;, &quot;zerom&quot;, &quot;bjm&quot;]</span>
+    <span class="n">dispersion_xc</span><span class="o">=</span><span class="s2">&quot;pbe&quot;</span><span class="p">,</span>
+    <span class="n">default_dtype</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Load the framework structure</span>
+<span class="n">framework</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span> <span class="o">=</span> <span class="n">read_cif</span><span class="p">(</span><span class="s2">&quot;GZU-1.cif&quot;</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+<span class="c1"># Load the adsorbate structure</span>
+<span class="n">adsorbate</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="s2">&quot;ch4.xyz&quot;</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+<span class="n">c</span> <span class="o">=</span> <span class="n">FixBondLengths</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">]])</span>
+<span class="n">adsorbate</span><span class="o">.</span><span class="n">set_constraint</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+
+<span class="n">Temperature</span> <span class="o">=</span> <span class="mf">298.0</span>  <span class="c1"># in Kelvin</span>
+<span class="n">pressure</span> <span class="o">=</span> <span class="mi">1_000_000</span>  <span class="c1"># in Pa = 1 bar</span>
+<span class="n">MCSteps</span> <span class="o">=</span> <span class="mi">10_000</span>
+<span class="n">MDSteps</span> <span class="o">=</span> <span class="mi">10_000</span>
+
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;Running GCMC simulation for pressure: </span><span class="si">{</span><span class="n">pressure</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> Pa at temperature: </span><span class="si">{</span><span class="n">Temperature</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> K&quot;</span>
+<span class="p">)</span>
+
+<span class="n">gcmc</span> <span class="o">=</span> <span class="n">GCMC</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">calc1</span><span class="p">,</span>
+    <span class="n">framework_atoms</span><span class="o">=</span><span class="n">framework</span><span class="p">,</span>
+    <span class="n">adsorbate_atoms</span><span class="o">=</span><span class="n">adsorbate</span><span class="p">,</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="n">Temperature</span><span class="p">,</span>
+    <span class="n">pressure</span><span class="o">=</span><span class="n">pressure</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+    <span class="n">vdw_radii</span><span class="o">=</span><span class="n">vdw_radii</span><span class="p">,</span>
+    <span class="n">vdw_factor</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span>
+    <span class="n">save_frequency</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">output_to_file</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">cutoff_radius</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span>
+    <span class="n">automatic_supercell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">LLM</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">move_weights</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;insertion&quot;</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>
+        <span class="s2">&quot;deletion&quot;</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>
+        <span class="s2">&quot;translation&quot;</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>
+        <span class="s2">&quot;rotation&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;reinsertion&quot;</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">)</span>
+
+<span class="n">gcmc</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">print_header</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="n">gcmc</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">MCSteps</span><span class="p">)</span>
+    <span class="n">gcmc</span><span class="o">.</span><span class="n">npt</span><span class="p">(</span>
+        <span class="n">nsteps</span><span class="o">=</span><span class="n">MDSteps</span><span class="p">,</span>
+        <span class="n">time_step</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;aniso_flex&quot;</span><span class="p">,</span>
+        <span class="n">calculator</span><span class="o">=</span><span class="n">calc2</span><span class="p">,</span>
+        <span class="n">movie_interval</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">output_interval</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="n">gcmc</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">MCSteps</span><span class="p">)</span>
+<span class="n">gcmc</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">print_summary</span><span class="p">()</span>
+<span class="n">gcmc</span><span class="o">.</span><span class="n">save_results</span><span class="p">()</span>
+</pre></div>
 </div>
-<ul class="simple">
-<li><p>Rotation: A random molecule is rotated by a quaternion  $mathbf{q}$</p></li>
-</ul>
-<div class="math-wrapper docutils container">
-<div class="math notranslate nohighlight">
-\[P_{acc}(S \rightarrow S'_\mathbf{q}) = \min \left[ 1, e^{-\beta \Delta U}\right]\]</div>
-</div>
-<ul class="simple">
-<li><p>Translation: A random molecule is translated by a random vector $mathbf{vec{r}}$</p></li>
-</ul>
-<div class="math-wrapper docutils container">
-<div class="math notranslate nohighlight">
-\[P_{acc}(S \rightarrow S'_\mathbf{\vec{r}}) = \min \left[ 1, e^{-\beta \Delta U}\right]\]</div>
-</div>
-<ul class="simple">
-<li><p>Reinsertion: A random molecule is deleted and inserted into a new random position</p></li>
-</ul>
-<div class="math-wrapper docutils container">
-<div class="math notranslate nohighlight">
-\[P_{acc}(S \rightarrow S') = \min \left[ 1, e^{-\beta \Delta U}\right]\]</div>
-</div>
-<p>where <span class="math notranslate nohighlight">\(\Delta U\)</span> represents the difference on the potential energy between the old and new state, <span class="math notranslate nohighlight">\(N\)</span> the number of adsorbate particles on the system, <span class="math notranslate nohighlight">\(\beta = 1 / k_B T\)</span> the reciprocal thermodynamic temperature calculated based on the Boltzmann constant <span class="math notranslate nohighlight">\(k_B\)</span> and the absolute temperature <span class="math notranslate nohighlight">\(T\)</span>. More details on the implementation of these movements are provided on Supporting Information.</p>
-<p>The fugacity of the adsorbing species, <span class="math notranslate nohighlight">\(f\)</span>, is related to the chemical potential of the ideal reservoir as</p>
-<div class="math-wrapper docutils container">
-<div class="math notranslate nohighlight">
-\[f = \frac{q_{rot}}{\beta \Lambda ^ 3} e^{\beta \mu}, \quad  \Lambda = \left( \frac{\beta h^2}{2 \pi m}\right)^\frac{1}{2}\]</div>
-</div>
-<p>where <span class="math notranslate nohighlight">\(q_{rot}\)</span> is the rotational partition function for a single and rigid molecule, and <span class="math notranslate nohighlight">\(\Lambda\)</span> the thermal de Broglie wavelength, <span class="math notranslate nohighlight">\(h\)</span> is the planks constant, and <span class="math notranslate nohighlight">\(m\)</span> is the mass of the adsorbate molecule.</p>
-<p>The Grand-Canonical ensemble can be specified in a more convenient way as a function of the pressure <span class="math notranslate nohighlight">\(P\)</span>, instead of the chemical potential, by converting the pressure to fugacity using a fugacity coefficient <span class="math notranslate nohighlight">\(\phi\)</span> calculated based on an empirical equation of state (EOS), such as the Pen-Robinson, for example.autocite{peng1976new}</p>
-<p>The enthalpy of adsorption <span class="math notranslate nohighlight">\(\Delta H_{\text{ads}}\)</span> (or the heat of adsorption <span class="math notranslate nohighlight">\(q = -\Delta H_{\text{ads}}\)</span>) can be calculated as</p>
-<div class="math-wrapper docutils container">
-<div class="math notranslate nohighlight">
-\[\Delta H_{\text{ads}} = \left( \frac{\partial U}{\partial N}\right)_{V,T} - \langle U_g \rangle - \langle U_h \rangle - RT\]</div>
-</div>
-<p>where <span class="math notranslate nohighlight">\(U\)</span> represents the total energy of the system (framework and adsorbed molecules), <span class="math notranslate nohighlight">\(\langle U_g \rangle\)</span> is the average energy of a single molecule in the gas phase, <span class="math notranslate nohighlight">\(\langle U_h \rangle\)</span> is the average energy of the framework (host) system, <span class="math notranslate nohighlight">\(R\)</span> is the universal gas constant and <span class="math notranslate nohighlight">\(T\)</span> the temperature of the simulation.autocite{vlugt2008computing, torres2017behavior}</p>
-<p>The energy/particle fluctuations in the grand-canonical ensemble can be used to express the absolute differential energy (<span class="math notranslate nohighlight">\(\partial U/\partial N\)</span>) as a function of the averages of the total energy and number of molecules autocite{nicholson1982computer, myers2002thermodynamics, poursaeidesfahani2016computation} for a single component system as</p>
-<div class="math-wrapper docutils container">
-<div class="math notranslate nohighlight">
-\[\left( \frac{\partial U}{\partial N}\right)_{V,T} = \frac{\left( \frac{\partial U}{\partial \mu}\right)_{V,T}}{\left( \frac{\partial N}{\partial \mu}\right)_{V,T}} = \frac{\langle U \cdot N\rangle_\mu - \langle U \rangle_\mu \langle N\rangle_\mu}{\langle N^2\rangle_\mu - \langle N\rangle^2_\mu }\]</div>
-</div>
-<p>where <span class="math notranslate nohighlight">\(\langle \dots \rangle_\mu\)</span> represents the averages in the grand-canonical ensemble (<span class="math notranslate nohighlight">\(\mu\)</span> is the chemical potential), <span class="math notranslate nohighlight">\(N\)</span> is the number of adsorbates on the simulation box, and <span class="math notranslate nohighlight">\(U\)</span> is the total potential energy.</p>
-<p>In simulations where both the framework structure and the adsorbed molecules have rigid bonds, the total internal energy of the host and the isolated molecule, <span class="math notranslate nohighlight">\(U_h = U_g = 0\)</span>. Therefore, the enthalpy of adsorption can be calculated as</p>
-<div class="math-wrapper docutils container">
-<div class="math notranslate nohighlight">
-\[\Delta H = \frac{\langle U \cdot N\rangle_\mu - \langle U \rangle_\mu \langle N\rangle_\mu}{\langle N^2\rangle_\mu - \langle N\rangle^2_\mu } - RT\]</div>
-</div>
-<p>This approximation is widely used in GCMC simulations and it has been shown that for non-flexible frameworks it has only a small influence on the adsorption at low loading.</p>
+<hr class="docutils" />
+<section id="breaking-down-the-input-script">
+<h2>Breaking down the input script<a class="headerlink" href="#breaking-down-the-input-script" title="Link to this heading">¶</a></h2>
+<p>The script starts by importing the necessary libraries and modules, including ASE, MACE, and FLAMES. It then sets the number of threads to use for parallel processing.</p>
+<p>The <cite>calc1</cite> variable is initialized with the <cite>CustomLennardJones</cite> calculator using the DREIDING force field parameters,
+while <cite>calc2</cite> is initialized with the <cite>mace_mp</cite> calculator for the MD simulation.</p>
+<p>The <cite>for</cite> loop runs the GCMC simulation for a specified number of steps, followed by an NPT MD simulation using the MACE calculator.
+Note that for the <cite>GCMC</cite> simulation, the <cite>model</cite> parameter is set to <cite>calc1</cite>, while for the <cite>npt</cite> method, the <cite>calculator</cite> parameter is set to <cite>calc2</cite>.</p>
 </section>
 </section>
 
@@ -346,23 +391,23 @@ The Metropolis Monte Carlo method can be used within the Grand-Canonical ensembl
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="tmmc.html">
+          <a class="next-page" href="../theoretical_background/widom.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Transition Matrix Monte Carlo (TMMC) Simulation</div>
+                <div class="title">Widom test particle insertion method</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="widom.html">
+          <a class="prev-page" href="basic_isotherm.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Widom test particle insertion method</div>
+                <div class="title">GCMC Adsorption Isotherm</div>
                 
               </div>
             </a>
@@ -403,8 +448,8 @@ The Metropolis Monte Carlo method can be used within the Grand-Canonical ensembl
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">Grand-Canonical Monte Carlo (GCMC) Simulation</a><ul>
-<li><a class="reference internal" href="#brief-introduction-about-gcmc-simulation">Brief introduction about GCMC simulation</a></li>
+<li><a class="reference internal" href="#">Mixed calculators for GCMC/MD simulations</a><ul>
+<li><a class="reference internal" href="#breaking-down-the-input-script">Breaking down the input script</a></li>
 </ul>
 </li>
 </ul>
@@ -422,6 +467,5 @@ The Metropolis Monte Carlo method can be used within the Grand-Canonical ensembl
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
-    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     </body>
 </html>

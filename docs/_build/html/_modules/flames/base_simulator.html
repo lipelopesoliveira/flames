@@ -7,7 +7,7 @@
         <link rel="prefetch" href="../../_static/logo-dark-mode.png" as="image">
 
     <link rel="shortcut icon" href="../../_static/favicon.ico"><!-- Generated with Sphinx 9.1.0 and Furo 2025.09.25 -->
-        <title>flames.base_simulator - FLAMES v0.4.7</title>
+        <title>flames.base_simulator - FLAMES v0.4.8</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=580074bf" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">FLAMES v0.4.7</div></a>
+      <a href="../../index.html"><div class="brand">FLAMES v0.4.8</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -207,6 +207,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic_gcmc.html">GCMC Simulation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic_restart.html">Restarting Simulations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic_isotherm.html">GCMC Adsorption Isotherm</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials: Advanced</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/advanced_hybrid_gcmc_md_mixed_calc.html">Mixed calculators for GCMC/MD simulations</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Theoretical Background</span></p>
 <ul>
@@ -740,6 +744,7 @@
         <span class="n">set_momenta</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">output_interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
         <span class="n">movie_interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="n">calculator</span><span class="p">:</span> <span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -762,6 +767,8 @@
 <span class="sd">            The interval for logging output (default is 100 steps).</span>
 <span class="sd">        movie_interval : int, optional</span>
 <span class="sd">            The interval for saving trajectory frames (default is 100 step).</span>
+<span class="sd">        calculator : ase.calculators.calculator.Calculator or None, optional</span>
+<span class="sd">            The calculator to use for energy calculations. If None, the default model will be used.</span>
 <span class="sd">        kwargs : optional</span>
 <span class="sd">            Arguments passed to the ase molecular dynamics class.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -769,11 +776,14 @@
         <span class="n">allowed_modes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;iso_shape&quot;</span><span class="p">,</span> <span class="s2">&quot;aniso_shape&quot;</span><span class="p">,</span> <span class="s2">&quot;aniso_flex&quot;</span><span class="p">]</span>
         <span class="k">assert</span> <span class="n">mode</span> <span class="ow">in</span> <span class="n">allowed_modes</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Mode must be one of </span><span class="si">{</span><span class="n">allowed_modes</span><span class="si">}</span><span class="s2">.&quot;</span>
 
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">calculator</span><span class="p">:</span>
+            <span class="n">calculator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+
         <span class="k">if</span> <span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;iso_shape&quot;</span> <span class="ow">or</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;aniso_shape&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">driver</span> <span class="o">==</span> <span class="s2">&quot;Berendsen&quot;</span><span class="p">:</span>
 
             <span class="n">new_state</span> <span class="o">=</span> <span class="n">nPT_Berendsen</span><span class="p">(</span>
                 <span class="n">atoms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="p">,</span>
-                <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+                <span class="n">model</span><span class="o">=</span><span class="n">calculator</span><span class="p">,</span>
                 <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
                 <span class="n">pressure</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">*</span> <span class="mf">1e-5</span><span class="p">,</span>
                 <span class="n">time_step</span><span class="o">=</span><span class="n">time_step</span><span class="p">,</span>
@@ -791,7 +801,7 @@
 
             <span class="n">new_state</span> <span class="o">=</span> <span class="n">nPT_NoseHoover</span><span class="p">(</span>
                 <span class="n">atoms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="p">,</span>
-                <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+                <span class="n">model</span><span class="o">=</span><span class="n">calculator</span><span class="p">,</span>
                 <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
                 <span class="n">pressure</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">*</span> <span class="mf">1e-5</span><span class="p">,</span>
                 <span class="n">time_step</span><span class="o">=</span><span class="n">time_step</span><span class="p">,</span>
@@ -811,7 +821,7 @@
 
             <span class="n">new_state</span> <span class="o">=</span> <span class="n">nPT_MTKNPT</span><span class="p">(</span>
                 <span class="n">atoms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="p">,</span>
-                <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+                <span class="n">model</span><span class="o">=</span><span class="n">calculator</span><span class="p">,</span>
                 <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
                 <span class="n">pressure</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">*</span> <span class="mf">1e-5</span><span class="p">,</span>
                 <span class="n">time_step</span><span class="o">=</span><span class="n">time_step</span><span class="p">,</span>
@@ -845,6 +855,7 @@
         <span class="n">set_momenta</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">output_interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
         <span class="n">movie_interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="n">calculator</span><span class="p">:</span> <span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -862,12 +873,17 @@
 <span class="sd">            The interval for logging output (default is 100 steps).</span>
 <span class="sd">        movie_interval : int, optional</span>
 <span class="sd">            The interval for saving trajectory frames (default is 100 step).</span>
+<span class="sd">        calculator : ase.calculators.calculator.Calculator or None, optional</span>
+<span class="sd">            The calculator to use for energy calculations. If None, the default model will be used.</span>
 <span class="sd">        kwargs : optional</span>
 <span class="sd">            Arguments passed to the ase molecular dynamics class.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">calculator</span><span class="p">:</span>
+            <span class="n">calculator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+
         <span class="n">new_state</span> <span class="o">=</span> <span class="n">nVT_Berendsen</span><span class="p">(</span>
             <span class="n">atoms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="p">,</span>
-            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">calculator</span><span class="p">,</span>
             <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
             <span class="n">time_step</span><span class="o">=</span><span class="n">time_step</span><span class="p">,</span>
             <span class="n">num_md_steps</span><span class="o">=</span><span class="n">nsteps</span><span class="p">,</span>
@@ -922,7 +938,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=a78bb796"></script>
+</div><script src="../../_static/documentation_options.js?v=4f911454"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
