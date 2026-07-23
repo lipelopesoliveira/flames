@@ -96,7 +96,7 @@ class CustomGNP(Calculator):
     implemented_properties = ["energy", "energies", "free_energy"]
     default_parameters = {
         "vdw_cutoff": 12.0,
-        "shifted": True,
+        "shifted": False,
     }
     nolabel = True
 
@@ -109,13 +109,13 @@ class CustomGNP(Calculator):
         vdw_cutoff : float, optional
             Cutoff distance for the nonbonded interactions. Default is 12.0 Angstroms.
         shifted : bool, optional
-            Whether to shift the potential to zero at the cutoff. Default is True.
+            Whether to shift the potential to zero at the cutoff. Default is False.
         """
         Calculator.__init__(self, **kwargs)
 
         self.gnp_params: GNPParameters = gnp_parameters
         self.vdw_cutoff = kwargs.get("vdw_cutoff", 12.0)
-        self.shifted = kwargs.get("shifted", True)
+        self.shifted = kwargs.get("shifted", False)
 
     def calculate(
         self,
