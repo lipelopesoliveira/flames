@@ -214,7 +214,7 @@ class TMMC(BaseSimulator):
 
         print("Restarting simulation...")
 
-        ins_energy_restart, del_energy_restart = [], []
+        ins_energy_restart, del_energy_restart, volume_restart = [], [], []
 
         if os.path.exists(
             os.path.join(self.out_folder, f"ins_ernergy_{self.n_adsorbates:04d}.npy")
@@ -310,7 +310,7 @@ class TMMC(BaseSimulator):
 
     def _save_state(self, actual_iteration: int) -> None:
         if actual_iteration % self.save_every == 0:
-            self.trajectory.write(self._current_ins_atoms)
+            self.trajectory.write(self._current_ins_atoms)  # type: ignore
             np.save(
                 os.path.join(self.out_folder, f"ins_ernergy_{self.n_adsorbates:04d}.npy"),
                 np.array(self.total_ins_energy_list),
