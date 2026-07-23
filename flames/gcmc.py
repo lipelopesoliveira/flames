@@ -572,7 +572,6 @@ class GCMC(BaseSimulator):
             + "Expected a non-negative integer."
         )
 
-
         eq_results = pymser.equilibrate(
             self.uptake_list[equilibration_steps:],
             LLM=LLM,
@@ -1134,8 +1133,8 @@ class GCMC(BaseSimulator):
         """
 
         move = self.rnd_generator.choice(
-                a=list(self.move_weights.keys()), p=list(self.move_weights.values())
-            )
+            a=list(self.move_weights.keys()), p=list(self.move_weights.values())
+        )
 
         return move
 

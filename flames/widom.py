@@ -186,7 +186,9 @@ class Widom(BaseSimulator):
             float: The Henry coefficient in mol kg-1 Pa-1
         """
 
-        return self.beta * self.boltz_fac.mean() * units.J / (units.mol * self.framework_density * 1e3)
+        return (
+            self.beta * self.boltz_fac.mean() * units.J / (units.mol * self.framework_density * 1e3)
+        )
 
     def _compute_kH_std(self, n: int = 5) -> float:
         """
@@ -227,9 +229,10 @@ class Widom(BaseSimulator):
         -------
             float: The Qst energy in kJ/mol
         """
-        return ((self.int_energy_list * self.boltz_fac).mean() / self.boltz_fac.mean() - units.kB * self.T) / (
-            units.kJ / units.mol
-        )
+        return (
+            (self.int_energy_list * self.boltz_fac).mean() / self.boltz_fac.mean()
+            - units.kB * self.T
+        ) / (units.kJ / units.mol)
 
     def _compute_Qst_std(self, n: int = 5) -> float:
         """

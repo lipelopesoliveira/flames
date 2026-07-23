@@ -204,7 +204,7 @@ class CustomLennardJones(Calculator):
             Cutoff distance for the van der Waals interactions.
             Default is 12.0 Angstroms.
         shifted : bool, optional
-            Whether to apply a shift to the potential 
+            Whether to apply a shift to the potential
             to ensure it goes to zero at the cutoff.
         """
 
@@ -250,16 +250,8 @@ class CustomLennardJones(Calculator):
         # )
 
         # Vesin Neighbor List (faster than Numba JIT, but requires vesin package)
-        calculator = NeighborList(
-            cutoff=self.vdw_cutoff,
-            full_list=True
-            )
-        i, j, d = calculator.compute(
-            points=positions,
-            box=cell,
-            periodic=True,
-            quantities="ijd"
-            )
+        calculator = NeighborList(cutoff=self.vdw_cutoff, full_list=True)
+        i, j, d = calculator.compute(points=positions, box=cell, periodic=True, quantities="ijd")
 
         # Numba JIT Energy Math
         total_e_k, atomic_e_k = compute_lj_numba(
