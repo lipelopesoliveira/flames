@@ -15,7 +15,6 @@ from flames.base_simulator import BaseSimulator
 from flames.eos import PengRobinsonEOS
 from flames.logger import GCMCLogger
 from flames.operations import (
-    check_overlap,
     check_overlap_vesin,
     random_mol_insertion,
     random_rotation_limited,
