@@ -17,6 +17,7 @@ dependencies:
   - gemmi
   - pip:
     - pymser
+    - vesin
     - cuequivariance-torch
     - mace-torch
     - torch-dftd
