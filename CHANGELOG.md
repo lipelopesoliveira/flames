@@ -1,5 +1,19 @@
 # Changelog
 
+## v[0.4.9] - 2026-07-23
+
+### New Features 🎉
+
+### Enhanced ✨
+
+### Fixed 🐛
+
+- Now the default value for `shifted` parameter in the `CustomLennardJones` calculator is set to `False`. This change ensures that the Lennard-Jones potential is not shifted by default, which may be more appropriate for certain simulations. Users can still set this parameter to `True` if they wish to apply a shift to the potential.
+
+### Documentation 📖
+
+### Removed 🗑️
+
 ## v[0.4.8] - 2026-07-22
 
 ### New Features 🎉
@@ -17,7 +31,6 @@
 - Add an example on how to use a different calculator for the MD simulation in the `GCMC` class.
 
 ### Removed 🗑️
-
 
 ## v[0.4.7] - 2026-07-22
 
