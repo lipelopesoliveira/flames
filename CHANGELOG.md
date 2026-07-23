@@ -8,7 +8,7 @@
 
 ### Fixed 🐛
 
-- Now the default value for `shifted` parameter in the `CustomLennardJones` calculator is set to `False`. This change ensures that the Lennard-Jones potential is not shifted by default, which may be more appropriate for certain simulations. Users can still set this parameter to `True` if they wish to apply a shift to the potential.
+- Now the default value for `shifted` parameter in the `CustomLennardJones` and `CustomGNP` calculators is set to `False`. This change ensures that the Lennard-Jones and GNP potentials are not shifted by default, which may be more appropriate for certain simulations. Users can still set this parameter to `True` if they wish to apply a shift to the potential.
 
 ### Documentation 📖
 
