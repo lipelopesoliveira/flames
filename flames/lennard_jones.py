@@ -185,7 +185,7 @@ class CustomLennardJones(Calculator):
         "sigma": 1.0,
         "rc": None,
         "ro": None,
-        "smooth": False,
+        "shifted": False,
     }
     nolabel = True
 
@@ -203,13 +203,16 @@ class CustomLennardJones(Calculator):
         vdw_cutoff : float, optional
             Cutoff distance for the van der Waals interactions.
             Default is 12.0 Angstroms.
+        shifted : bool, optional
+            Whether to apply a shift to the potential 
+            to ensure it goes to zero at the cutoff.
         """
 
         Calculator.__init__(self, **kwargs)
 
         self.lj_params: dict = lj_parameters
         self.vdw_cutoff = kwargs.get("vdw_cutoff", 12.0)
-        self.shifted = kwargs.get("shifted", True)
+        self.shifted = kwargs.get("shifted", False)
 
     def calculate(
         self,
@@ -246,8 +249,17 @@ class CustomLennardJones(Calculator):
         #    positions, cell, np.linalg.inv(cell), self.vdw_cutoff, use_robust_mic=True
         # )
 
-        calculator = NeighborList(cutoff=self.vdw_cutoff, full_list=True)
-        i, j, d = calculator.compute(points=positions, box=cell, periodic=True, quantities="ijd")
+        # Vesin Neighbor List (faster than Numba JIT, but requires vesin package)
+        calculator = NeighborList(
+            cutoff=self.vdw_cutoff,
+            full_list=True
+            )
+        i, j, d = calculator.compute(
+            points=positions,
+            box=cell,
+            periodic=True,
+            quantities="ijd"
+            )
 
         # Numba JIT Energy Math
         total_e_k, atomic_e_k = compute_lj_numba(
