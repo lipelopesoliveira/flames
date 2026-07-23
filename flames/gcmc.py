@@ -186,7 +186,6 @@ class GCMC(BaseSimulator):
         criticalPressure: float | None = None,
         acentricFactor: float | None = None,
         void_fraction: float = 0.0,
-        LLM: bool = False,
         move_weights: dict = {
             "insertion": 0.20,
             "deletion": 0.20,
