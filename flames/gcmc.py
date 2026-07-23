@@ -280,9 +280,6 @@ class GCMC(BaseSimulator):
         # Dictionary to store the equilibrated results by pyMSER
         self.equilibrated_results: dict = {}
 
-        # Uses Leftmost Local Minima
-        self.LLM = LLM
-
     @property
     def move_weights(self) -> dict:
         """
@@ -533,16 +530,19 @@ class GCMC(BaseSimulator):
 
     def equilibrate(
         self,
+        equilibration_steps: int = 0,
+        LLM: bool = True,
         batch_size: int | bool = False,
         run_ADF: bool = False,
         uncertainty: str = "uSD",
-        production_start: int = 0,
     ) -> None:
         """
         Use pyMSER to get the equilibrated statistics of the simulation.
 
         Parameters
         ----------
+        equilibration_steps : int
+            Number of steps to use for equilibration. Default is 0.
         LLM : bool
             If True, use the Leftmost-Local Minima (LLM) method to determine the equilibration time.
             This is only recommended for high-throughput simulations, and sometimes can underestimate
@@ -560,16 +560,24 @@ class GCMC(BaseSimulator):
             - "uSE": uncorrelated Standard Error
             - "SD": Standard Deviation
             - "SE": Standard Error
-        production_start : int
-            The step to start the production analysis from. Default is 0.
-
         """
 
+        assert uncertainty in ["uSD", "uSE", "SD", "SE"], (
+            f"Invalid uncertainty type: {uncertainty}. "
+            + "Valid options are: 'uSD', 'uSE', 'SD', 'SE'."
+        )
+
+        assert isinstance(equilibration_steps, int) and equilibration_steps >= 0, (
+            f"Invalid type for equilibration_steps: {type(equilibration_steps)}. "
+            + "Expected a non-negative integer."
+        )
+
+
         eq_results = pymser.equilibrate(
-            self.uptake_list[production_start:],
-            LLM=self.LLM,
+            self.uptake_list[equilibration_steps:],
+            LLM=LLM,
             batch_size=(
-                int(len(self.uptake_list[production_start:]) / 50)
+                int(len(self.uptake_list[equilibration_steps:]) / 50)
                 if batch_size is False
                 else batch_size
             ),
@@ -579,21 +587,22 @@ class GCMC(BaseSimulator):
         )
 
         enthalpy, enthalpy_sd = pymser.calc_equilibrated_enthalpy(
-            energy=np.array(self.total_ads_list[production_start:]) / units.kB,  # Convert to K
-            number_of_molecules=self.uptake_list[production_start:],
+            energy=np.array(self.total_ads_list[equilibration_steps:]) / units.kB,  # Convert to K
+            number_of_molecules=self.uptake_list[equilibration_steps:],
             temperature=self.T,
             eq_index=eq_results["t0"],
             uncertainty="SD",
             ac_time=int(eq_results["ac_time"]),
         )
 
+        eq_results["LLM"] = LLM
         eq_results["average"] = float(eq_results["average"])
         eq_results["uncertainty"] = float(eq_results["uncertainty"])
         eq_results["ac_time"] = int(eq_results["ac_time"])
         eq_results["uncorr_samples"] = int(eq_results["uncorr_samples"])
 
         eq_results["equilibrated"] = eq_results["t0"] < 0.75 * len(
-            self.uptake_list[production_start:]
+            self.uptake_list[equilibration_steps:]
         )
 
         eq_results["enthalpy_kJ_per_mol"] = float(enthalpy)
@@ -655,7 +664,7 @@ class GCMC(BaseSimulator):
                 / 3600,
             },
             "equilibration": {
-                "LLM": self.LLM,
+                "LLM": self.equilibrated_results.get("LLM", False),
                 "t0": int(self.equilibrated_results.get("t0", 0)),
                 "average": self.equilibrated_results.get("average", None),
                 "uncertainty": self.equilibrated_results.get("uncertainty", None),
