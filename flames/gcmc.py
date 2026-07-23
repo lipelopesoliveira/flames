@@ -1133,11 +1133,7 @@ class GCMC(BaseSimulator):
         move: str
         """
 
-        if self.n_adsorbates == 0:
-            move = "insertion"
-
-        else:
-            move = self.rnd_generator.choice(
+        move = self.rnd_generator.choice(
                 a=list(self.move_weights.keys()), p=list(self.move_weights.values())
             )
 
