@@ -62,7 +62,6 @@ gcmc = GCMC(
     output_to_file=True,
     cutoff_radius=8.0,
     automatic_supercell=True,
-    LLM=False,
     move_weights={
         "insertion": 0.25,
         "deletion": 0.25,
@@ -84,7 +83,6 @@ for j in range(5):
         movie_interval=1,
         output_interval=1000,
     )
-
 
 gcmc.run(MCSteps)
 gcmc.logger.print_summary()

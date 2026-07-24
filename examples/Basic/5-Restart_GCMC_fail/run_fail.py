@@ -31,7 +31,6 @@ gcmc = GCMC(
     output_to_file=True,
     cutoff_radius=12.0,
     automatic_supercell=True,
-    LLM=False,
     move_weights={
         "insertion": 0.333,
         "deletion": 0.333,
