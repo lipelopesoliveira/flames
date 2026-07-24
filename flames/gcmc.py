@@ -15,7 +15,7 @@ from flames.base_simulator import BaseSimulator
 from flames.eos import PengRobinsonEOS
 from flames.logger import GCMCLogger
 from flames.operations import (
-    check_overlap,
+    check_overlap_vesin,
     random_mol_insertion,
     random_rotation_limited,
     random_translation,
@@ -503,7 +503,7 @@ class GCMC(BaseSimulator):
             n_attempts += 1
             atoms_trial = random_mol_insertion(temp_system, self.adsorbate, self.rnd_generator)
 
-            overlaped = check_overlap(
+            overlaped = check_overlap_vesin(
                 atoms=atoms_trial,
                 group1_indices=np.arange(len(temp_system)),
                 group2_indices=np.arange(len(temp_system), len(atoms_trial)),
@@ -570,7 +570,6 @@ class GCMC(BaseSimulator):
             f"Invalid type for equilibration_steps: {type(equilibration_steps)}. "
             + "Expected a non-negative integer."
         )
-
 
         eq_results = pymser.equilibrate(
             self.uptake_list[equilibration_steps:],
@@ -855,7 +854,7 @@ class GCMC(BaseSimulator):
 
         atoms_trial = random_mol_insertion(self.current_system, self.adsorbate, self.rnd_generator)
 
-        overlaped = check_overlap(
+        overlaped = check_overlap_vesin(
             atoms=atoms_trial,
             group1_indices=np.arange(len(self.current_system)),
             group2_indices=np.arange(len(self.current_system), len(atoms_trial)),
@@ -968,7 +967,7 @@ class GCMC(BaseSimulator):
             # Try at least 1000 times to insert the molecule without overlap
             temp = random_mol_insertion(atoms_trial, self.adsorbate, self.rnd_generator)
 
-            overlaped = check_overlap(
+            overlaped = check_overlap_vesin(
                 atoms=temp,
                 group1_indices=np.arange(len(atoms_trial)),
                 group2_indices=np.arange(len(atoms_trial), stop=len(temp)),
@@ -1034,7 +1033,7 @@ class GCMC(BaseSimulator):
 
         atoms_trial.set_positions(pos)  # type: ignore
 
-        overlaped = check_overlap(
+        overlaped = check_overlap_vesin(
             atoms=atoms_trial,
             group1_indices=np.concatenate(
                 [np.arange(0, i_start), np.arange(i_end, len(atoms_trial))]
@@ -1093,7 +1092,7 @@ class GCMC(BaseSimulator):
         )
         atoms_trial.set_positions(pos)  # type: ignore
 
-        overlaped = check_overlap(
+        overlaped = check_overlap_vesin(
             atoms=atoms_trial,
             group1_indices=np.concatenate(
                 [np.arange(0, i_start), np.arange(i_end, len(atoms_trial))]
@@ -1133,8 +1132,8 @@ class GCMC(BaseSimulator):
         """
 
         move = self.rnd_generator.choice(
-                a=list(self.move_weights.keys()), p=list(self.move_weights.values())
-            )
+            a=list(self.move_weights.keys()), p=list(self.move_weights.values())
+        )
 
         return move
 

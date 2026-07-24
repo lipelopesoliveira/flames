@@ -30,7 +30,8 @@ dependencies = [
   "gemmi",
   "simplejson",
   "torch-dftd",
-  "pymser"
+  "pymser",
+  "vesin"
 ]
 license = {file = "LICENSE"}
 
@@ -60,7 +61,8 @@ dev = [
     "sphinx-copybutton",
     "sphinx-autobuild",
     "sphinx-autodoc-typehints==3.0.1",
-    "packaging"
+    "packaging",
+    "vesin"
 ]
 
 [tool.setuptools.packages.find]
