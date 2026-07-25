@@ -145,11 +145,6 @@ class GCMC(BaseSimulator):
         Void fraction of the adsorbate.
     :type void_fraction: float, optional
 
-    :param LLM:
-        Use Leftmost Local Minima (LLM) on the determination of the equilibration point by `pyMSER <https://github.com/lipelopesoliveira/pyMSER>`_.
-        This can underestimate the equilibration point in some situations, but generate good averages for well-behaved scenarios.
-    :type LLM: bool, optional
-
     :param move_weights:
         A dictionary containing the move weights for ``'insertion'``, ``'deletion'``, ``'translation'``, ``'rotation'``, and ``'reinsertion'``.
         Default is equal weights for all moves.
@@ -530,7 +525,7 @@ class GCMC(BaseSimulator):
     def equilibrate(
         self,
         equilibration_steps: int = 0,
-        LLM: bool = True,
+        LLM: bool = False,
         batch_size: int | bool = False,
         run_ADF: bool = False,
         uncertainty: str = "uSD",
@@ -543,10 +538,11 @@ class GCMC(BaseSimulator):
         equilibration_steps : int
             Number of steps to use for equilibration. Default is 0.
         LLM : bool
-            If True, use the Leftmost-Local Minima (LLM) method to determine the equilibration time.
-            This is only recommended for high-throughput simulations, and sometimes can underestimate
-            the true equilibration point.
-            Default is True.
+            If True, use tLeftmost Local Minima (LLM) on the determination of the equilibration point
+            by `pyMSER <https://github.com/lipelopesoliveira/pyMSER>`_.
+            his can underestimate the equilibration point in some situations,
+            but generate good averages for well-behaved scenarios.
+            Default is False.
         batch_size : int
             Batch size to use for speedup the equilibration process. Default is 100.
         run_ADF : bool
