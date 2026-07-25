@@ -273,8 +273,7 @@ def check_overlap(
     This function is more efficient as it calculates a distance matrix between
     the two groups in a single call rather than looping.
 
-    This function takes between 1 to 10 ms to evaluate the structure and has O(N) complexity.
-
+    This function is now a legacy method and will be deprecated in favor of the faster check_overlap_vesin function.
     Parameters:
     ----------
         atoms (ase.Atoms):
