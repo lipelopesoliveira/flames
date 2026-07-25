@@ -1,4 +1,5 @@
 import ase
+import math
 import numpy as np
 from scipy.spatial.transform import Rotation
 from vesin import NeighborList
@@ -35,7 +36,8 @@ def randon_unit_vector_sphere_marsaglia(rnd_generator: np.random.Generator) -> n
         Random vector in cartesian coordinates
     """
 
-    random = rnd_generator.random  # local alias for speed
+    random = rnd_generator.random
+
     while True:
         z1 = 2.0 * random() - 1.0
         z2 = 2.0 * random() - 1.0
@@ -43,10 +45,13 @@ def randon_unit_vector_sphere_marsaglia(rnd_generator: np.random.Generator) -> n
         if S < 1.0:
             break
 
-    scale = np.sqrt(1.0 - S)
-    return np.fromiter(
-        (2.0 * z1 * scale, 2.0 * z2 * scale, 1.0 - 2.0 * S), dtype=np.float64, count=3
-    )
+    scale = math.sqrt(1.0 - S)
+
+    return np.array([
+        2.0 * z1 * scale, 
+        2.0 * z2 * scale, 
+        1.0 - 2.0 * S
+    ], dtype=np.float64)
 
 
 def random_rotation(
