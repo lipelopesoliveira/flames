@@ -14,7 +14,7 @@ dependencies:
   - pymatgen
   - tqdm
   - simplejson
-  - gemmi
+  - numba
   - pip:
     - pymser
     - vesin
