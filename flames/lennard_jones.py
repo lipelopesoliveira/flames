@@ -240,18 +240,13 @@ class CustomLennardJones(Calculator):
         sigma_vec = np.array([self.lj_params[s]["sigma"] for s in labels])
         epsilon_vec = np.array([self.lj_params[s]["epsilon"] * units.kB for s in labels])
 
-        # Extract positions and cell data as raw NumPy arrays
-        positions = self.atoms.positions  # type: ignore
-        cell = self.atoms.cell.array  # type: ignore
-
-        # Numba JIT Neighbor List
-        # i, j, d = numba_neighbor_list(
-        #    positions, cell, np.linalg.inv(cell), self.vdw_cutoff, use_robust_mic=True
-        # )
-
         # Vesin Neighbor List (faster than Numba JIT, but requires vesin package)
-        calculator = NeighborList(cutoff=self.vdw_cutoff, full_list=True)
-        i, j, d = calculator.compute(points=positions, box=cell, periodic=True, quantities="ijd")
+        neighbor_calculator = NeighborList(cutoff=self.vdw_cutoff, full_list=True)
+        i, j, d = neighbor_calculator.compute(
+            points=self.atoms.positions,  # type: ignore
+            box=self.atoms.cell.array,    # type: ignore
+            periodic=True,
+            quantities="ijd")
 
         # Numba JIT Energy Math
         total_e_k, atomic_e_k = compute_lj_numba(
