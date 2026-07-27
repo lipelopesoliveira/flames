@@ -172,7 +172,7 @@ class Widom(BaseSimulator):
         self.Qst_std_dv = 0.0
 
         self.max_overlap_tries = max_overlap_tries
-        self.MAX_ENERGY_ERROR = 1000.0
+        self.MAX_ENERGY_ERROR = 1e5
         self.save_snapshots = save_snapshots
 
     def _compute_kH(self) -> float:
@@ -416,7 +416,7 @@ class Widom(BaseSimulator):
         )
 
         if overlaped:
-            return False, atoms_trial
+            return self.MAX_ENERGY_ERROR, atoms_trial
         
         # Set the same calculator to the trial atoms
         atoms_trial.calc = self.model
@@ -442,14 +442,7 @@ class Widom(BaseSimulator):
 
         step_time_start = datetime.datetime.now()
 
-        # Try a valid insertion up to max_overlap_tries times until accepted to count as one Widom insertion
-        for _ in range(max(1, self.max_overlap_tries)):
-            deltaE, atoms_trial = self.try_insertion()
-
-            if deltaE:
-                break
-
-            self._save_rejected_if_enabled(atoms_trial)
+        deltaE, atoms_trial = self.try_insertion()
 
         self._save_minimum_configuration(deltaE, atoms_trial)  # type: ignore
 

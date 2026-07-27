@@ -530,7 +530,7 @@ Iteration  |  dE (eV)  |  dE (kJ/mol)  | kH [mol kg-1 Pa-1]  |  dH (kJ/mol) | Ti
 
     def print_iteration_info(self, iteration_data: list):
         """Prints a single log line for a Widom iteration."""
-        line_str = "{:^10} | {:^9.6f} | {:>13.2f} | {:>19.3e} | {:12.2f} | {:8.2f}"
+        line_str = "{:^10} | {:^9.6e} | {:>13.2f} | {:>19.3e} | {:12.2f} | {:8.2f}"
         self._print(line_str.format(*iteration_data))
 
     def print_summary(self):
