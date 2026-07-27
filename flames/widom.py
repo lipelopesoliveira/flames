@@ -208,10 +208,7 @@ class Widom(BaseSimulator):
 
         # Calculate standard deviation using cross-validation
         if len(self.int_energy_list) <= n:
-            raise ValueError(
-                f"{len(self.int_energy_list)} data points are not enough to compute standard deviation with {n} splits."
-                "Not enough data points to compute standard deviation. "
-            )
+            return 0.0
 
         cv_boltz_fac = random_n_splits(self.boltz_fac, n, self.rnd_generator)
 
