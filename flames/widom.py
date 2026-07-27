@@ -12,7 +12,7 @@ from tqdm import tqdm
 from flames import VERSION
 from flames.base_simulator import BaseSimulator
 from flames.logger import WidomLogger
-from flames.operations import check_overlap, random_mol_insertion
+from flames.operations import check_overlap_vesin, random_mol_insertion
 from flames.utilities import random_n_splits
 
 
@@ -406,24 +406,21 @@ class Widom(BaseSimulator):
         # Ensure atoms_trial is always defined so it can be returned in failure cases
         atoms_trial = self.framework.copy()
 
-        for _ in range(max(self.max_overlap_tries, 1)):
-            atoms_trial = random_mol_insertion(self.framework, self.adsorbate, self.rnd_generator)
 
-            overlaped = check_overlap(
-                atoms=atoms_trial,
-                group1_indices=np.arange(self.n_atoms_framework),
-                group2_indices=np.arange(
-                    self.n_atoms_framework, self.n_atoms_framework + self.n_adsorbate_atoms
-                ),
-                vdw_radii=self.vdw,
-            )
+        atoms_trial = random_mol_insertion(self.framework, self.adsorbate, self.rnd_generator)
 
-            if not overlaped:
-                break
-        else:
-            # Return MAX_ENERGY_ERROR if no valid insertion found after max tries
-            return self.MAX_ENERGY_ERROR, atoms_trial
+        overlaped = check_overlap_vesin(
+            atoms=atoms_trial,
+            group1_indices=np.arange(self.n_atoms_framework),
+            group2_indices=np.arange(
+                self.n_atoms_framework, self.n_atoms_framework + self.n_adsorbate_atoms
+            ),
+            vdw_radii=self.vdw,
+        )
 
+        if overlaped:
+            return False, atoms_trial
+        
         # Set the same calculator to the trial atoms
         atoms_trial.calc = self.model
 
@@ -432,9 +429,6 @@ class Widom(BaseSimulator):
 
         # Add interaction energy to the info dictionary
         atoms_trial.info["interaction_energy"] = deltaE
-
-        if np.abs(deltaE) > np.abs(self.max_deltaE):
-            return self.MAX_ENERGY_ERROR, atoms_trial  # Return MAX_ENERGY_ERROR to indicate error
 
         return deltaE, atoms_trial
 
@@ -451,14 +445,11 @@ class Widom(BaseSimulator):
 
         step_time_start = datetime.datetime.now()
 
-        accepted = False
-
         # Try a valid insertion up to max_overlap_tries times until accepted to count as one Widom insertion
-        for _ in range(self.max_overlap_tries):
+        for _ in range(max(1, self.max_overlap_tries)):
             deltaE, atoms_trial = self.try_insertion()
-            accepted = deltaE < units.kB * self.T
 
-            if accepted:
+            if deltaE:
                 break
 
             self._save_rejected_if_enabled(atoms_trial)
