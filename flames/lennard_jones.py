@@ -244,9 +244,10 @@ class CustomLennardJones(Calculator):
         neighbor_calculator = NeighborList(cutoff=self.vdw_cutoff, full_list=True)
         i, j, d = neighbor_calculator.compute(
             points=self.atoms.positions,  # type: ignore
-            box=self.atoms.cell.array,    # type: ignore
+            box=self.atoms.cell.array,  # type: ignore
             periodic=True,
-            quantities="ijd")
+            quantities="ijd",
+        )
 
         # Numba JIT Energy Math
         total_e_k, atomic_e_k = compute_lj_numba(

@@ -403,7 +403,6 @@ class Widom(BaseSimulator):
         # Ensure atoms_trial is always defined so it can be returned in failure cases
         atoms_trial = self.framework.copy()
 
-
         atoms_trial = random_mol_insertion(self.framework, self.adsorbate, self.rnd_generator)
 
         overlaped = check_overlap_vesin(
@@ -417,7 +416,7 @@ class Widom(BaseSimulator):
 
         if overlaped:
             return self.MAX_ENERGY_ERROR, atoms_trial
-        
+
         # Set the same calculator to the trial atoms
         atoms_trial.calc = self.model
 
