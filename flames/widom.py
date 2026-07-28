@@ -166,10 +166,10 @@ class Widom(BaseSimulator):
 
         self.kH_std_dv = 0.0
 
-        # Compute the adsorption energy (Qst)
-        self.Qst = self._compute_Qst()
+        # Compute the enthalpy of adsorption (ΔH^0)
+        self.dH = self._compute_dH()
 
-        self.Qst_std_dv = 0.0
+        self.dH_std_dv = 0.0
 
         self.max_overlap_tries = max_overlap_tries
         self.MAX_ENERGY_ERROR = 1e5
@@ -219,26 +219,26 @@ class Widom(BaseSimulator):
             / (self.framework_density * 1e3)
         ).std()
 
-    def _compute_Qst(self) -> float:
+    def _compute_dH(self) -> float:
         """
-        Compute the adsorption energy (Qst) using the integral energy list and Boltzmann factors.
+        Compute the enthalpy of adsorption (ΔH^0) using the integral energy list and Boltzmann factors.
 
-        Qst = - < ΔE * exp(-β ΔE) > / <exp(-β ΔE)>  + kB.T # [kJ/mol]
+        ΔH^0 = < ΔE * exp(-β ΔE) > / <exp(-β ΔE)> - kB.T # [kJ/mol]
 
         Returns
         -------
-            float: The Qst energy in kJ/mol
+            float: The ΔH^0 energy in kJ/mol
         """
         return (
             (self.int_energy_list * self.boltz_fac).mean() / self.boltz_fac.mean()
             - units.kB * self.T
         ) / (units.kJ / units.mol)
 
-    def _compute_Qst_std(self, n: int = 5) -> float:
+    def _compute_dH_std(self, n: int = 5) -> float:
         """
-        Compute the standard deviation of the adsorption energy (Qst) using the integral energy list and Boltzmann factors.
+        Compute the standard deviation of the enthalpy of adsorption (ΔH^0) using the integral energy list and Boltzmann factors.
 
-        Qst = - < ΔE * exp(-β ΔE) > / <exp(-β ΔE)>  + kB.T # [kJ/mol]
+        ΔH^0 = < ΔE * exp(-β ΔE) > / <exp(-β ΔE)> - kB.T # [kJ/mol]
 
         Parameters
         ----------
@@ -247,7 +247,7 @@ class Widom(BaseSimulator):
 
         Returns
         -------
-            float: The standard deviation of Qst energy in kJ/mol
+            float: The standard deviation of ΔH^0 energy in kJ/mol
         """
 
         if len(self.int_energy_list) <= n:
@@ -326,11 +326,11 @@ class Widom(BaseSimulator):
         self.boltz_fac = np.exp(-self.beta * self.int_energy_list)
 
         self.kH = self._compute_kH()
-        self.Qst = self._compute_Qst()
+        self.dH = self._compute_dH()
 
         # Calculate standard deviation using cross-validation
         self.kH_std_dv = self._compute_kH_std(5)
-        self.Qst_std_dv = self._compute_Qst_std(5)
+        self.dH_std_dv = self._compute_dH_std(5)
 
     def save_results(self, file_name: str = "Widom_Results.json") -> None:
         """
@@ -351,8 +351,8 @@ class Widom(BaseSimulator):
             "temperature_K": self.T,
             "henry_coefficient_mol_kg-1_Pa-1": self.kH,
             "henry_coefficient_std_mol_kg-1_Pa-1": self.kH_std_dv,
-            "enthalpy_of_adsorption_kJ_mol-1": self.Qst,
-            "enthalpy_of_adsorption_std_kJ_mol-1": self.Qst_std_dv,
+            "enthalpy_of_adsorption_kJ_mol-1": self.dH,
+            "enthalpy_of_adsorption_std_kJ_mol-1": self.dH_std_dv,
         }
 
         with open(os.path.join(self.out_folder, file_name), "w") as f:
@@ -377,8 +377,8 @@ class Widom(BaseSimulator):
         # Set the base iteration to the length of the uptake list
         self.base_iteration = len(self.int_energy_list)
 
-        self.Qst = self._compute_Qst()
-        self.Qst_std_dv = self._compute_Qst_std(5)
+        self.dH = self._compute_dH()
+        self.dH_std_dv = self._compute_dH_std(5)
 
         self.kH = self._compute_kH()
         self.kH_std_dv = self._compute_kH_std(5)
@@ -459,7 +459,7 @@ class Widom(BaseSimulator):
                 deltaE,  # type: ignore
                 deltaE / (units.kJ / units.mol),  # type: ignore
                 self.kH,
-                self.Qst,
+                self.dH,
                 (datetime.datetime.now() - step_time_start).total_seconds(),
             ],
         )

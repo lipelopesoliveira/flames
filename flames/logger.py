@@ -524,7 +524,7 @@ class WidomLogger(BaseLogger):
 Starting Widom simulation
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-Iteration  |  dE (eV)  |  dE (kJ/mol)  | kH [mol kg-1 Pa-1]  |  dH (kJ/mol) | Time (s)
+Iteration  |  ΔE (eV)  |  ΔE (kJ/mol)  | kH [mol kg-1 Pa-1]  |  ΔH (kJ/mol) | Time (s)
 ---------------------------------------------------------------------------------------"""
         self._print(header)
 
@@ -549,7 +549,7 @@ Finishing Widom simulation
     Average properties of the system:
     ------------------------------------------------------------------------------
     Henry coefficient: [mol/kg/Pa]      {self.sim.kH:12.5e} +/- {self.sim.kH_std_dv:12.5e} [-]
-    Enthalpy of adsorption: [kJ/mol]    {self.sim.Qst:12.5f} +/- {self.sim.Qst_std_dv:12.5f} [-]
+    Enthalpy of adsorption: [kJ/mol]    {self.sim.dH:12.5f} +/- {self.sim.dH_std_dv:12.5f} [-]
 
 ===========================================================================
 Simulation finished successfully!
