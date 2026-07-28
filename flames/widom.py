@@ -179,7 +179,7 @@ class Widom(BaseSimulator):
         """
         Compute the Henry coefficient (kH) using the Boltzmann factors.
 
-        kH = β <exp(-β ΔE)> [mol kg-1 Pa-1]
+        kH = β <exp(-β ΔE)> / ρ [mol kg-1 Pa-1]
 
         Returns
         -------
@@ -194,7 +194,7 @@ class Widom(BaseSimulator):
         """
         Compute the standard deviation of the Henry coefficient (kH) using the Boltzmann factors.
 
-        kH = β <exp(-β ΔE)> [mol kg-1 Pa-1]
+        kH = β <exp(-β ΔE)> / ρ [mol kg-1 Pa-1]
 
         Parameters
         ----------
