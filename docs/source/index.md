@@ -22,10 +22,10 @@ overview
 :hidden:
 :caption: Tutorials: Basic
 
-tutorials/basic_widom
-tutorials/basic_gcmc
-tutorials/basic_restart
-tutorials/basic_isotherm
+tutorials/basic/widom
+tutorials/basic/gcmc
+tutorials/basic/restart
+tutorials/basic/isotherm
 ```
 
 ```{toctree}
@@ -38,9 +38,16 @@ tutorials/basic_isotherm
 ```{toctree}
 :maxdepth: 2
 :hidden:
+:caption: Tutorials: Calculators
+
+```
+
+```{toctree}
+:maxdepth: 2
+:hidden:
 :caption: Tutorials: Advanced
 
-tutorials/advanced_hybrid_gcmc_md_mixed_calc
+tutorials/advanced/hybrid_gcmc_md_mixed_calc
 ```
 
 ```{toctree}
