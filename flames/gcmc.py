@@ -359,18 +359,6 @@ class GCMC(BaseSimulator):
 
         self._n_adsorbates = n
 
-    def _save_rejected(self, atoms_trial: ase.Atoms) -> None:
-        """
-        Helper to conditionally write the rejected configuration to the trajectory.
-
-        Parameters
-        ----------
-        atoms_trial : ase.Atoms
-            The trial configuration that was rejected.
-        """
-        if self.save_rejected:
-            self.rejected_trajectory.write(atoms_trial)  # type: ignore
-
     def restart(self) -> None:
         """
         Restart the simulation from the last state.

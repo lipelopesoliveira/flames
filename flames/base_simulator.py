@@ -205,7 +205,7 @@ class BaseSimulator:
         mol2cm3 = units.kB / units.J * units.mol * 273.15 / atm2pa
 
         # Get the ideal supercell. This will be updated by the set_framework method
-        self.ideal_supercell = self.get_ideal_supercell()
+        self.ideal_supercell = self._get_ideal_supercell()
 
         self.conv_factors = {
             "nmol": 1 / np.prod(self.ideal_supercell),
@@ -226,7 +226,19 @@ class BaseSimulator:
         # Use an max deltaE to avoid errors on the model
         self.max_deltaE = max_deltaE
 
-    def get_ideal_supercell(self) -> np.ndarray:
+    def _save_rejected(self, atoms_trial: ase.Atoms) -> None:
+            """
+            Helper to conditionally write the rejected configuration to the trajectory.
+    
+            Parameters
+            ----------
+            atoms_trial : ase.Atoms
+                The trial configuration that was rejected.
+            """
+            if self.save_rejected:
+                self.rejected_trajectory.write(atoms_trial)  # type: ignore
+
+    def _get_ideal_supercell(self) -> np.ndarray:
         """
         Get the ideal supercell dimensions based on the cutoff radius.
 
@@ -264,7 +276,7 @@ class BaseSimulator:
         self.framework = framework_atoms
         self.framework.set_tags(np.zeros(len(self.framework), dtype=int))
 
-        self.ideal_supercell = self.get_ideal_supercell()
+        self.ideal_supercell = self._get_ideal_supercell()
 
         if (
             not np.array_equal(self.ideal_supercell, np.array([1, 1, 1]))
