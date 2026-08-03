@@ -40,6 +40,11 @@ tutorials/basic/isotherm
 :hidden:
 :caption: Tutorials: Calculators
 
+tutorials/calculators/lennard_jones
+tutorials/calculators/ewald
+tutorials/calculators/combining
+tutorials/calculators/cp2k
+
 ```
 
 ```{toctree}
@@ -100,4 +105,4 @@ The tutorials section contains step-by-step guides on how to use FLAMES for diff
 
 ### Basic
 
-- [Widom Insertion Method](tutorials/basic_widom): A tutorial on how to perform Widom insertion simulations using FLAMES.
+- [Widom Insertion Method](tutorials/basic/widom): A tutorial on how to perform Widom insertion simulations using FLAMES.
