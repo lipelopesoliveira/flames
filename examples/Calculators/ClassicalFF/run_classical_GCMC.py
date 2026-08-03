@@ -7,7 +7,8 @@ from ase.data import vdw_radii
 from ase.io import read
 from numba import set_num_threads
 
-from flames.calculators import CustomLennardJones, EwaldSum
+from flames.calculators.ewald import CustomEwald
+from flames.calculators.lennard_jones import CustomLennardJones
 from flames.gcmc import GCMC
 
 NUM_THREADS_TO_USE = 4
@@ -19,7 +20,7 @@ with open("/home/felipe/PRs/flames/flames/data/UFF_lj_params.json", "r") as f:
 with open("/home/felipe/PRs/flames/flames/data/TraPPE_lj_params.json", "r") as f:
     trappe_lj_params = json.loads(f.read())
 
-ewald = EwaldSum(R_cutoff=5.5, G_cutoff_N=5, alpha=5 / 15)
+ewald = CustomEwald(cutoff=12.0, precision=1e-6)
 lj = CustomLennardJones({**uff_lj_params, **trappe_lj_params}, vdw_cutoff=12.5)
 
 calc = mixing.SumCalculator([lj, ewald])
