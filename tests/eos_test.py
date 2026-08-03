@@ -260,7 +260,7 @@ def test_compressibility_against_raspa(pr_eos):
         pr_eos.T = T
         pr_eos.P = P
         Z_pr = pr_eos.get_compressibility()
-        assert Z_pr == pytest.approx(Z_ref, rel=0.1), f"Failed for T={T}, P={P}: Z_pr={Z_pr}, Z_ref={Z_ref}"
+        assert Z_pr == pytest.approx(Z_ref, rel=1e-3), f"Failed for T={T}, P={P}: Z_pr={Z_pr}, Z_ref={Z_ref}"
 
 def test_fugacity_coefficient_against_raspa(pr_eos):
     """
@@ -270,4 +270,4 @@ def test_fugacity_coefficient_against_raspa(pr_eos):
         pr_eos.T = T
         pr_eos.P = P
         phi_pr = pr_eos.get_fugacity_coefficient()
-        assert phi_pr == pytest.approx(phi_ref, rel=0.1), f"Failed for T={T}, P={P}: phi_pr={phi_pr}, phi_ref={phi_ref}"
+        assert phi_pr == pytest.approx(phi_ref, rel=1e-3), f"Failed for T={T}, P={P}: phi_pr={phi_pr}, phi_ref={phi_ref}"
