@@ -4,6 +4,8 @@
 
 ### New Features 🎉
 
+- Add MoveWeights class for managing and normalizing movement weights in simulations. This class allows users to define weights for different types of moves (insertion, deletion, translation, rotation, reinsertion, and identity change) and ensures that they are normalized to sum to 1. It also provides a method to select a move based on the defined weights using a random generator.
+
 ### Enhanced ✨
 
 - Use the `vesin` library to check for atom overlaps during the insertion of adsorbates in the GCMC and Widom simulations. The `vesin` library provides a more efficient method for calculating distances, prividing around 10x speedup in the overlap checking process. From the practical point of view, this change should provide only a minor speedup in the overall simulation time, as this process took only 30 ms on average for 2000 atoms, and now takes only 3 ms. However, this change improves the overall efficiency of the code and reduces the computational overhead associated with overlap checking.
@@ -13,6 +15,13 @@
 - Now the default value for `shifted` parameter in the `CustomLennardJones` and `CustomGNP` calculators is set to `False`. This change ensures that the Lennard-Jones and GNP potentials are not shifted by default, which may be more appropriate for certain simulations. Users can still set this parameter to `True` if they wish to apply a shift to the potential.
 
 ### Documentation 📖
+
+- New examples for using the `CustomLennardJones` and `CustomEwald` calculators in GCMC and Widom simulations have been added to the documentation. These examples demonstrate how to set up and run simulations using these calculators, providing users with practical guidance on their usage.
+- Improved the online documentation for the code with additional explanations and examples for the new features and enhancements introduced in this release.
+
+### Modified 🛠
+
+️- Moved the `CustomLennardJones` and `CustomEwald` calculators to the `flames.calculators.lennard_jones` and `flames.calculators.ewald` modules, respectively. This change improves the organization of the codebase and makes it easier for users to locate and use these calculators in their simulations.
 
 ### Removed 🗑️
 
