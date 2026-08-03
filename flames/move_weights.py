@@ -1,5 +1,5 @@
 import warnings
-from dataclasses import asdict, dataclass, fields
+from dataclasses import dataclass, fields
 
 import numpy as np
 
@@ -95,7 +95,7 @@ class MoveWeights:
         - str: The name of the selected move.
         """
 
-        weights_dict = asdict(self)
+        weights_dict = self.asdict()
 
         move = str(generator.choice(a=list(weights_dict.keys()), p=list(weights_dict.values())))
 
