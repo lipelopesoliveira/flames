@@ -16,22 +16,57 @@ class BaseEOS(ABC):
         pressure: float,
         molarMass: float,
     ) -> None:
-        self.T = temperature
-        self.P = pressure
-        self.molar_mass = molarMass
+        self._T = temperature
+        self._P = pressure
+        self._molar_mass = molarMass
 
         # Universal gas constant in J/(mol*K)
         self.R = units.kB / units.J * units.mol
 
-    @abstractmethod
     def get_compressibility(self) -> float:
-        """Calculate the compressibility factor Z."""
-        return 1
+        """Calculate the compressibility factor Z for the thermodynamically stable phase."""
+        Z, _, _ = self.get_stable_phase_properties()
+        return Z
 
-    @abstractmethod
+    @property
+    def T(self) -> float:
+        return self._T
+
+    @T.setter
+    def T(self, value: float) -> None:
+        if value <= 0:
+            raise ValueError("Temperature must be greater than zero.")
+        self._T = value
+
+    @property
+    def P(self) -> float:
+        return self._P
+
+    @P.setter
+    def P(self, value: float) -> None:
+        if value <= 0:
+            raise ValueError("Pressure must be greater than zero.")
+        self._P = value
+
+    @property
+    def molar_mass(self) -> float:
+        return self._molar_mass
+
+    @molar_mass.setter
+    def molar_mass(self, value: float) -> None:
+        if value <= 0:
+            raise ValueError("Molar mass must be greater than zero.")
+        self._molar_mass = value
+
     def get_fugacity_coefficient(self) -> float:
-        """Calculate the fugacity coefficient phi."""
-        return 1
+        """Calculate the fugacity coefficient phi for the thermodynamically stable phase."""
+        _, phi, _ = self.get_stable_phase_properties()
+        return phi
+        
+    def get_phase_state(self) -> str:
+        """Returns a string indicating the current thermodynamically stable phase."""
+        _, _, phase = self.get_stable_phase_properties()
+        return phase
 
     def get_bulk_phase_density(self) -> float:
         """
@@ -39,19 +74,28 @@ class BaseEOS(ABC):
         rho = MM / Vm (kg/m^3)
         """
         Z = self.get_compressibility()
-        molar_volume = self.R * self.T * Z / self.P
+        molar_volume = self.R * self._T * Z / self._P
+
         density = 1e-3 * self.molar_mass / molar_volume * units.mol
         return float(density)
 
     def get_bulk_phase_molar_density(self) -> float:
         """
-        Calculate the equivalent bulk phase number of molecules per cubic meter.
+        Calculate the equivalent bulk phase molar density.
         (mol/m^3)
         """
         Z = self.get_compressibility()
-        molar_volume = self.R * self.T * Z / self.P
+        molar_volume = self.R * self._T * Z / self._P
+        
         molar_density = 1 / molar_volume * units.mol
         return float(molar_density)
+
+    def get_stable_phase_properties(self) -> tuple[float, float, str]:
+        """
+        Returns the compressibility (Z), fugacity coefficient (phi), and phase name of the stable phase.
+        This method should be implemented by subclasses to provide specific EOS calculations.
+        """
+        return 1, 1, "Ideal Gas"  # Default implementation for ideal gas behavior
 
 
 class PengRobinsonEOS(BaseEOS):
@@ -82,13 +126,11 @@ class PengRobinsonEOS(BaseEOS):
         *args,
         **kwargs,
     ) -> None:
-        # Initialize generic properties from BaseEOS
         super().__init__(*args, **kwargs)
 
         self.Tc = criticalTemperature
         self.Pc = criticalPressure
         self.omega = acentricFactor
-        self.reducedTemperature = self.T / criticalTemperature
 
         # Peng-Robinson specific constants calculation
         nc = (1 + (4 - np.sqrt(8)) ** (1 / 3) + (4 + np.sqrt(8)) ** (1 / 3)) ** (-1)
@@ -99,7 +141,15 @@ class PengRobinsonEOS(BaseEOS):
         self.b = self.omega_b * self.R * self.Tc / self.Pc
 
         self.kappa = 0.37464 + 1.54226 * self.omega - 0.26992 * self.omega**2
-        self.alpha = (1 + self.kappa * (1 - np.sqrt(self.reducedTemperature))) ** 2
+
+    @property
+    def reducedTemperature(self) -> float:
+        return self.T / self.Tc
+
+    @property
+    def alpha(self) -> float:
+        """Calculate the temperature-dependent alpha parameter for the PR EOS."""
+        return (1 + self.kappa * (1 - np.sqrt(self.reducedTemperature))) ** 2
 
     def calculate_eos_parameters(self) -> tuple[float, float]:
         """Calculate parameters A and B for the PR EOS."""
@@ -107,24 +157,8 @@ class PengRobinsonEOS(BaseEOS):
         B = self.b * self.P / (self.R * self.T)
         return A, B
 
-    def get_compressibility(self) -> float:
-        """
-        Calculate the compressibility factor Z by solving the PR cubic equation:
-        Z^3 - (1 - B)*Z^2 + (A - 2*B - 3*B^2)*Z - (A*B - B^2 - B^3) = 0
-        """
-        A, B = self.calculate_eos_parameters()
-        coefficients = [1, -(1 - B), (A - 2 * B - 3 * B**2), -(A * B - B**2 - B**3)]
-        roots = np.roots(coefficients)
-
-        # Select the largest real root for the gas phase
-        Z = np.max(roots[np.isreal(roots)]).real
-        return float(Z)
-
-    def get_fugacity_coefficient(self) -> float:
-        """Calculate the fugacity coefficient using the PR EOS analytical expression."""
-        Z = self.get_compressibility()
-        A, B = self.calculate_eos_parameters()
-
+    def _calculate_phi_for_z(self, Z: float, A: float, B: float) -> float:
+        """Helper method to calculate fugacity coefficient for a specific Z root."""
         ln_phi = (
             (Z - 1)
             - np.log(Z - B)
@@ -133,3 +167,57 @@ class PengRobinsonEOS(BaseEOS):
             * np.log((Z + (1 + np.sqrt(2)) * B) / (Z + (1 - np.sqrt(2)) * B))
         )
         return float(np.exp(ln_phi))
+
+    def get_stable_phase_properties(self) -> tuple[float, float, str]:
+        """
+        Finds all physical roots of the PR cubic equation and determines the stable phase.
+        Returns: Tuple of (Z_stable, phi_stable, phase_string)
+        """
+        A, B = self.calculate_eos_parameters()
+        coefficients = [1, -(1 - B), (A - 2 * B - 3 * B**2), -(A * B - B**2 - B**3)]
+        
+        # Calculate all roots
+        roots = np.roots(coefficients)
+        
+        # Filter for real roots
+        real_roots = roots[np.isclose(roots.imag, 0)].real
+        
+        # Filter for physical roots (compressibility must be greater than excluded volume B)
+        physical_roots = np.sort(real_roots[real_roots > B])
+
+        if len(physical_roots) == 0:
+            raise ValueError("No physical roots (Z > B) found for given conditions.")
+            
+        if len(physical_roots) == 1:
+            # Single phase region
+            Z = physical_roots[0]
+            phi = self._calculate_phi_for_z(Z, A, B)
+            
+            # Classify the single phase based on critical point
+            if self.T > self.Tc and self.P > self.Pc:
+                phase = "Supercritical Fluid"
+            elif self.T < self.Tc and self.P < self.Pc:
+                phase = "Vapor"
+            else:
+                phase = "Liquid"
+                
+            return Z, phi, phase
+
+        elif len(physical_roots) >= 2:
+            # Two-phase region (3 real roots, middle root is non-physical but usually filtered/ignored by taking min/max)
+            Z_liquid = physical_roots[0]   # Smallest root
+            Z_vapor = physical_roots[-1]   # Largest root
+
+            phi_liquid = self._calculate_phi_for_z(Z_liquid, A, B)
+            phi_vapor = self._calculate_phi_for_z(Z_vapor, A, B)
+
+            # The most stable phase has the lowest fugacity coefficient
+            if np.isclose(phi_vapor, phi_liquid, rtol=1e-5):
+                return Z_vapor, phi_vapor, "Vapor-Liquid Equilibrium"
+            elif phi_vapor < phi_liquid:
+                return Z_vapor, phi_vapor, "Vapor (Stable)"
+            else:
+                return Z_liquid, phi_liquid, "Liquid (Stable)"
+
+        else:
+            raise ValueError("Unexpected number of physical roots found.")
