@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 
 import numpy as np
 from ase import units
@@ -62,7 +62,7 @@ class BaseEOS(ABC):
         """Calculate the fugacity coefficient phi for the thermodynamically stable phase."""
         _, phi, _ = self.get_stable_phase_properties()
         return phi
-        
+
     def get_phase_state(self) -> str:
         """Returns a string indicating the current thermodynamically stable phase."""
         _, _, phase = self.get_stable_phase_properties()
@@ -86,7 +86,7 @@ class BaseEOS(ABC):
         """
         Z = self.get_compressibility()
         molar_volume = self.R * self._T * Z / self._P
-        
+
         molar_density = 1 / molar_volume * units.mol
         return float(molar_density)
 
@@ -175,24 +175,24 @@ class PengRobinsonEOS(BaseEOS):
         """
         A, B = self.calculate_eos_parameters()
         coefficients = [1, -(1 - B), (A - 2 * B - 3 * B**2), -(A * B - B**2 - B**3)]
-        
+
         # Calculate all roots
         roots = np.roots(coefficients)
-        
+
         # Filter for real roots
         real_roots = roots[np.isclose(roots.imag, 0)].real
-        
+
         # Filter for physical roots (compressibility must be greater than excluded volume B)
         physical_roots = np.sort(real_roots[real_roots > B])
 
         if len(physical_roots) == 0:
             raise ValueError("No physical roots (Z > B) found for given conditions.")
-            
+
         if len(physical_roots) == 1:
             # Single phase region
             Z = physical_roots[0]
             phi = self._calculate_phi_for_z(Z, A, B)
-            
+
             # Classify the single phase based on critical point
             if self.T > self.Tc and self.P > self.Pc:
                 phase = "Supercritical Fluid"
@@ -200,13 +200,13 @@ class PengRobinsonEOS(BaseEOS):
                 phase = "Vapor"
             else:
                 phase = "Liquid"
-                
+
             return Z, phi, phase
 
         elif len(physical_roots) >= 2:
             # Two-phase region (3 real roots, middle root is non-physical but usually filtered/ignored by taking min/max)
-            Z_liquid = physical_roots[0]   # Smallest root
-            Z_vapor = physical_roots[-1]   # Largest root
+            Z_liquid = physical_roots[0]  # Smallest root
+            Z_vapor = physical_roots[-1]  # Largest root
 
             phi_liquid = self._calculate_phi_for_z(Z_liquid, A, B)
             phi_vapor = self._calculate_phi_for_z(Z_vapor, A, B)
