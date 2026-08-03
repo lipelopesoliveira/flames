@@ -7,8 +7,8 @@ from ase.io import read
 from mace.calculators import mace_mp
 from numba import get_num_threads, set_num_threads
 
-from flames.gcmc import GCMC
 from flames.calculators.lennard_jones import CustomLennardJones
+from flames.gcmc import GCMC
 from flames.utilities import read_cif
 
 NUM_THREADS_TO_USE = 1

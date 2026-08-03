@@ -4,8 +4,8 @@ import ase
 from ase.data import vdw_radii
 from ase.io import read
 
-from flames.gcmc import GCMC
 from flames.calculators.lennard_jones import CustomLennardJones
+from flames.gcmc import GCMC
 from flames.utilities import read_cif
 
 with open("TraPPE_zeo.json", "r") as f:
