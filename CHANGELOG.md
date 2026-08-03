@@ -4,11 +4,12 @@
 
 ### New Features 🎉
 
-- Add MoveWeights class for managing and normalizing movement weights in simulations. This class allows users to define weights for different types of moves (insertion, deletion, translation, rotation, reinsertion, and identity change) and ensures that they are normalized to sum to 1. It also provides a method to select a move based on the defined weights using a random generator.
+- Add `MoveWeights` class for managing and normalizing movement weights in simulations. This class allows users to define weights for different types of moves (insertion, deletion, translation, rotation, reinsertion, and identity change) and ensures that they are normalized to sum to 1. It also provides a method to select a move based on the defined weights using a random generator.
 
 ### Enhanced ✨
 
 - Use the `vesin` library to check for atom overlaps during the insertion of adsorbates in the GCMC and Widom simulations. The `vesin` library provides a more efficient method for calculating distances, prividing around 10x speedup in the overlap checking process. From the practical point of view, this change should provide only a minor speedup in the overall simulation time, as this process took only 30 ms on average for 2000 atoms, and now takes only 3 ms. However, this change improves the overall efficiency of the code and reduces the computational overhead associated with overlap checking.
+- Improve the `BaseEOS` and `PengRobinsonEOS` classes for better reuse.
 
 ### Fixed 🐛
 
