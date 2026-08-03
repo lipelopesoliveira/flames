@@ -11,18 +11,11 @@ class BaseEOS(ABC):
         self,
         temperature: float,
         pressure: float,
-        criticalTemperature: float,
-        criticalPressure: float,
-        acentricFactor: float,
         molarMass: float,
     ) -> None:
         self.T = temperature
         self.P = pressure
-        self.Tc = criticalTemperature
-        self.Pc = criticalPressure
         self.molar_mass = molarMass
-        self.omega = acentricFactor
-        self.reducedTemperature = temperature / criticalTemperature
 
         # Universal gas constant in J/(mol*K)
         self.R = units.kB / units.J * units.mol  
@@ -62,9 +55,20 @@ class PengRobinsonEOS(BaseEOS):
     """
     Peng-Robinson Equation of State implementation.
     """
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self,
+                 criticalTemperature: float,
+                 criticalPressure: float,
+                 acentricFactor: float,
+                 *args,
+                 **kwargs) -> None:
         # Initialize generic properties from BaseEOS
         super().__init__(*args, **kwargs)
+
+        self.Tc = criticalTemperature
+        self.Pc = criticalPressure
+        self.omega = acentricFactor
+        self.reducedTemperature = self.T / criticalTemperature
+
 
         # Peng-Robinson specific constants calculation
         nc = (1 + (4 - np.sqrt(8)) ** (1 / 3) + (4 + np.sqrt(8)) ** (1 / 3)) ** (-1)
