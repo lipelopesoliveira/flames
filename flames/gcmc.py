@@ -800,13 +800,17 @@ class GCMC(BaseSimulator):
         return rnd_number < acc
 
     def _save_state(self, actual_iteration: int) -> None:
+        """
+        Save the current state of the simulation to a file if
+        the current iteration is a multiple of the save frequency.
+
+        Parameters
+        ----------
+        actual_iteration : int
+            The current iteration number of the simulation.
+        """
 
         if actual_iteration % self.save_every == 0:
-            # Workaround to save the labels in Trajectory.info since ASE's Trajectory does not support custom arrays
-            if "labels" in self.current_system.arrays.keys():
-                self.current_system.info["labels"] = self.current_system.get_array("labels")
-
-            self.trajectory.write(self.current_system)  # type: ignore
 
             np.save(
                 os.path.join(self.out_folder, f"uptake_{self.P:.5f}.npy"),
@@ -1196,6 +1200,8 @@ class GCMC(BaseSimulator):
             step_time=(datetime.datetime.now() - step_time_start).total_seconds(),
         )
 
+        # Save the current state and trajectory
+        self._save_trajectory(actual_iteration)
         self._save_state(actual_iteration)
 
     def run(self, N) -> None:

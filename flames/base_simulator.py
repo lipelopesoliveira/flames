@@ -226,17 +226,35 @@ class BaseSimulator:
         # Use an max deltaE to avoid errors on the model
         self.max_deltaE = max_deltaE
 
+    def _save_trajectory(self, actual_iteration: int) -> None:
+        """
+        Save the trajectory of the simulation to a trajectory file if
+        the current iteration is a multiple of the save frequency.
+
+        Parameters
+                ----------
+                actual_iteration : int
+                    The current iteration number of the simulation.
+        """
+
+        if actual_iteration % self.save_every == 0:
+            # Workaround to save the labels in Trajectory.info since ASE's Trajectory does not support custom arrays
+            if "labels" in self.current_system.arrays.keys():
+                self.current_system.info["labels"] = self.current_system.get_array("labels")
+
+            self.trajectory.write(self.current_system)  # type: ignore
+
     def _save_rejected(self, atoms_trial: ase.Atoms) -> None:
-            """
-            Helper to conditionally write the rejected configuration to the trajectory.
-    
-            Parameters
-            ----------
-            atoms_trial : ase.Atoms
-                The trial configuration that was rejected.
-            """
-            if self.save_rejected:
-                self.rejected_trajectory.write(atoms_trial)  # type: ignore
+        """
+        Helper to conditionally write the rejected configuration to the trajectory.
+
+        Parameters
+        ----------
+        atoms_trial : ase.Atoms
+            The trial configuration that was rejected.
+        """
+        if self.save_rejected:
+            self.rejected_trajectory.write(atoms_trial)  # type: ignore
 
     def _get_ideal_supercell(self) -> np.ndarray:
         """
