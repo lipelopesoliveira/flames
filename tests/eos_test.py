@@ -1,5 +1,4 @@
 import pytest
-from ase import units
 
 from flames.eos import BaseEOS, PengRobinsonEOS
 
@@ -236,7 +235,7 @@ def test_base_eos_density(base_eos):
 def test_base_eos_molar_density(base_eos):
     """Test molar density calculation with Ideal Gas assumption (Z=1)."""
     expected_molar_volume = base_eos.R * T_TEST * 1.0 / P_TEST
-    expected_molar_density = (1.0 / expected_molar_volume)
+    expected_molar_density = 1.0 / expected_molar_volume
 
     assert base_eos.get_bulk_phase_molar_density() == pytest.approx(
         expected_molar_density, rel=1e-5
