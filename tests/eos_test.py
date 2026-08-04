@@ -116,6 +116,57 @@ FUGACITY_RASPA = {
     (400, 500000): 0.9896841213,
 }
 
+DENSITY_RASPA = {
+    (250.0, 100000.0): 2.1368988271,
+    (250.0, 1000000.0): 23.4711295326,
+    (250.0, 10000000.0): 1115.9503454489,
+    (250.0, 100000000.0): 1314.5205940771,
+    (250.0, 500000.0): 11.1105414848,
+    (250.0, 5000000.0): 1089.6073982699,
+    (250.0, 50000000.0): 1237.7456307428,
+    (250.0, 500000000.0): 1497.1292429576,
+    (280.0, 100000.0): 1.9029911446,
+    (280.0, 1000000.0): 20.2970227737,
+    (280.0, 10000000.0): 938.7013269163,
+    (280.0, 100000000.0): 1252.56620853,
+    (280.0, 500000.0): 9.7806141341,
+    (280.0, 5000000.0): 868.3127997715,
+    (280.0, 50000000.0): 1148.2193925781,
+    (280.0, 500000000.0): 1475.554199299,
+    (298.0, 100000.0): 1.7860156739,
+    (298.0, 1000000.0): 18.822107558,
+    (298.0, 10000000.0): 781.5866932186,
+    (298.0, 100000000.0): 1213.9608694363,
+    (298.0, 500000.0): 9.1344870827,
+    (298.0, 5000000.0): 134.6312231124,
+    (298.0, 50000000.0): 1090.3560079856,
+    (298.0, 500000000.0): 1462.5003472706,
+    (323.0, 100000.0): 1.6457723125,
+    (323.0, 1000000.0): 17.130602948,
+    (323.0, 10000000.0): 377.2017104234,
+    (323.0, 100000000.0): 1159.2147551458,
+    (323.0, 500000.0): 8.3738092452,
+    (323.0, 5000000.0): 107.3033576531,
+    (323.0, 50000000.0): 1006.2774899272,
+    (323.0, 500000000.0): 1444.2883387617,
+    (353.0, 100000.0): 1.5042897778,
+    (353.0, 1000000.0): 15.4940128126,
+    (353.0, 10000000.0): 225.2587276565,
+    (353.0, 100000000.0): 1092.9763603162,
+    (353.0, 500000.0): 7.6197451329,
+    (353.0, 5000000.0): 89.8005818199,
+    (353.0, 50000000.0): 903.5080795132,
+    (353.0, 500000000.0): 1422.3856326593,
+    (400.0, 100000.0): 1.3260331795,
+    (400.0, 1000000.0): 13.5119969271,
+    (400.0, 10000000.0): 163.1714531581,
+    (400.0, 100000000.0): 991.8096160281,
+    (400.0, 500000.0): 6.6856498277,
+    (400.0, 5000000.0): 73.557384303,
+    (400.0, 50000000.0): 753.1984986193,
+    (400.0, 500000000.0): 1388.1802390905,
+}
+
 
 # 1. Concrete subclass to test BaseEOS's default "return 1" behavior
 class IdealGasEOS(BaseEOS):
@@ -177,7 +228,7 @@ def test_base_eos_abstract_defaults(base_eos):
 def test_base_eos_density(base_eos):
     """Test bulk density calculation with Ideal Gas assumption (Z=1)."""
     expected_molar_volume = base_eos.R * T_TEST * 1.0 / P_TEST
-    expected_density = (1e-3 * MOLAR_MASS_TEST) / expected_molar_volume * units.mol
+    expected_density = (1e-3 * MOLAR_MASS_TEST) / expected_molar_volume
 
     assert base_eos.get_bulk_phase_density() == pytest.approx(expected_density, rel=1e-5)
 
@@ -185,7 +236,7 @@ def test_base_eos_density(base_eos):
 def test_base_eos_molar_density(base_eos):
     """Test molar density calculation with Ideal Gas assumption (Z=1)."""
     expected_molar_volume = base_eos.R * T_TEST * 1.0 / P_TEST
-    expected_molar_density = (1.0 / expected_molar_volume) * units.mol
+    expected_molar_density = (1.0 / expected_molar_volume)
 
     assert base_eos.get_bulk_phase_molar_density() == pytest.approx(
         expected_molar_density, rel=1e-5
@@ -276,3 +327,17 @@ def test_fugacity_coefficient_against_raspa(pr_eos):
         assert phi_pr == pytest.approx(
             phi_ref, rel=1e-3
         ), f"Failed for T={T}, P={P}: phi_pr={phi_pr}, phi_ref={phi_ref}"
+
+
+def test_density_against_raspa(pr_eos):
+    """
+    Test PR EOS density against RASPA reference values.
+    """
+    for (T, P), density_ref in DENSITY_RASPA.items():
+        pr_eos.T = T
+        pr_eos.P = P
+        density_pr = pr_eos.get_bulk_phase_density()
+
+        assert density_pr == pytest.approx(
+            density_ref, rel=1e-3
+        ), f"Failed for T={T}, P={P}: density_pr={density_pr}, density_ref={density_ref}"

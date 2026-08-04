@@ -76,7 +76,7 @@ class BaseEOS(ABC):
         Z = self.get_compressibility()
         molar_volume = self.R * self._T * Z / self._P
 
-        density = 1e-3 * self.molar_mass / molar_volume * units.mol
+        density = 1e-3 * self.molar_mass / molar_volume
         return float(density)
 
     def get_bulk_phase_molar_density(self) -> float:
@@ -87,7 +87,7 @@ class BaseEOS(ABC):
         Z = self.get_compressibility()
         molar_volume = self.R * self._T * Z / self._P
 
-        molar_density = 1 / molar_volume * units.mol
+        molar_density = 1 / molar_volume
         return float(molar_density)
 
     def get_stable_phase_properties(self) -> tuple[float, float, str]:
@@ -171,7 +171,17 @@ class PengRobinsonEOS(BaseEOS):
     def get_stable_phase_properties(self) -> tuple[float, float, str]:
         """
         Finds all physical roots of the PR cubic equation and determines the stable phase.
-        Returns: Tuple of (Z_stable, phi_stable, phase_string)
+        Returns:
+        --------
+        Z (float): Compressibility factor of the stable phase.
+        phi (float): Fugacity coefficient of the stable phase.
+        phase (str): Description of the stable phase. Can be:
+            - "Fluid is supercritical"
+            - "Fluid is a vapour"
+            - "Fluid is a liquid"
+            - "Vapour=stable, Liquid=metastable"
+            - "Liquid=stable, Vapour=metastable"
+            - "Vapor-Liquid Equilibrium"
         """
         A, B = self.calculate_eos_parameters()
         coefficients = [1, -(1 - B), (A - 2 * B - 3 * B**2), -(A * B - B**2 - B**3)]
@@ -188,36 +198,42 @@ class PengRobinsonEOS(BaseEOS):
         if len(physical_roots) == 0:
             raise ValueError("No physical roots (Z > B) found for given conditions.")
 
-        if len(physical_roots) == 1:
+        elif len(physical_roots) == 1:
             # Single phase region
             Z = physical_roots[0]
             phi = self._calculate_phi_for_z(Z, A, B)
 
             # Classify the single phase based on critical point
             if self.T > self.Tc and self.P > self.Pc:
-                phase = "Supercritical Fluid"
+                phase = "Fluid is supercritical"
             elif self.T < self.Tc and self.P < self.Pc:
-                phase = "Vapor"
+                phase = "Fluid is a vapour"
             else:
-                phase = "Liquid"
+                phase = "Fluid is a liquid"
 
-            return Z, phi, phase
-
-        elif len(physical_roots) >= 2:
-            # Two-phase region (3 real roots, middle root is non-physical but usually filtered/ignored by taking min/max)
+        # Two-phase region (2 or 3 real roots)
+        # If 3 real roots, the middle root is non-physical and
+        # usually filtered/ignored by taking min/max
+        elif len(physical_roots) == 2 or len(physical_roots) == 3:
             Z_liquid = physical_roots[0]  # Smallest root
-            Z_vapor = physical_roots[-1]  # Largest root
+            Z_vapour = physical_roots[-1]  # Largest root
 
             phi_liquid = self._calculate_phi_for_z(Z_liquid, A, B)
-            phi_vapor = self._calculate_phi_for_z(Z_vapor, A, B)
+            phi_vapor = self._calculate_phi_for_z(Z_vapour, A, B)
 
             # The most stable phase has the lowest fugacity coefficient
             if np.isclose(phi_vapor, phi_liquid, rtol=1e-5):
-                return Z_vapor, phi_vapor, "Vapor-Liquid Equilibrium"
+                Z, phi, phase = Z_vapour, phi_vapor, "Vapor-Liquid Equilibrium"
+
             elif phi_vapor < phi_liquid:
-                return Z_vapor, phi_vapor, "Vapor (Stable)"
+                Z, phi, phase = Z_vapour, phi_vapor, "Vapour=stable, Liquid=metastable"
             else:
-                return Z_liquid, phi_liquid, "Liquid (Stable)"
+                Z, phi, phase = Z_liquid, phi_liquid, "Liquid=stable, Vapour=metastable"
 
         else:
-            raise ValueError("Unexpected number of physical roots found.")
+            raise ValueError(
+                "Unexpected number of physical roots found. Check EOS parameters."
+                "Number of physical roots: {}".format(len(physical_roots))
+            )
+
+        return Z, phi, phase
