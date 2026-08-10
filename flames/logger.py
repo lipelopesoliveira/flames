@@ -111,11 +111,10 @@ Perpendicular cell:
 
 """
         if not np.array_equal(self.sim._get_ideal_supercell(), np.array([1, 1, 1])):
-            header += f"""
+            header += f"""\n
 WARNING: Ideal supercell size is {self.sim._get_ideal_supercell()} (x, y, z).
 Consider using automatic_supercell=True to create a supercell that
-fits the cutoff radius of {self.sim.cutoff} Å or manually create a supercell.
-
+fits the cutoff radius of {self.sim.cutoff} Å or manually create a supercell.\n
 """
 
         header += "Atomic positions:\n"
