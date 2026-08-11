@@ -77,6 +77,10 @@ class Widom(BaseSimulator):
         If ``True``, writes the output to a file named ``Widom_Output.out`` in the ``results`` directory. Default is ``True``.
     :type output_to_file: bool, optional
 
+    :param save_only_adsorbate:
+        If ``True``, saves only the adsorbate atoms in the trajectory file. Default is ``False``.
+    :type save_only_adsorbate: bool, optional
+
     :param output_folder:
         Folder to save the output files. If ``None``, a folder named ``results_<T>_<P>`` will be created.
     :type output_folder: str or None, optional
@@ -113,6 +117,7 @@ class Widom(BaseSimulator):
         save_snapshots: bool = True,
         save_rejected: bool = False,
         output_to_file: bool = True,
+        save_only_adsorbate: bool = False,
         output_folder: str | None = None,
         debug: bool = False,
         random_seed: int | None = None,
@@ -168,6 +173,7 @@ class Widom(BaseSimulator):
 
         self.MAX_ENERGY_ERROR = 1e5
         self.save_snapshots = save_snapshots
+        self.save_only_adsorbate = save_only_adsorbate
 
     def _compute_kH(self) -> float:
         """
@@ -409,6 +415,8 @@ class Widom(BaseSimulator):
         )
 
         if overlaped:
+            # Add interaction energy to the info dictionary
+            atoms_trial.info["interaction_energy"] = self.MAX_ENERGY_ERROR
             return self.MAX_ENERGY_ERROR, atoms_trial
 
         # Set the same calculator to the trial atoms
@@ -440,7 +448,10 @@ class Widom(BaseSimulator):
         self._save_minimum_configuration(deltaE, atoms_trial)  # type: ignore
 
         if self.save_snapshots:
-            self.trajectory.write(atoms_trial)  # type: ignore
+            if self.save_only_adsorbate:
+                self.trajectory.write(atoms_trial[self.n_atoms_framework:])  # type: ignore
+            else:
+                self.trajectory.write(atoms_trial)  # type: ignore
 
         # Append int_energy_list
         self.update_statistics(deltaE)  # type: ignore
