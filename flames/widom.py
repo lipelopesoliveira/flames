@@ -56,10 +56,6 @@ class Widom(BaseSimulator):
         Factor to scale the Van der Waals radii. Default is ``0.6``.
     :type vdw_factor: float, optional
 
-    :param max_overlap_tries:
-        Maximum number of tries to insert/move a molecule without overlap. Default is ``100``.
-    :type max_overlap_tries: int, optional
-
     :param max_deltaE:
         Maximum energy difference (in eV) to consider for acceptance criteria.
         This is used to avoid overflow due to problematic calculations. Default is ``1.555`` eV (approx. 150 kJ/mol).
@@ -112,7 +108,6 @@ class Widom(BaseSimulator):
         framework_energy: float | None = None,
         adsorbate_energy: float | None = None,
         vdw_factor: float = 0.6,
-        max_overlap_tries: int = 1000,
         max_deltaE: float = 1.555,
         device: str = "cpu",
         save_snapshots: bool = True,
@@ -171,7 +166,6 @@ class Widom(BaseSimulator):
 
         self.dH_std_dv = 0.0
 
-        self.max_overlap_tries = max_overlap_tries
         self.MAX_ENERGY_ERROR = 1e5
         self.save_snapshots = save_snapshots
 
