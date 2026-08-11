@@ -6,7 +6,7 @@ from ase.io import read
 from mace.calculators import MACECalculator
 
 from flames import VERSION
-from flames.tmmc import TMMC
+from flames.widom import Widom
 
 MOFS_PATH = os.path.dirname(__file__) + "/mofs/"
 ADSORBATES_PATH = os.path.dirname(__file__) + "/adsorbates/"
@@ -14,79 +14,72 @@ MODELS_PATH = os.path.dirname(__file__) + "/models/"
 
 
 # -----------------------------
-# SIMPLE TMMC RUN AND RESTART
+# SIMPLE WIDOM RUN AND RESTART
 # -----------------------------
-def test_tmmc_run(tmpdir):
+def test_widom_run(tmpdir):
     vdw_radii = [0.0, 0.38, 2.5, 0.86, 0.53, 1.01, 0.88, 0.86, 0.89, 0.82, 2.5, 1.15, 1.28, 1.53]
-    ins_energy_list = [0.062041, 0.98445, -0.210626, 0.322975, 1.504674]
-    del_energy_list = [0.569542, 0.718969, 0.950904, 0.569542, 0.718969]
+    int_energy_list = [0.0, -0.201905, -0.001457, -0.016145, -0.165637, -0.150568]
     ref_results = {
-        "simulation": {
-            "code_version": VERSION,
-            "random_seed": 10,
-            "temperature_K": 298.15,
-            "n_steps": 5,
-        }
+        "code_version": VERSION,
+        "enthalpy_of_adsorption_std_kJ_mol-1": 0.0,
+        "henry_coefficient_std_mol_kg-1_Pa-1": 0.0,
+        "random_seed": 10,
+        "temperature_K": 298.15,
+        "total_insertions": 6,
     }
-    framework = read(MOFS_PATH + "MOF-303_5xH2O.xsf")
+    enthalpy_ads_ref = -20.835212757381015
+    henry_coeff_ref = 0.00023053295198257289
+    framework = read(MOFS_PATH + "MOF-303_5xH2O.xsf")[:-15]
     adsorbate = read(ADSORBATES_PATH + "H2O.xyz")
     model = MACECalculator(
         model_paths=MODELS_PATH + "MOF-303_mace.model", device="cpu", default_dtype="float64"
     )
-    tmmc = TMMC(
+    widom = Widom(
         model=model,
         framework_atoms=framework,
         adsorbate_atoms=adsorbate,
         temperature=298.15,
-        pressure=1e5,
         device="cpu",
         vdw_radii=vdw_radii,
         vdw_factor=1.15,
-        save_frequency=1,
         output_folder=tmpdir,
         random_seed=10,
+        automatic_supercell=False,
     )
-    tmmc.set_adsorbate(adsorbate, n_adsorbates=5, adsorbate_energy=adsorbate.info["total_energy"])
+    widom.set_adsorbate(adsorbate, n_adsorbates=0, adsorbate_energy=adsorbate.info["total_energy"])
+    assert abs(widom.adsorbate_energy - adsorbate.info["total_energy"]) < 1e-12
+    assert widom.n_adsorbate_atoms == 3
+    assert widom.n_adsorbates == 0
 
-    assert abs(tmmc.adsorbate_energy - adsorbate.info["total_energy"]) < 1e-12
-    assert tmmc.n_adsorbate_atoms == 3
-    assert tmmc.n_adsorbates == 5
-
-    tmmc.run(5)
-    np.testing.assert_allclose(tmmc.total_ins_energy_list, ins_energy_list, rtol=1e-2)
-    np.testing.assert_allclose(tmmc.total_del_energy_list, del_energy_list, rtol=1e-2)
-    np.testing.assert_allclose(tmmc.volume_list, [framework.get_volume()] * 5)
+    widom.run(5)
+    np.testing.assert_allclose(widom.int_energy_list, int_energy_list, rtol=1e-2)
     np.testing.assert_allclose(
-        np.load(str(tmpdir) + "/ins_ernergy_0005.npy"), ins_energy_list, rtol=1e-2
-    )
-    np.testing.assert_allclose(
-        np.load(str(tmpdir) + "/del_ernergy_0005.npy"), del_energy_list, rtol=1e-2
-    )
-    np.testing.assert_allclose(
-        np.load(str(tmpdir) + "/volume_0005.npy"), [framework.get_volume()] * 5
+        np.load(str(tmpdir) + "/int_energy_0.00000.npy"), int_energy_list, rtol=1e-2
     )
 
-    tmmc.save_results()
-    results = json.load(open(str(tmpdir) + "/results_298.15_0005.json"))
-    results["simulation"].pop("enlapsed_time_hours")
+    widom.save_results()
+    results = json.load(open(str(tmpdir) + "/Widom_Results.json"))
+    results.pop("enlapsed_time_hours")
+    enthalpy_ads = results.pop("enthalpy_of_adsorption_kJ_mol-1")
+    henry_coeff = results.pop("henry_coefficient_mol_kg-1_Pa-1")
+    assert abs(enthalpy_ads - enthalpy_ads_ref) < 1.0e-3
+    assert abs(henry_coeff - henry_coeff_ref) < 1.0e-3
     assert results == ref_results
 
-    tmmc = TMMC(
+    widom = Widom(
         model=model,
         framework_atoms=framework,
         adsorbate_atoms=adsorbate,
         temperature=298.15,
-        pressure=1e5,
         device="cpu",
         vdw_radii=vdw_radii,
         vdw_factor=1.15,
-        save_frequency=1,
         output_folder=tmpdir,
         random_seed=10,
+        automatic_supercell=False,
     )
-    tmmc.set_adsorbate(adsorbate, n_adsorbates=5, adsorbate_energy=adsorbate.info["total_energy"])
-    tmmc.restart()
-    assert tmmc.base_iteration == 5
-    np.testing.assert_allclose(tmmc.total_ins_energy_list, ins_energy_list, rtol=1e-2)
-    np.testing.assert_allclose(tmmc.total_del_energy_list, del_energy_list, rtol=1e-2)
-    np.testing.assert_allclose(tmmc.volume_list, [framework.get_volume()] * 5)
+    widom.set_adsorbate(adsorbate, n_adsorbates=0, adsorbate_energy=adsorbate.info["total_energy"])
+    widom.restart()
+    assert widom.base_iteration == 6
+    assert widom.n_adsorbates == 0
+    np.testing.assert_allclose(widom.int_energy_list, int_energy_list, rtol=1e-2)
