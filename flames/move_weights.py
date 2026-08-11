@@ -27,13 +27,14 @@ class MoveWeights:
     reinsertion: float = 0.0
     identity_change: float = 0.0
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validates and normalizes weights immediately after initialization."""
         self._validate_types_and_values()
         self._validate_consistence()
         self._normalize_weights()
 
-    def _validate_types_and_values(self):
+    def _validate_types_and_values(self) -> None:
+        """Ensures all weights are non-negative numbers."""
         # Iterate through all defined fields in the dataclass
         for f in fields(self):
             value = getattr(self, f.name)
@@ -42,13 +43,15 @@ class MoveWeights:
             if value < 0:
                 raise ValueError(f"Weight for '{f.name}' must be non-negative, not {value}")
 
-    def _validate_consistence(self):
+    def _validate_consistence(self) -> None:
+        """Ensures that insertion and deletion weights are equal."""
         if self.insertion != self.deletion:
             raise InsertionDeletionError(
                 f"Insertion ({self.insertion}) and deletion ({self.deletion}) weights must be equal."
             )
 
-    def _normalize_weights(self):
+    def _normalize_weights(self) -> None:
+        """Normalizes the weights so that they sum to 1."""
         total_weight = sum(getattr(self, f.name) for f in fields(self))
 
         assert total_weight > 0, "Total weight must be greater than 0 to normalize."
