@@ -1,5 +1,6 @@
 from typing import Any
 
+from copy import deepcopy
 import ase.atoms
 import ase.io
 import numpy as np
@@ -271,8 +272,8 @@ class Adsorbate:
             generator = np.random.default_rng()
 
         if len(self.structure) == 1:
-            return self.structure[0].copy()
+            return deepcopy(self.structure[0])
 
         # Using generator.integers avoids issues np.random.choice has with arrays of complex objects
         idx = generator.integers(len(self.structure))
-        return self.structure[idx].copy()
+        return deepcopy(self.structure[idx])
