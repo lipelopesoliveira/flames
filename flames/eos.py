@@ -12,14 +12,14 @@ class BaseEOS(ABC):
 
     def __init__(
         self,
-        molarMass: float = 1.0,
+        molar_mass: float = 1.0,
     ) -> None:
         """Initialize the base EOS with a molar mass.
         Parameters:
         -----------
-        molarMass (float): Molar mass of the substance (g/mol).
+        molar_mass (float): Molar mass of the substance (g/mol).
         """
-        self._molar_mass = molarMass
+        self._molar_mass = molar_mass
 
         # Universal gas constant in J/(mol*K)
         self.R = units.kB / units.J * units.mol
@@ -116,7 +116,7 @@ class PengRobinsonEOS(BaseEOS):
         Tc (float): Critical temperature of the substance (K).
         Pc (float): Critical pressure of the substance (Pa).
         omega (float): Acentric factor of the substance.
-        molarMass (float): Molar mass of the substance (g/mol).
+        molar_mass (float): Molar mass of the substance (g/mol).
 
     Methods:
         get_compressibility(): Calculates the compressibility factor Z.
@@ -153,13 +153,23 @@ class PengRobinsonEOS(BaseEOS):
     def __repr__(self) -> str:
         return (
             f"PengRobinsonEOS(Tc={self.Tc}, Pc={self.Pc}, omega={self.omega}, "
-            f"molarMass={self.molar_mass})"
+            f"molar_mass={self.molar_mass})"
         )
 
     def __str__(self) -> str:
         return (
             f"Peng-Robinson EOS with Tc={self.Tc} K, Pc={self.Pc} Pa, "
             f"omega={self.omega}, molar mass={self.molar_mass} kg/mol"
+        )
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, PengRobinsonEOS):
+            return NotImplemented
+        return (
+            bool(np.isclose(self.Tc, other.Tc))
+            and bool(np.isclose(self.Pc, other.Pc))
+            and bool(np.isclose(self.omega, other.omega))
+            and bool(np.isclose(self.molar_mass, other.molar_mass))
         )
 
     def reducedTemperature(self, temperature: float) -> float:

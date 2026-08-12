@@ -185,20 +185,20 @@ class IdealGasEOS(BaseEOS):
 def base_eos() -> IdealGasEOS:
     """Fixture providing an IdealGasEOS instance to test BaseEOS logic."""
     return IdealGasEOS(
-        molarMass=MOLAR_MASS_TEST,
+        molar_mass=MOLAR_MASS_TEST,
     )
 
 
 @pytest.fixture
 def pr_eos() -> PengRobinsonEOS:
     """Fixture providing a PengRobinsonEOS instance."""
-    # Notice how temperature, pressure, and molarMass are passed as kwargs
+    # Notice how temperature, pressure, and molar_mass are passed as kwargs
     # to satisfy the *args, **kwargs passed to super().__init__ in PR EOS.
     return PengRobinsonEOS(
         criticalTemperature=TC_TEST,
         criticalPressure=PC_TEST,
         acentricFactor=OMEGA_TEST,
-        molarMass=MOLAR_MASS_TEST,
+        molar_mass=MOLAR_MASS_TEST,
     )
 
 

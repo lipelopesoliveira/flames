@@ -23,7 +23,7 @@ class Adsorbate:
     def __init__(
         self,
         name: str,
-        structure: ase.atoms.Atoms | str | list[ase.atoms.Atoms] | None = None,
+        structure: ase.atoms.Atoms | str | list[ase.atoms.Atoms] | list = [],
         molar_mass: float | None = None,
         mol_fraction: float = 1.0,
         weights: MoveWeights | dict[str, float] | None = None,
@@ -51,7 +51,7 @@ class Adsorbate:
         self._mol_fraction = mol_fraction
 
         # Handle file reading here to utilize index and **kwargs
-        self._structure = None
+        self._structure = []
         if isinstance(structure, str):
             parsed = ase.io.read(structure, index=index, **kwargs)
             self.structure = [parsed] if isinstance(parsed, ase.atoms.Atoms) else parsed
@@ -70,20 +70,42 @@ class Adsorbate:
 
     def __repr__(self) -> str:
         """Returns a string representation of the Adsorbate object."""
-        return f"Adsorbate(name={self.name}, mol_fraction={self.mol_fraction}, structure={self.structure}, weights={self.weights}, eos={self.eos})"
+        return f"Adsorbate(name={self.name}, mol_fraction={self.mol_fraction}, molar_mass={self.molar_mass}, structure={self.structure}, weights={self.weights}, eos={self.eos})"
 
     def __str__(self) -> str:
         """Returns a human-readable string summarizing the Adsorbate."""
-        return f"Adsorbate: {self.name}, Mole Fraction: {self.mol_fraction}, Structure: {self.structure}, Weights: {self.weights}, EOS: {self.eos}"
+        return f"Adsorbate: {self.name}, Mole Fraction: {self.mol_fraction}, Molar Mass: {self.molar_mass}, Structure: {self.structure}, Weights: {self.weights}, EOS: {self.eos}"
 
     def __iter__(self):
         """Allows iteration over the adsorbate's atomic structure(s)."""
         return iter(self.structure) if self.structure is not None else iter([])
 
+    def __len__(self) -> int:
+        """Returns the number of structures associated with the adsorbate."""
+        return len(self.structure) if self.structure is not None else 0
+
+    def __getitem__(self, index: int | slice) -> ase.atoms.Atoms | list[ase.atoms.Atoms]:
+        """
+        Allows indexing into the adsorbate to retrieve specific atomic structures.
+
+        Args:
+            index (int | slice): The index or slice of the structure(s) to retrieve.
+
+        Returns:
+            ase.atoms.Atoms | list[ase.atoms.Atoms]: The requested structure(s).
+
+        Raises:
+            TypeError: If the structure is not set (is None).
+            IndexError: If the index is out of bounds.
+        """
+        if self.structure is None:
+            raise TypeError("Adsorbate has no structures to index.")
+        return self.structure[index]
+
     @property
     def molar_mass(self) -> float:
         """float: The molar mass of the adsorbate in g/mol. If not explicitly set, it is calculated from the structure."""
-        return self.get_molar_mass()
+        return self._molar_mass
 
     @molar_mass.setter
     def molar_mass(self, value: float) -> None:
@@ -127,7 +149,7 @@ class Adsorbate:
             ValueError: If the input is not a recognized structure type or valid file.
         """
         if value is None:
-            self._structure = None
+            self._structure = []
         elif isinstance(value, ase.atoms.Atoms):
             self._structure = [value]
         elif isinstance(value, list) and all(isinstance(item, ase.atoms.Atoms) for item in value):
@@ -192,7 +214,7 @@ class Adsorbate:
                     "Structure must be set before setting EOS parameters via dictionary."
                 )
             # Because structure is normalized to a list, we can safely grab index 0
-            self._eos = PengRobinsonEOS(**value, molarMass=self.structure[0].get_masses().sum())
+            self._eos = PengRobinsonEOS(**value, molar_mass=self.structure[0].get_masses().sum())
         else:
             raise ValueError(
                 "EOS must be a BaseEOS or PengRobinsonEOS object, a dictionary of EOS parameters, or None."
