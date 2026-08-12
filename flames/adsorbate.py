@@ -4,127 +4,220 @@ from typing import Any, Dict, Iterator, Optional
 
 import ase.io
 import numpy as np
-from ase import Atoms
+import ase.atoms
 
-from flames.eos import BaseEOS
+from flames.eos import BaseEOS, PengRobinsonEOS
 from flames.move_weights import MoveWeights
 
 
-@dataclass
 class Adsorbate:
     """
-    Represents an independent adsorbate species, including its
+    Represents an independent adsorbate species in a simulation, including its
     atomic structure, movement probabilities, and equation of state.
+
+    Attributes:
+        name (str): The identifier for the adsorbate species.
+        structure (list[ase.atoms.Atoms] | None): The atomic configuration(s) of the adsorbate.
+        weights (MoveWeights): The probabilities/weights for different Monte Carlo moves.
+        eos (BaseEOS | None): The equation of state associated with the adsorbate.
     """
 
-    name: str
-    structure: Atoms
-    weights: MoveWeights = field(default_factory=MoveWeights)
-    eos: Optional[BaseEOS] = None
+    def __init__(
+            self,
+            name: str,
+            structure: ase.atoms.Atoms | str | list[ase.atoms.Atoms] | None = None,
+            mol_fraction: float = 1.0,
+            weights: MoveWeights | dict[str, float] | None = None,
+            eos: BaseEOS | dict[str, float] | None = None,
+            index: int | str = ':',
+            **kwargs: Any
+    ) -> None:
+        """
+        Initializes an Adsorbate instance.
 
-    @classmethod
-    def from_file(
-        cls,
-        filepath: str,
-        name: Optional[str] = None,
-        weights: Optional[MoveWeights] = None,
-        eos: Optional[BaseEOS] = None,
-        **kwargs: Any,
-    ) -> "Adsorbate":
+        Args:
+            name (str): The name of the adsorbate species (e.g., 'CO2', 'N2').
+            structure (Atoms | str | list[Atoms] | None): The structural representation. 
+                If a string is provided, it is treated as a file path and read via ASE.
+            mol_fraction (float): The mole fraction of the adsorbate in the gas phase.
+            weights (MoveWeights | dict[str, float] | None): Move probabilities. If a dict 
+                is passed, it initializes a MoveWeights object. If None, uses defaults.
+            eos (BaseEOS | dict[str, float] | None): Equation of state object or parameters.
+            index (int | str): The index or slice to read if `structure` is a file path. 
+                Defaults to ':' (reads all configurations).
+            **kwargs (Any): Additional keyword arguments passed to `ase.io.read`.
+        """
+        self._name = name
 
-        try:
-            structure = ase.io.read(filepath, **kwargs)
-        except Exception as e:
-            raise IOError(f"Failed to read structure from {filepath}: {e}")
+        self._mol_fraction = mol_fraction
 
-        if not isinstance(structure, Atoms):
-            if isinstance(structure, list) and len(structure) > 0:
-                warnings.warn(f"Multiple structures found in {filepath}. Using the first one.")
-                structure = structure[0]
-            else:
-                raise ValueError(f"Expected an ASE Atoms object, but got {type(structure)}")
+        # Handle file reading here to utilize index and **kwargs
+        self._structure = None
+        if isinstance(structure, str):
+            parsed = ase.io.read(structure, index=index, **kwargs)
+            self.structure = [parsed] if isinstance(parsed, ase.atoms.Atoms) else parsed
+        else:
+            self.structure = structure
 
-        if name is None:
-            import os
+        # Initialize defaults, then route through setters. Empty dict triggers default MoveWeights
+        self._weights: MoveWeights = MoveWeights()
+        self.weights = weights if weights is not None else {}
 
-            name = os.path.splitext(os.path.basename(filepath))[0]
+        # Route through setter to handle EOS initialization
+        self._eos = None
+        self.eos = eos
 
-        if weights is None:
-            weights = MoveWeights()
+    def __repr__(self) -> str:
+        """Returns a string representation of the Adsorbate object."""
+        return f"Adsorbate(name={self.name}, mol_fraction={self.mol_fraction}, structure={self.structure}, weights={self.weights}, eos={self.eos})"
 
-        return cls(name=name, structure=structure, weights=weights, eos=eos)
+    def __str__(self) -> str:
+        """Returns a human-readable string summarizing the Adsorbate."""
+        return f"Adsorbate: {self.name}, Mole Fraction: {self.mol_fraction}, Structure: {self.structure}, Weights: {self.weights}, EOS: {self.eos}"
 
-    def pick_random_move(self, generator: np.random.Generator) -> str:
+    def __iter__(self):
+        """Allows iteration over the adsorbate's atomic structure(s)."""
+        return iter(self.structure) if self.structure is not None else iter([])
+
+    @property
+    def name(self) -> str:
+        """str: The name of the adsorbate species."""
+        return self._name
+
+    @name.setter
+    def name(self, value: str) -> None:
+        self._name = value
+
+    @property
+    def mol_fraction(self) -> float:
+        """float: The mole fraction of the adsorbate in the gas phase."""
+        return self._mol_fraction
+
+    @mol_fraction.setter
+    def mol_fraction(self, value: float) -> None:
+        if not (0 <= value <= 1):
+            raise ValueError("Mole fraction must be between 0 and 1.")
+        self._mol_fraction = value
+
+    @property
+    def structure(self) -> list[ase.atoms.Atoms] | None:
+        """list[Atoms] | None: The structure(s) of the adsorbate, always stored as a list."""
+        return self._structure
+
+    @structure.setter
+    def structure(self, value: ase.atoms.Atoms | list[ase.atoms.Atoms] | None) -> None:
+        """
+        Sets the structure of the adsorbate, ensuring it is stored as a list of Atoms.
+
+        Args:
+            value (str | Atoms | list[Atoms] | None): The structure to set. Strings are 
+                interpreted as file paths and read using ASE's default read behavior.
+        
+        Raises:
+            ValueError: If the input is not a recognized structure type or valid file.
+        """
+        if value is None:
+            self._structure = None
+        elif isinstance(value, ase.atoms.Atoms):
+            self._structure = [value]
+        elif isinstance(value, list) and all(isinstance(item, ase.atoms.Atoms) for item in value):
+            self._structure = value
+        else:
+            raise ValueError("Structure must be an ASE Atoms object, a list of Atoms objects, or None.")
+
+    @property
+    def weights(self) -> MoveWeights:
+        """MoveWeights: The object managing Monte Carlo move probabilities."""
+        return self._weights
+
+    @weights.setter
+    def weights(self, value: MoveWeights | dict[str, float]) -> None:
+        """
+        Sets the move weights for the adsorbate.
+
+        Args:
+            value (MoveWeights | dict[str, float]): A MoveWeights instance, or a dictionary 
+                of move probabilities to construct one.
+        
+        Raises:
+            ValueError: If the input is neither a MoveWeights instance nor a dictionary.
+        """
+        if isinstance(value, MoveWeights):
+            self._weights = value
+        elif isinstance(value, dict):
+            # Assuming MoveWeights is imported and available in scope
+            self._weights = MoveWeights(**value)
+        else:
+            raise ValueError("Weights must be a MoveWeights object or a dictionary of move probabilities.")
+
+    @property
+    def eos(self) -> BaseEOS | None:
+        """BaseEOS | None: The equation of state model for the adsorbate."""
+        return self._eos
+
+    @eos.setter
+    def eos(self, value: BaseEOS | PengRobinsonEOS | dict[str, float] | None) -> None:
+        """
+        Sets the Equation of State (EOS) for the adsorbate.
+
+        Args:
+            value (BaseEOS | PengRobinsonEOS | dict[str, float] | None): The EOS object, 
+                or a dictionary of parameters to initialize a PengRobinsonEOS. 
+                If a dict is used, the structure must be set first to calculate molar mass.
+        
+        Raises:
+            ValueError: If structure is missing when passing a dict, or if the value type is invalid.
+        """
+        if value is None:
+            self._eos = None
+        elif isinstance(value, (BaseEOS, PengRobinsonEOS)):
+            self._eos = value
+        elif isinstance(value, dict):
+            if not self.structure:
+                raise ValueError("Structure must be set before setting EOS parameters via dictionary.")
+            # Because structure is normalized to a list, we can safely grab index 0
+            self._eos = PengRobinsonEOS(**value, molarMass=self.structure[0].get_masses().sum())
+        else:
+            raise ValueError("EOS must be a BaseEOS or PengRobinsonEOS object, a dictionary of EOS parameters, or None.")
+
+    def pick_random_move(self, generator: np.random.Generator | None = None) -> str:
+        """
+        Selects a random Monte Carlo move based on the adsorbate's move weights.
+
+        Args:
+            generator (np.random.Generator | None): An optional NumPy random number generator. 
+                If None, the default RNG is used.
+
+        Returns:
+            str: The string identifier of the selected move.
+        """
+        if generator is None:
+            generator = np.random.default_rng()
         return self.weights.pick_random_move(generator=generator)
 
-
-class Adsorbates:
-    """
-    A collection of Adsorbate objects representing the gas phase mixture.
-    Manages partial pressures, mole fractions, and aggregate thermodynamic properties.
-    """
-
-    def __init__(self):
-        # We store the adsorbates and their partial pressures in dictionaries
-        # keyed by the adsorbate's name for easy lookup.
-        self._components: Dict[str, Adsorbate] = {}
-        self._partial_pressures: Dict[str, float] = {}
-
-    def add(self, adsorbate: Adsorbate, partial_pressure: float) -> None:
-        """Add an adsorbate to the mixture with its partial pressure (in Pascals)."""
-        if partial_pressure <= 0:
-            raise ValueError(f"Partial pressure for {adsorbate.name} must be > 0.")
-
-        self._components[adsorbate.name] = adsorbate
-        self._partial_pressures[adsorbate.name] = partial_pressure
-
-        # If the adsorbate has an EOS, update its pressure to match the partial pressure
-        if adsorbate.eos is not None:
-            adsorbate.eos.P = partial_pressure
-
-    def remove(self, name: str) -> None:
-        """Remove an adsorbate from the mixture."""
-        if name in self._components:
-            del self._components[name]
-            del self._partial_pressures[name]
-        else:
-            raise KeyError(f"Adsorbate '{name}' not found in the mixture.")
-
-    def get(self, name: str) -> Adsorbate:
-        """Retrieve an Adsorbate by name."""
-        return self._components[name]
-
-    @property
-    def total_pressure(self) -> float:
-        """Calculate the total pressure of the mixture."""
-        return sum(self._partial_pressures.values())
-
-    @property
-    def mole_fractions(self) -> Dict[str, float]:
-        """Calculate the mole fraction (y_i) for each component."""
-        p_tot = self.total_pressure
-        if p_tot == 0:
-            return {name: 0.0 for name in self._components}
-        return {name: p / p_tot for name, p in self._partial_pressures.items()}
-
-    def pick_random_adsorbate(self, generator: np.random.Generator) -> Adsorbate:
+    def pick_structure(self, generator: np.random.Generator | None = None) -> ase.atoms.Atoms:
         """
-        Randomly select an adsorbate for a Monte Carlo insertion move,
-        weighted by their mole fractions in the gas phase.
+        Randomly selects and returns a copy of one of the adsorbate's structures.
+
+        Args:
+            generator (np.random.Generator | None): An optional NumPy random number generator. 
+                If None, the default RNG is used.
+
+        Returns:
+            ase.atoms.Atoms: A deep copy of the selected atomic structure.
+
+        Raises:
+            ValueError: If no structure has been assigned to the adsorbate.
         """
-        if not self._components:
-            raise ValueError("No adsorbates in the mixture.")
-
-        names = list(self._components.keys())
-        fractions = list(self.mole_fractions.values())
-
-        selected_name = str(generator.choice(a=names, p=fractions))
-        return self.get(selected_name)
-
-    def __iter__(self) -> Iterator[Adsorbate]:
-        """Allow iterating directly over the Adsorbate objects."""
-        return iter(self._components.values())
-
-    def __len__(self) -> int:
-        """Return the number of unique adsorbate species in the mixture."""
-        return len(self._components)
+        if not self.structure:
+            raise ValueError("No structure available to pick from. Please set the structure first.")
+            
+        if generator is None:
+            generator = np.random.default_rng()
+            
+        if len(self.structure) == 1:
+            return self.structure[0].copy()
+            
+        # Using generator.integers avoids issues np.random.choice has with arrays of complex objects
+        idx = generator.integers(len(self.structure))
+        return self.structure[idx].copy()
