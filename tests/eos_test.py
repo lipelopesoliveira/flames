@@ -174,19 +174,17 @@ class IdealGasEOS(BaseEOS):
     This concrete class allows us to test the base class's default return values.
     """
 
-    def get_compressibility(self) -> float:
-        return super().get_compressibility()
+    def get_compressibility(self, temperature: float, pressure: float) -> float:
+        return super().get_compressibility(temperature, pressure)
 
-    def get_fugacity_coefficient(self) -> float:
-        return super().get_fugacity_coefficient()
+    def get_fugacity_coefficient(self, temperature: float, pressure: float) -> float:
+        return super().get_fugacity_coefficient(temperature, pressure)
 
 
 @pytest.fixture
 def base_eos() -> IdealGasEOS:
     """Fixture providing an IdealGasEOS instance to test BaseEOS logic."""
     return IdealGasEOS(
-        temperature=T_TEST,
-        pressure=P_TEST,
         molarMass=MOLAR_MASS_TEST,
     )
 
@@ -200,8 +198,6 @@ def pr_eos() -> PengRobinsonEOS:
         criticalTemperature=TC_TEST,
         criticalPressure=PC_TEST,
         acentricFactor=OMEGA_TEST,
-        temperature=T_TEST,
-        pressure=P_TEST,
         molarMass=MOLAR_MASS_TEST,
     )
 
@@ -211,8 +207,6 @@ def pr_eos() -> PengRobinsonEOS:
 
 def test_base_eos_initialization(base_eos):
     """Test that properties are properly assigned in the base class."""
-    assert base_eos.T == T_TEST
-    assert base_eos.P == P_TEST
     assert base_eos.molar_mass == MOLAR_MASS_TEST
     assert hasattr(base_eos, "R")
     assert base_eos.R > 0  # Universal gas constant should be populated
@@ -220,8 +214,8 @@ def test_base_eos_initialization(base_eos):
 
 def test_base_eos_abstract_defaults(base_eos):
     """Test that BaseEOS default methods return 1 as defined."""
-    assert base_eos.get_compressibility() == 1.0
-    assert base_eos.get_fugacity_coefficient() == 1.0
+    assert base_eos.get_compressibility(T_TEST, P_TEST) == 1.0
+    assert base_eos.get_fugacity_coefficient(T_TEST, P_TEST) == 1.0
 
 
 def test_base_eos_density(base_eos):
@@ -229,7 +223,7 @@ def test_base_eos_density(base_eos):
     expected_molar_volume = base_eos.R * T_TEST * 1.0 / P_TEST
     expected_density = (1e-3 * MOLAR_MASS_TEST) / expected_molar_volume
 
-    assert base_eos.get_bulk_phase_density() == pytest.approx(expected_density, rel=1e-5)
+    assert base_eos.get_bulk_phase_density(T_TEST, P_TEST) == pytest.approx(expected_density, rel=1e-5)
 
 
 def test_base_eos_molar_density(base_eos):
@@ -237,7 +231,7 @@ def test_base_eos_molar_density(base_eos):
     expected_molar_volume = base_eos.R * T_TEST * 1.0 / P_TEST
     expected_molar_density = 1.0 / expected_molar_volume
 
-    assert base_eos.get_bulk_phase_molar_density() == pytest.approx(
+    assert base_eos.get_bulk_phase_molar_density(T_TEST, P_TEST) == pytest.approx(
         expected_molar_density, rel=1e-5
     )
 
@@ -250,20 +244,18 @@ def test_pr_eos_initialization(pr_eos):
     assert pr_eos.Tc == TC_TEST
     assert pr_eos.Pc == PC_TEST
     assert pr_eos.omega == OMEGA_TEST
-    assert pr_eos.T == T_TEST
-    assert pr_eos.P == P_TEST
-    assert pr_eos.reducedTemperature == T_TEST / TC_TEST
+    assert pr_eos.reducedTemperature(T_TEST) == T_TEST / TC_TEST
 
     # Internal PR Constants
     assert pr_eos.a > 0
     assert pr_eos.b > 0
     assert pr_eos.kappa > 0
-    assert pr_eos.alpha > 0
+    assert pr_eos.alpha(T_TEST) > 0
 
 
 def test_pr_eos_parameters(pr_eos):
     """Test calculation of A and B dimensionless parameters."""
-    A, B = pr_eos.calculate_eos_parameters()
+    A, B = pr_eos.calculate_eos_parameters(T_TEST, P_TEST)
     assert A > 0
     assert B > 0
     assert isinstance(A, float)
@@ -275,7 +267,7 @@ def test_pr_eos_compressibility(pr_eos):
     Test PR compressibility.
     For CO2 gas at 1 atm and 298K, Z should be real, a float, and slightly less than 1.
     """
-    z = pr_eos.get_compressibility()
+    z = pr_eos.get_compressibility(T_TEST, P_TEST)
     assert isinstance(z, float)
     assert 0.98 < z < 1.0
 
@@ -285,7 +277,7 @@ def test_pr_eos_fugacity_coefficient(pr_eos):
     Test PR fugacity coefficient.
     For CO2 gas at 1 atm and 298K, phi should be slightly less than 1.
     """
-    phi = pr_eos.get_fugacity_coefficient()
+    phi = pr_eos.get_fugacity_coefficient(T_TEST, P_TEST)
     assert isinstance(phi, float)
     assert 0.98 < phi < 1.0
 
@@ -296,8 +288,8 @@ def test_pr_eos_density_vs_ideal(base_eos, pr_eos):
     Because Z < 1 for CO2 at 1 atm (attractive forces), the real gas occupies
     less volume than an ideal gas, making its density slightly higher.
     """
-    ideal_density = base_eos.get_bulk_phase_density()
-    pr_density = pr_eos.get_bulk_phase_density()
+    ideal_density = base_eos.get_bulk_phase_density(T_TEST, P_TEST)
+    pr_density = pr_eos.get_bulk_phase_density(T_TEST, P_TEST)
 
     assert pr_density > ideal_density
 
@@ -307,9 +299,7 @@ def test_compressibility_against_raspa(pr_eos):
     Test PR EOS compressibility factor against RASPA reference values.
     """
     for (T, P), Z_ref in COMPRESSIBILITY_RASPA.items():
-        pr_eos.T = T
-        pr_eos.P = P
-        Z_pr = pr_eos.get_compressibility()
+        Z_pr = pr_eos.get_compressibility(T, P)
         assert Z_pr == pytest.approx(
             Z_ref, rel=1e-3
         ), f"Failed for T={T}, P={P}: Z_pr={Z_pr}, Z_ref={Z_ref}"
@@ -320,9 +310,7 @@ def test_fugacity_coefficient_against_raspa(pr_eos):
     Test PR EOS fugacity coefficient against RASPA reference values.
     """
     for (T, P), phi_ref in FUGACITY_RASPA.items():
-        pr_eos.T = T
-        pr_eos.P = P
-        phi_pr = pr_eos.get_fugacity_coefficient()
+        phi_pr = pr_eos.get_fugacity_coefficient(T, P)
         assert phi_pr == pytest.approx(
             phi_ref, rel=1e-3
         ), f"Failed for T={T}, P={P}: phi_pr={phi_pr}, phi_ref={phi_ref}"
@@ -333,9 +321,7 @@ def test_density_against_raspa(pr_eos):
     Test PR EOS density against RASPA reference values.
     """
     for (T, P), density_ref in DENSITY_RASPA.items():
-        pr_eos.T = T
-        pr_eos.P = P
-        density_pr = pr_eos.get_bulk_phase_density()
+        density_pr = pr_eos.get_bulk_phase_density(T, P)
 
         assert density_pr == pytest.approx(
             density_ref, rel=1e-3

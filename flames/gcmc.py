@@ -230,16 +230,14 @@ class GCMC(BaseSimulator):
         # Check if any critical parameters are not None
         if all([self.criticalTemperature, self.criticalPressure, self.acentricFactor]):
             self.eos = PengRobinsonEOS(
-                temperature=self.T,
-                pressure=self.P,
                 criticalTemperature=self.criticalTemperature,  # type: ignore
                 criticalPressure=self.criticalPressure,  # type: ignore
                 acentricFactor=self.acentricFactor,  # type: ignore
                 molarMass=self.adsorbate_mass * 1e3,  # convert kg/mol to g/mol
             )
-            self.fugacity_coeff = self.eos.get_fugacity_coefficient()
+            self.fugacity_coeff = self.eos.get_fugacity_coefficient(self.T, self.P)
 
-            self.excess_nmol = self.eos.get_bulk_phase_molar_density() * self.V * self.void_fraction
+            self.excess_nmol = self.eos.get_bulk_phase_molar_density(self.T, self.P) * self.V * self.void_fraction
 
         # Parameters for storing the main results during the simulation
         self._n_adsorbates: int = 0
