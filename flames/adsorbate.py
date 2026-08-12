@@ -1,9 +1,10 @@
+from copy import deepcopy
 from typing import Any
 
-from copy import deepcopy
 import ase.atoms
 import ase.io
 import numpy as np
+from ase import units
 
 from flames.eos import BaseEOS, PengRobinsonEOS
 from flames.move_weights import MoveWeights
@@ -251,13 +252,16 @@ class Adsorbate:
             generator = np.random.default_rng()
         return self.weights.pick_random_move(generator=generator)
 
-    def pick_structure(self, generator: np.random.Generator | None = None) -> ase.atoms.Atoms:
+    def pick_structure(
+        self, generator: np.random.Generator | None = None, use_energy_bias: bool = False
+    ) -> ase.atoms.Atoms:
         """
         Randomly selects and returns a copy of one of the adsorbate's structures.
 
         Args:
             generator (np.random.Generator | None): An optional NumPy random number generator.
                 If None, the default RNG is used.
+            use_energy_bias (bool): Whether to use energy-based biasing for structure selection.
 
         Returns:
             ase.atoms.Atoms: A deep copy of the selected atomic structure.
@@ -265,6 +269,27 @@ class Adsorbate:
         Raises:
             ValueError: If no structure has been assigned to the adsorbate.
         """
+
+        n_structures = len(self.structure)
+
+        weights = np.ones(n_structures) / n_structures  # Default uniform weights
+        if use_energy_bias:
+            partition_function = np.array(
+                [
+                    np.exp(-atom.get_potential_energy() / units.kB / 298.15)
+                    for atom in self.structure
+                ]
+            ).sum()
+            weights = (
+                np.array(
+                    [
+                        np.exp(-atom.get_potential_energy() / units.kB / 298.15)
+                        for atom in self.structure
+                    ]
+                )
+                / partition_function
+            )
+
         if not self.structure:
             raise ValueError("No structure available to pick from. Please set the structure first.")
 
@@ -275,5 +300,6 @@ class Adsorbate:
             return deepcopy(self.structure[0])
 
         # Using generator.integers avoids issues np.random.choice has with arrays of complex objects
-        idx = generator.integers(len(self.structure))
+        idx = generator.choice(a=range(len(weights)), p=list(weights))
+
         return deepcopy(self.structure[idx])
