@@ -13,11 +13,16 @@ from pymatgen.transformations.advanced_transformations import (
 from flames.exceptions import InsertionDeletionError, MoveKeyError
 
 
-def enthalpy_of_adsorption(energy, number_of_molecules, temperature):
+def enthalpy_of_adsorption(
+        total_energy: np.ndarray,
+        adsorbate_energy: np.ndarray,
+        number_of_molecules: np.ndarray,
+        temperature: float
+        ) -> float:
     """
     Calculates the enthalpy of adsorption as
 
-    H = <EN> - <E><N> / <N^2> - <N>^2 - RT
+    H = <EN> - <E><N> / <N^2> - <N>^2 - <E_guest> - k_BT
 
     adapted from J. Phys. Chem. 1993, 97, 51, 13742-13752.
 
@@ -30,8 +35,11 @@ def enthalpy_of_adsorption(energy, number_of_molecules, temperature):
 
     Parameters
     ----------
-    energy : 1D array
-        List with the potential energy of the adsorbed phase for each MC cycle in units of Kelvin.
+    total_energy : 1D array
+        List with the total energy of the system for each MC cycle in units of eV.
+
+    adsorbate_energy : 1D array
+        List with the energy of the adsorbate for each MC cycle in units of eV.
 
     number_of_molecules : 1D array
         List with the number of molecules in the simulation system for each MC cycle.
@@ -45,17 +53,31 @@ def enthalpy_of_adsorption(energy, number_of_molecules, temperature):
     H : float
         Enthalpy of adsorption in units of kJ⋅mol-1
     """
-    # Define basic constants
-    R = units.kB / (units.kJ / units.mol)  # kJ⋅K−1⋅mol−1
 
     # Convert energy from Kelvin to kJ/mol
-    E = np.array(energy) * R
+    E = np.array(total_energy)
     N = np.array(number_of_molecules)
+    E_guest = np.array(adsorbate_energy)
+
+    # Use ddof=1 for unbiased sample variance/covariance
+    var_N = np.var(N, ddof=1)
+    
+    if var_N == 0:
+        raise ValueError("Variance of N is zero (no molecule fluctuations). Cannot compute enthalpy.")
+
+    # np.cov returns a 2x2 matrix; index [0, 1] is the cross-covariance of E and N.
+    # This is numerically stable compared to: (E * N).mean() - E.mean() * N.mean()
+    cov_EN = np.cov(E, N, ddof=1)[0, 1]
+
+    # Calculate the enthalpy of adsorption in eV
+    H_eV = (cov_EN / var_N) - E_guest.mean() - (units.kB * temperature)
 
     EN = E * N
 
     # Calculate the enthalpy of adsorption. Here <N^2> - <N>^2 = VAR(N)
-    H = (EN.mean() - E.mean() * N.mean()) / np.var(N) - R * temperature
+    H = (EN.mean() - E.mean() * N.mean()) / np.var(N) - units.kB * temperature - E_guest.mean()
+
+    H /= (units.kJ / units.mol)  # Convert from kJ/mol to kJ/mol
 
     return H
 
