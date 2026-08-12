@@ -5,15 +5,18 @@
 ### New Features 🎉
 
 - Add `MoveWeights` class for managing and normalizing movement weights in simulations. This class allows users to define weights for different types of moves (insertion, deletion, translation, rotation, reinsertion, and identity change) and ensures that they are normalized to sum to 1. It also provides a method to select a move based on the defined weights using a random generator.
+- Now it is possible to save only the adsorbate positions in the `Widom` simulations by setting the `save_only_adsorbate` parameter to `True` when initializing the `Widom` class. This feature allows users to save only the positions of the adsorbate molecules during the Widom insertion process, which can be useful for analyzing the behavior of the adsorbates without saving the entire system state. When set to `False`, the full system state will be saved, including both the framework and adsorbate molecules. The default value for this parameter is set to `False`, meaning that the full system state will be saved unless specified otherwise by the user.
 
 ### Enhanced ✨
 
 - Use the `vesin` library to check for atom overlaps during the insertion of adsorbates in the GCMC and Widom simulations. The `vesin` library provides a more efficient method for calculating distances, prividing around 10x speedup in the overlap checking process. From the practical point of view, this change should provide only a minor speedup in the overall simulation time, as this process took only 30 ms on average for 2000 atoms, and now takes only 3 ms. However, this change improves the overall efficiency of the code and reduces the computational overhead associated with overlap checking.
 - Improve the `BaseEOS` and `PengRobinsonEOS` classes for better reuse.
+- Added new tests for the `PengRobinsonEOS` to compare the results with `RASPA2` and ensure the accuracy of the calculations. The tests include comparisons of fugacity coefficients and bulk phase densities for different gases at various temperatures and pressures, providing a comprehensive validation of the EOS implementation.
 
 ### Fixed 🐛
 
 - Now the default value for `shifted` parameter in the `CustomLennardJones` and `CustomGNP` calculators is set to `False`. This change ensures that the Lennard-Jones and GNP potentials are not shifted by default, which may be more appropriate for certain simulations. Users can still set this parameter to `True` if they wish to apply a shift to the potential.
+- Fixed the incorrect warning message for ideal supercell size in logger.
 
 ### Documentation 📖
 
@@ -22,10 +25,12 @@
 
 ### Modified 🛠
 
-️- Moved the `CustomLennardJones` and `CustomEwald` calculators to the `flames.calculators.lennard_jones` and `flames.calculators.ewald` modules, respectively. This change improves the organization of the codebase and makes it easier for users to locate and use these calculators in their simulations.
+️- Moved the `CustomLennardJones` and `CustomEwald` calculators to the `flames.calculators.lennard_jones` and `flames.calculators.ewald` modules, respectively. This change improves the organization of the codebase and makes it easier for users to locate and use these calculators in their simulations. 
 - Moved the `LLM` parameter in the `GCMC` class to the `save_results` method. This change allows users to specify whether to use the Left-most Local Minima (LLM) method for equilibration analysis when saving the results of a GCMC simulation, providing greater flexibility in how the results are analyzed and reported. The default value for this parameter is set to `False`, meaning that the LLM method will not be used by default unless specified otherwise.
 
 ### Removed 🗑️
+
+- Removed the `max_overlap_tries` parameter from the `GCMC` and `Widom` classes. This parameter was previously used to limit the number of attempts for placing an adsorbate without van der Waals overlap. However, it may cause problems in the simulation leading to potential issues with sampling.
 
 ## v[0.4.8] - 2026-07-22
 
