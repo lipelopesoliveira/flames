@@ -24,6 +24,7 @@ class Adsorbate:
         self,
         name: str,
         structure: ase.atoms.Atoms | str | list[ase.atoms.Atoms] | None = None,
+        molar_mass: float | None = None,
         mol_fraction: float = 1.0,
         weights: MoveWeights | dict[str, float] | None = None,
         eos: BaseEOS | dict[str, float] | None = None,
@@ -57,6 +58,8 @@ class Adsorbate:
         else:
             self.structure = structure
 
+        self._molar_mass = molar_mass if molar_mass is not None else self.get_molar_mass()
+
         # Initialize defaults, then route through setters. Empty dict triggers default MoveWeights
         self._weights: MoveWeights = MoveWeights()
         self.weights = weights if weights is not None else {}
@@ -76,6 +79,15 @@ class Adsorbate:
     def __iter__(self):
         """Allows iteration over the adsorbate's atomic structure(s)."""
         return iter(self.structure) if self.structure is not None else iter([])
+
+    @property
+    def molar_mass(self) -> float:
+        """float: The molar mass of the adsorbate in g/mol. If not explicitly set, it is calculated from the structure."""
+        return self.get_molar_mass()
+
+    @molar_mass.setter
+    def molar_mass(self, value: float) -> None:
+        self._molar_mass = value
 
     @property
     def name(self) -> str:
@@ -185,6 +197,21 @@ class Adsorbate:
             raise ValueError(
                 "EOS must be a BaseEOS or PengRobinsonEOS object, a dictionary of EOS parameters, or None."
             )
+
+    def get_molar_mass(self) -> float:
+        """
+        Calculates the molar mass of the adsorbate based on its structure.
+
+        Returns:
+            float: The molar mass in g/mol.
+
+        Raises:
+            ValueError: If the structure is not set or is empty.
+        """
+        if self.structure and len(self.structure) > 0:
+            return self.structure[0].get_masses().sum()
+        else:
+            raise ValueError("Structure is not set. Cannot calculate molar mass.")
 
     def pick_random_move(self, generator: np.random.Generator | None = None) -> str:
         """
