@@ -23,6 +23,7 @@
 ### Modified 🛠
 
 ️- Moved the `CustomLennardJones` and `CustomEwald` calculators to the `flames.calculators.lennard_jones` and `flames.calculators.ewald` modules, respectively. This change improves the organization of the codebase and makes it easier for users to locate and use these calculators in their simulations.
+- Moved the `LLM` parameter in the `GCMC` class to the `save_results` method. This change allows users to specify whether to use the Left-most Local Minima (LLM) method for equilibration analysis when saving the results of a GCMC simulation, providing greater flexibility in how the results are analyzed and reported. The default value for this parameter is set to `False`, meaning that the LLM method will not be used by default unless specified otherwise.
 
 ### Removed 🗑️
 

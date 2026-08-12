@@ -526,9 +526,9 @@ class GCMC(BaseSimulator):
         equilibration_steps : int
             Number of steps to use for equilibration. Default is 0.
         LLM : bool
-            If True, use tLeftmost Local Minima (LLM) on the determination of the equilibration point
+            If True, use the Leftmost Local Minima (LLM) on the determination of the equilibration point
             by `pyMSER <https://github.com/lipelopesoliveira/pyMSER>`_.
-            his can underestimate the equilibration point in some situations,
+            this can underestimate the equilibration point in some situations,
             but generate good averages for well-behaved scenarios.
             Default is False.
         batch_size : int
@@ -598,6 +598,7 @@ class GCMC(BaseSimulator):
         batch_size: int | bool = False,
         run_ADF: bool = False,
         uncertainty: str = "uSD",
+        LLM: bool = False,
     ) -> None:
         """
         Save a json file with the main results of the simulation.
@@ -624,13 +625,18 @@ class GCMC(BaseSimulator):
             - "uSE": uncorrelated Standard Error
             - "SD": Standard Deviation
             - "SE": Standard Error
+        LLM : bool
+            If True, use the Leftmost-Local Minima (LLM) method to determine the equilibration time.
+            This is only recommended for high-throughput simulations, and sometimes can underestimate
+            the true equilibration point.
+            Default is False.
 
         """
 
         if file_name is None:
             file_name = f"results_{self.T}_{self.P}.json"
 
-        self.equilibrate(batch_size=batch_size, run_ADF=run_ADF, uncertainty=uncertainty)
+        self.equilibrate(batch_size=batch_size, run_ADF=run_ADF, uncertainty=uncertainty, LLM=LLM)
 
         results = {
             "simulation": {

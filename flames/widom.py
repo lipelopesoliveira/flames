@@ -449,7 +449,7 @@ class Widom(BaseSimulator):
 
         if self.save_snapshots:
             if self.save_only_adsorbate:
-                self.trajectory.write(atoms_trial[self.n_atoms_framework:])  # type: ignore
+                self.trajectory.write(atoms_trial[self.n_atoms_framework :])  # type: ignore
             else:
                 self.trajectory.write(atoms_trial)  # type: ignore
 
