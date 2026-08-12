@@ -223,7 +223,9 @@ def test_base_eos_density(base_eos):
     expected_molar_volume = base_eos.R * T_TEST * 1.0 / P_TEST
     expected_density = (1e-3 * MOLAR_MASS_TEST) / expected_molar_volume
 
-    assert base_eos.get_bulk_phase_density(T_TEST, P_TEST) == pytest.approx(expected_density, rel=1e-5)
+    assert base_eos.get_bulk_phase_density(T_TEST, P_TEST) == pytest.approx(
+        expected_density, rel=1e-5
+    )
 
 
 def test_base_eos_molar_density(base_eos):

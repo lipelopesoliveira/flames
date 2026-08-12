@@ -14,11 +14,11 @@ from flames.exceptions import InsertionDeletionError, MoveKeyError
 
 
 def enthalpy_of_adsorption(
-        total_energy: np.ndarray,
-        adsorbate_energy: np.ndarray,
-        number_of_molecules: np.ndarray,
-        temperature: float
-        ) -> float:
+    total_energy: np.ndarray,
+    adsorbate_energy: np.ndarray,
+    number_of_molecules: np.ndarray,
+    temperature: float,
+) -> float:
     """
     Calculates the enthalpy of adsorption as
 
@@ -61,9 +61,11 @@ def enthalpy_of_adsorption(
 
     # Use ddof=1 for unbiased sample variance/covariance
     var_N = np.var(N, ddof=1)
-    
+
     if var_N == 0:
-        raise ValueError("Variance of N is zero (no molecule fluctuations). Cannot compute enthalpy.")
+        raise ValueError(
+            "Variance of N is zero (no molecule fluctuations). Cannot compute enthalpy."
+        )
 
     # np.cov returns a 2x2 matrix; index [0, 1] is the cross-covariance of E and N.
     # This is numerically stable compared to: (E * N).mean() - E.mean() * N.mean()
@@ -72,12 +74,7 @@ def enthalpy_of_adsorption(
     # Calculate the enthalpy of adsorption in eV
     H_eV = (cov_EN / var_N) - E_guest.mean() - (units.kB * temperature)
 
-    EN = E * N
-
-    # Calculate the enthalpy of adsorption. Here <N^2> - <N>^2 = VAR(N)
-    H = (EN.mean() - E.mean() * N.mean()) / np.var(N) - units.kB * temperature - E_guest.mean()
-
-    H /= (units.kJ / units.mol)  # Convert from kJ/mol to kJ/mol
+    H = H_eV / (units.kJ / units.mol)  # Convert from eV to kJ/mol
 
     return H
 

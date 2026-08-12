@@ -1,10 +1,8 @@
-import warnings
-from dataclasses import dataclass, field
-from typing import Any, Dict, Iterator, Optional
+from typing import Any
 
+import ase.atoms
 import ase.io
 import numpy as np
-import ase.atoms
 
 from flames.eos import BaseEOS, PengRobinsonEOS
 from flames.move_weights import MoveWeights
@@ -23,27 +21,27 @@ class Adsorbate:
     """
 
     def __init__(
-            self,
-            name: str,
-            structure: ase.atoms.Atoms | str | list[ase.atoms.Atoms] | None = None,
-            mol_fraction: float = 1.0,
-            weights: MoveWeights | dict[str, float] | None = None,
-            eos: BaseEOS | dict[str, float] | None = None,
-            index: int | str = ':',
-            **kwargs: Any
+        self,
+        name: str,
+        structure: ase.atoms.Atoms | str | list[ase.atoms.Atoms] | None = None,
+        mol_fraction: float = 1.0,
+        weights: MoveWeights | dict[str, float] | None = None,
+        eos: BaseEOS | dict[str, float] | None = None,
+        index: int | str = ":",
+        **kwargs: Any,
     ) -> None:
         """
         Initializes an Adsorbate instance.
 
         Args:
             name (str): The name of the adsorbate species (e.g., 'CO2', 'N2').
-            structure (Atoms | str | list[Atoms] | None): The structural representation. 
+            structure (Atoms | str | list[Atoms] | None): The structural representation.
                 If a string is provided, it is treated as a file path and read via ASE.
             mol_fraction (float): The mole fraction of the adsorbate in the gas phase.
-            weights (MoveWeights | dict[str, float] | None): Move probabilities. If a dict 
+            weights (MoveWeights | dict[str, float] | None): Move probabilities. If a dict
                 is passed, it initializes a MoveWeights object. If None, uses defaults.
             eos (BaseEOS | dict[str, float] | None): Equation of state object or parameters.
-            index (int | str): The index or slice to read if `structure` is a file path. 
+            index (int | str): The index or slice to read if `structure` is a file path.
                 Defaults to ':' (reads all configurations).
             **kwargs (Any): Additional keyword arguments passed to `ase.io.read`.
         """
@@ -110,9 +108,9 @@ class Adsorbate:
         Sets the structure of the adsorbate, ensuring it is stored as a list of Atoms.
 
         Args:
-            value (str | Atoms | list[Atoms] | None): The structure to set. Strings are 
+            value (str | Atoms | list[Atoms] | None): The structure to set. Strings are
                 interpreted as file paths and read using ASE's default read behavior.
-        
+
         Raises:
             ValueError: If the input is not a recognized structure type or valid file.
         """
@@ -123,7 +121,9 @@ class Adsorbate:
         elif isinstance(value, list) and all(isinstance(item, ase.atoms.Atoms) for item in value):
             self._structure = value
         else:
-            raise ValueError("Structure must be an ASE Atoms object, a list of Atoms objects, or None.")
+            raise ValueError(
+                "Structure must be an ASE Atoms object, a list of Atoms objects, or None."
+            )
 
     @property
     def weights(self) -> MoveWeights:
@@ -136,9 +136,9 @@ class Adsorbate:
         Sets the move weights for the adsorbate.
 
         Args:
-            value (MoveWeights | dict[str, float]): A MoveWeights instance, or a dictionary 
+            value (MoveWeights | dict[str, float]): A MoveWeights instance, or a dictionary
                 of move probabilities to construct one.
-        
+
         Raises:
             ValueError: If the input is neither a MoveWeights instance nor a dictionary.
         """
@@ -148,7 +148,9 @@ class Adsorbate:
             # Assuming MoveWeights is imported and available in scope
             self._weights = MoveWeights(**value)
         else:
-            raise ValueError("Weights must be a MoveWeights object or a dictionary of move probabilities.")
+            raise ValueError(
+                "Weights must be a MoveWeights object or a dictionary of move probabilities."
+            )
 
     @property
     def eos(self) -> BaseEOS | None:
@@ -161,10 +163,10 @@ class Adsorbate:
         Sets the Equation of State (EOS) for the adsorbate.
 
         Args:
-            value (BaseEOS | PengRobinsonEOS | dict[str, float] | None): The EOS object, 
-                or a dictionary of parameters to initialize a PengRobinsonEOS. 
+            value (BaseEOS | PengRobinsonEOS | dict[str, float] | None): The EOS object,
+                or a dictionary of parameters to initialize a PengRobinsonEOS.
                 If a dict is used, the structure must be set first to calculate molar mass.
-        
+
         Raises:
             ValueError: If structure is missing when passing a dict, or if the value type is invalid.
         """
@@ -174,18 +176,22 @@ class Adsorbate:
             self._eos = value
         elif isinstance(value, dict):
             if not self.structure:
-                raise ValueError("Structure must be set before setting EOS parameters via dictionary.")
+                raise ValueError(
+                    "Structure must be set before setting EOS parameters via dictionary."
+                )
             # Because structure is normalized to a list, we can safely grab index 0
             self._eos = PengRobinsonEOS(**value, molarMass=self.structure[0].get_masses().sum())
         else:
-            raise ValueError("EOS must be a BaseEOS or PengRobinsonEOS object, a dictionary of EOS parameters, or None.")
+            raise ValueError(
+                "EOS must be a BaseEOS or PengRobinsonEOS object, a dictionary of EOS parameters, or None."
+            )
 
     def pick_random_move(self, generator: np.random.Generator | None = None) -> str:
         """
         Selects a random Monte Carlo move based on the adsorbate's move weights.
 
         Args:
-            generator (np.random.Generator | None): An optional NumPy random number generator. 
+            generator (np.random.Generator | None): An optional NumPy random number generator.
                 If None, the default RNG is used.
 
         Returns:
@@ -200,7 +206,7 @@ class Adsorbate:
         Randomly selects and returns a copy of one of the adsorbate's structures.
 
         Args:
-            generator (np.random.Generator | None): An optional NumPy random number generator. 
+            generator (np.random.Generator | None): An optional NumPy random number generator.
                 If None, the default RNG is used.
 
         Returns:
@@ -211,13 +217,13 @@ class Adsorbate:
         """
         if not self.structure:
             raise ValueError("No structure available to pick from. Please set the structure first.")
-            
+
         if generator is None:
             generator = np.random.default_rng()
-            
+
         if len(self.structure) == 1:
             return self.structure[0].copy()
-            
+
         # Using generator.integers avoids issues np.random.choice has with arrays of complex objects
         idx = generator.integers(len(self.structure))
         return self.structure[idx].copy()

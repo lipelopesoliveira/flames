@@ -12,7 +12,7 @@ class BaseEOS(ABC):
 
     def __init__(
         self,
-        molarMass: float=1.0,
+        molarMass: float = 1.0,
     ) -> None:
         """Initialize the base EOS with a molar mass.
         Parameters:
@@ -24,7 +24,9 @@ class BaseEOS(ABC):
         # Universal gas constant in J/(mol*K)
         self.R = units.kB / units.J * units.mol
 
-    def get_stable_phase_properties(self, temperature: float, pressure: float) -> tuple[float, float, str]:
+    def get_stable_phase_properties(
+        self, temperature: float, pressure: float
+    ) -> tuple[float, float, str]:
         """
         Returns the compressibility (Z), fugacity coefficient (phi), and phase name of the stable phase.
         This method should be implemented by subclasses to provide specific EOS calculations.
@@ -62,14 +64,14 @@ class BaseEOS(ABC):
 
         Parameters:
         -----------
-        temperature (float): 
+        temperature (float):
             Temperature in Kelvin.
-        pressure (float): 
+        pressure (float):
             Pressure in Pascals.
-        
+
         Returns:
         --------
-        density (float): 
+        density (float):
             Bulk phase density in kg/m^3
         """
         Z = self.get_compressibility(temperature, pressure)
@@ -84,16 +86,16 @@ class BaseEOS(ABC):
 
         Parameters:
         -----------
-        temperature (float): 
+        temperature (float):
             Temperature in Kelvin.
-        pressure (float): 
+        pressure (float):
             Pressure in Pascals.
-        
+
         Returns:
         --------
-        molar_density (float): 
+        molar_density (float):
             Bulk phase molar density in mol/m^3
-        
+
         """
         Z = self.get_compressibility(temperature, pressure)
         molar_volume = self.R * temperature * Z / pressure
@@ -101,15 +103,13 @@ class BaseEOS(ABC):
         molar_density = 1 / molar_volume
         return float(molar_density)
 
-    
-
 
 class PengRobinsonEOS(BaseEOS):
     """
     Peng-Robinson Equation of State implementation.
 
     This class calculates the compressibility factor and fugacity coefficient
-    based on the Peng-Robinson EOS, which is widely used for corrections to 
+    based on the Peng-Robinson EOS, which is widely used for corrections to
     real gas behavior.
 
     Attributes:
@@ -186,7 +186,9 @@ class PengRobinsonEOS(BaseEOS):
         )
         return float(np.exp(ln_phi))
 
-    def get_stable_phase_properties(self, temperature: float, pressure: float) -> tuple[float, float, str]:
+    def get_stable_phase_properties(
+        self, temperature: float, pressure: float
+    ) -> tuple[float, float, str]:
         """
         Finds all physical roots of the PR cubic equation and determines the stable phase.
         Returns:

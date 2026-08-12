@@ -237,7 +237,9 @@ class GCMC(BaseSimulator):
             )
             self.fugacity_coeff = self.eos.get_fugacity_coefficient(self.T, self.P)
 
-            self.excess_nmol = self.eos.get_bulk_phase_molar_density(self.T, self.P) * self.V * self.void_fraction
+            self.excess_nmol = (
+                self.eos.get_bulk_phase_molar_density(self.T, self.P) * self.V * self.void_fraction
+            )
 
         # Parameters for storing the main results during the simulation
         self._n_adsorbates: int = 0
