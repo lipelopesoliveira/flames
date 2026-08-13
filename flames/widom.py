@@ -181,10 +181,11 @@ class Widom(BaseSimulator):
         Post-initialization to set up the Widom simulation.
         """
 
-
         # Check if there is only on adsorbate molecule
         if len(self.adsorbates) != 1:
-            raise ValueError("Widom insertion method currently supports only one adsorbate molecule.")
+            raise ValueError(
+                "Widom insertion method currently supports only one adsorbate molecule."
+            )
 
     def _compute_kH(self) -> float:
         """
@@ -414,13 +415,16 @@ class Widom(BaseSimulator):
         # Ensure atoms_trial is always defined so it can be returned in failure cases
         atoms_trial = self.framework.copy()
 
-        atoms_trial = random_mol_insertion(self.framework, self.adsorbates[0].structure, self.rnd_generator)
+        atoms_trial = random_mol_insertion(
+            self.framework, self.adsorbates[0].structure, self.rnd_generator
+        )
 
         overlaped = check_overlap_vesin(
             atoms=atoms_trial,
             group1_indices=np.arange(self.n_atoms_framework),
             group2_indices=np.arange(
-                self.n_atoms_framework, self.n_atoms_framework + list(self.n_adsorbate_atoms.values())[0]
+                self.n_atoms_framework,
+                self.n_atoms_framework + list(self.n_adsorbate_atoms.values())[0],
             ),
             vdw_radii=self.vdw,
         )
@@ -434,7 +438,11 @@ class Widom(BaseSimulator):
         atoms_trial.calc = self.model
 
         # Calculate the interaction energy of the trial configuration
-        deltaE = atoms_trial.get_potential_energy() - self.framework_energy - self.adsorbate_energy[self.adsorbates[0].name]
+        deltaE = (
+            atoms_trial.get_potential_energy()
+            - self.framework_energy
+            - self.adsorbate_energy[self.adsorbates[0].name]
+        )
 
         # Add interaction energy to the info dictionary
         atoms_trial.info["interaction_energy"] = deltaE

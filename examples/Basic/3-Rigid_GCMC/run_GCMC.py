@@ -1,7 +1,7 @@
 import os
 import sys
 
-sys.path.append('C:\\Users\\flopes\\Documents\\PRs\\flames')
+sys.path.append("C:\\Users\\flopes\\Documents\\PRs\\flames")
 
 # Hide UserWarning and RuntimeWarning messages
 import warnings
@@ -12,8 +12,8 @@ from ase.data import vdw_radii
 from ase.io import read
 from mace.calculators import mace_mp
 
-from flames.gcmc import GCMC
 from flames.adsorbate import Adsorbate
+from flames.gcmc import GCMC
 
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)

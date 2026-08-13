@@ -41,7 +41,12 @@ class BaseLogger:
         """Prints the header for the simulation output."""
         atomic_numbers = set(
             set(list(self.sim.framework.get_atomic_numbers()))
-            | set().union(*[set(list(adsorbate.structure.get_atomic_numbers())) for adsorbate in self.sim.adsorbates])
+            | set().union(
+                *[
+                    set(list(adsorbate.structure.get_atomic_numbers()))
+                    for adsorbate in self.sim.adsorbates
+                ]
+            )
         )
 
         header = f"""
@@ -208,7 +213,9 @@ Current average binding energy: {avg_binding_energy:.3f} kJ/mol
 ===========================================================================
 """)
 
-    def print_debug_movement(self, movement, deltaE, prefactor, acc, rnd_number, adsorbate_name) -> None:
+    def print_debug_movement(
+        self, movement, deltaE, prefactor, acc, rnd_number, adsorbate_name
+    ) -> None:
         """
         Print debug information about the current state of the simulation.
         This method is called to provide detailed information about the current state of the system.
@@ -341,7 +348,9 @@ Current steps are: {self.sim.base_iteration}
         line_str = "{:^11}|{:^13}|{:>9.2f} |{:>13.4f} |{:>11.4f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:9.2f}"
         self._print(line_str.format(*iteration_data.values()))
 
-    def print_debug_movement(self, movement, deltaE, prefactor, acc, rnd_number, adsorbate_name) -> None:
+    def print_debug_movement(
+        self, movement, deltaE, prefactor, acc, rnd_number, adsorbate_name
+    ) -> None:
         """Prints detailed debug information for a single MC move."""
         self._print(f"""
 =======================================================================================================

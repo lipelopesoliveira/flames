@@ -9,8 +9,8 @@ from ase.data import vdw_radii
 from ase.io import read
 from mace.calculators import mace_mp
 
-from flames.widom import Widom
 from flames.adsorbate import Adsorbate
+from flames.widom import Widom
 
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
