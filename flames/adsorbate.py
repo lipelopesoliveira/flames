@@ -1,9 +1,9 @@
 from copy import deepcopy
 from typing import Any
 
-from ase.atoms import Atoms
 import ase.io
 import numpy as np
+from ase.atoms import Atoms
 
 from flames.eos import BaseEOS, PengRobinsonEOS
 from flames.move_weights import MoveWeights
@@ -229,9 +229,10 @@ class Adsorbate:
         """
         if generator is None:
             generator = np.random.default_rng()
+
         return self.weights.pick_random_move(generator=generator)
 
-    def pick_structure(self) -> Atoms:
+    def pick_structure(self) -> Atoms | list[Atoms]:
         """
         Randomly selects and returns a copy of one of the adsorbate's structures.
 
@@ -240,10 +241,10 @@ class Adsorbate:
                 If None, the default RNG is used.
 
         Returns:
-            Atoms: A deep copy of the selected atomic structure.
+            Atoms | list[Atoms]: A deep copy of the selected atomic structure.
 
         Raises:
             ValueError: If no structure has been assigned to the adsorbate.
         """
 
-        return deepcopy(self.structure)  # type: ignore
+        return deepcopy(self.structure)

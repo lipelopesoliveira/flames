@@ -386,9 +386,9 @@ class BaseSimulator:
         # Set tags and properties for each adsorbate
         for i, adsorbate in enumerate(self.adsorbates):
             adsorbate.tag = i + 1
-            adsorbate.structure.set_cell(self.framework.get_cell())
-            adsorbate.structure.set_pbc([True, True, True])
-            adsorbate.structure.calc = self.model
+            adsorbate.structure.set_cell(self.framework.get_cell())  # type: ignore
+            adsorbate.structure.set_pbc([True, True, True])  # type: ignore
+            adsorbate.structure.calc = self.model  # type: ignore
 
         if isinstance(adsorbate_energy, float):
             if len(self.adsorbates) != 1:
@@ -417,7 +417,7 @@ class BaseSimulator:
 
         else:
             self.adsorbate_energy = {
-                adsorbate.name: adsorbate.structure.get_potential_energy()
+                adsorbate.name: adsorbate.structure.get_potential_energy()  # type: ignore
                 for adsorbate in self.adsorbates
             }
 
@@ -533,7 +533,7 @@ Start optimizing adsorbate structure...
         for i in range(len(self.adsorbates)):
 
             resultsDict, optAdsorbate = crystalOptimization(
-                atoms_in=self.adsorbates[i].structure,
+                atoms_in=self.adsorbates[i].structure,  # type: ignore
                 calculator=self.model,
                 optimizer=LBFGS,  # type: ignore
                 fmax=max_force,
@@ -550,11 +550,11 @@ Start optimizing adsorbate structure...
             )
 
             self.adsorbates[i].structure = optAdsorbate.copy()
-            self.adsorbates[i].structure.set_constraint(None)
-            self.adsorbates[i].structure.set_cell(self.framework.get_cell())
-            self.adsorbates[i].structure.calc = self.model
+            self.adsorbates[i].structure.set_constraint(None)  # type: ignore
+            self.adsorbates[i].structure.set_cell(self.framework.get_cell())  # type: ignore
+            self.adsorbates[i].structure.calc = self.model  # type: ignore
             self.adsorbate_energy = {
-                self.adsorbates[i].name: self.adsorbates[i].structure.get_potential_energy()
+                self.adsorbates[i].name: self.adsorbates[i].structure.get_potential_energy()  # type: ignore
             }
 
     def npt(
