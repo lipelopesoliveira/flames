@@ -1,6 +1,6 @@
+from copy import deepcopy
 from typing import Any
 
-from copy import deepcopy
 import ase.atoms
 import ase.io
 import numpy as np
@@ -24,12 +24,12 @@ class Adsorbate:
     def __init__(
         self,
         name: str,
-        structure: ase.atoms.Atoms | str | list[ase.atoms.Atoms] | list = [],
+        structure: ase.atoms.Atoms | str = ase.atoms.Atoms(),
         molar_mass: float | None = None,
         mol_fraction: float = 1.0,
         weights: MoveWeights | dict[str, float] | None = None,
         eos: BaseEOS | dict[str, float] | None = None,
-        index: int | str = ":",
+        tag: int = 0,
         **kwargs: Any,
     ) -> None:
         """
@@ -43,21 +43,18 @@ class Adsorbate:
             weights (MoveWeights | dict[str, float] | None): Move probabilities. If a dict
                 is passed, it initializes a MoveWeights object. If None, uses defaults.
             eos (BaseEOS | dict[str, float] | None): Equation of state object or parameters.
-            index (int | str): The index or slice to read if `structure` is a file path.
-                Defaults to ':' (reads all configurations).
             **kwargs (Any): Additional keyword arguments passed to `ase.io.read`.
         """
         self._name = name
 
         self._mol_fraction = mol_fraction
 
-        # Handle file reading here to utilize index and **kwargs
-        self._structure = []
+        self._tag = tag
+
         if isinstance(structure, str):
-            parsed = ase.io.read(structure, index=index, **kwargs)
-            self.structure = [parsed] if isinstance(parsed, ase.atoms.Atoms) else parsed
+            self._structure = ase.io.read(structure, **kwargs)
         else:
-            self.structure = structure
+            self._structure = structure
 
         self._molar_mass = molar_mass if molar_mass is not None else self.get_molar_mass()
 
@@ -71,37 +68,15 @@ class Adsorbate:
 
     def __repr__(self) -> str:
         """Returns a string representation of the Adsorbate object."""
-        return f"Adsorbate(name={self.name}, mol_fraction={self.mol_fraction}, molar_mass={self.molar_mass}, structure={self.structure}, weights={self.weights}, eos={self.eos})"
+        return "Adsorbate(name={}, mol_fraction={}, molar_mass={}, structure={}, weights={}, eos={})".format(
+            self.name, self.mol_fraction, self.molar_mass, self.structure, self.weights, self.eos
+        )
 
     def __str__(self) -> str:
         """Returns a human-readable string summarizing the Adsorbate."""
-        return f"Adsorbate: {self.name}, Mole Fraction: {self.mol_fraction}, Molar Mass: {self.molar_mass}, Structure: {self.structure}, Weights: {self.weights}, EOS: {self.eos}"
-
-    def __iter__(self):
-        """Allows iteration over the adsorbate's atomic structure(s)."""
-        return iter(self.structure) if self.structure is not None else iter([])
-
-    def __len__(self) -> int:
-        """Returns the number of structures associated with the adsorbate."""
-        return len(self.structure) if self.structure is not None else 0
-
-    def __getitem__(self, index: int | slice) -> ase.atoms.Atoms | list[ase.atoms.Atoms]:
-        """
-        Allows indexing into the adsorbate to retrieve specific atomic structures.
-
-        Args:
-            index (int | slice): The index or slice of the structure(s) to retrieve.
-
-        Returns:
-            ase.atoms.Atoms | list[ase.atoms.Atoms]: The requested structure(s).
-
-        Raises:
-            TypeError: If the structure is not set (is None).
-            IndexError: If the index is out of bounds.
-        """
-        if self.structure is None:
-            raise TypeError("Adsorbate has no structures to index.")
-        return self.structure[index]
+        return "Adsorbate: {}, Mole Fraction: {}, Molar Mass: {}, Structure: {}, Weights: {}, EOS: {}".format(
+            self.name, self.mol_fraction, self.molar_mass, self.structure, self.weights, self.eos
+        )
 
     @property
     def molar_mass(self) -> float:
@@ -133,12 +108,23 @@ class Adsorbate:
         self._mol_fraction = value
 
     @property
-    def structure(self) -> list[ase.atoms.Atoms] | None:
-        """list[Atoms] | None: The structure(s) of the adsorbate, always stored as a list."""
+    def tag(self) -> int:
+        """int: The tag associated with the adsorbate, useful for identification in simulations."""
+        return self._tag
+
+    @tag.setter
+    def tag(self, value: int) -> None:
+        self._tag = value
+        if self.structure is not None:
+            self.structure.set_tags(np.ones(len(self.structure), dtype=int) * value)  # type: ignore
+
+    @property
+    def structure(self) -> ase.atoms.Atoms:
+        """ase.atoms.Atoms: The structure of the adsorbate."""
         return self._structure
 
     @structure.setter
-    def structure(self, value: ase.atoms.Atoms | list[ase.atoms.Atoms] | None) -> None:
+    def structure(self, value: ase.atoms.Atoms) -> None:
         """
         Sets the structure of the adsorbate, ensuring it is stored as a list of Atoms.
 
@@ -149,16 +135,10 @@ class Adsorbate:
         Raises:
             ValueError: If the input is not a recognized structure type or valid file.
         """
-        if value is None:
-            self._structure = []
-        elif isinstance(value, ase.atoms.Atoms):
-            self._structure = [value]
-        elif isinstance(value, list) and all(isinstance(item, ase.atoms.Atoms) for item in value):
+        if isinstance(value, ase.atoms.Atoms):
             self._structure = value
         else:
-            raise ValueError(
-                "Structure must be an ASE Atoms object, a list of Atoms objects, or None."
-            )
+            raise ValueError("Structure must be an ASE Atoms object")
 
     @property
     def weights(self) -> MoveWeights:
@@ -215,7 +195,7 @@ class Adsorbate:
                     "Structure must be set before setting EOS parameters via dictionary."
                 )
             # Because structure is normalized to a list, we can safely grab index 0
-            self._eos = PengRobinsonEOS(**value, molar_mass=self.structure[0].get_masses().sum())
+            self._eos = PengRobinsonEOS(**value, molar_mass=self.molar_mass)
         else:
             raise ValueError(
                 "EOS must be a BaseEOS or PengRobinsonEOS object, a dictionary of EOS parameters, or None."
@@ -231,8 +211,8 @@ class Adsorbate:
         Raises:
             ValueError: If the structure is not set or is empty.
         """
-        if self.structure and len(self.structure) > 0:
-            return self.structure[0].get_masses().sum()
+        if self.structure:
+            return self.structure.get_masses().sum()  # type: ignore
         else:
             raise ValueError("Structure is not set. Cannot calculate molar mass.")
 
@@ -251,7 +231,7 @@ class Adsorbate:
             generator = np.random.default_rng()
         return self.weights.pick_random_move(generator=generator)
 
-    def pick_structure(self, generator: np.random.Generator | None = None) -> ase.atoms.Atoms:
+    def pick_structure(self) -> ase.atoms.Atoms:
         """
         Randomly selects and returns a copy of one of the adsorbate's structures.
 
@@ -265,15 +245,5 @@ class Adsorbate:
         Raises:
             ValueError: If no structure has been assigned to the adsorbate.
         """
-        if not self.structure:
-            raise ValueError("No structure available to pick from. Please set the structure first.")
 
-        if generator is None:
-            generator = np.random.default_rng()
-
-        if len(self.structure) == 1:
-            return deepcopy(self.structure[0])
-
-        # Using generator.integers avoids issues np.random.choice has with arrays of complex objects
-        idx = generator.integers(len(self.structure))
-        return deepcopy(self.structure[idx])
+        return deepcopy(self.structure)  # type: ignore

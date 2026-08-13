@@ -10,6 +10,7 @@ from ase.calculators import calculator
 from ase.io import Trajectory
 from ase.optimize import LBFGS
 
+from flames.adsorbate import Adsorbate
 from flames.ase_utils import (
     crystalOptimization,
     nPT_Berendsen,
@@ -119,7 +120,7 @@ class BaseSimulator:
         self,
         model: calculator.Calculator,
         framework_atoms: ase.Atoms,
-        adsorbate_atoms: ase.Atoms,
+        adsorbates: Adsorbate,
         temperature: float,
         pressure: float,
         device: str,
@@ -149,6 +150,7 @@ class BaseSimulator:
             self.out_folder = output_folder
         else:
             self.out_folder = f"results_{temperature:.2f}_{pressure:.2f}"
+
         os.makedirs(self.out_folder, exist_ok=True)
         os.makedirs(os.path.join(self.out_folder, "Movies"), exist_ok=True)
 
@@ -188,7 +190,7 @@ class BaseSimulator:
         else:
             self.current_total_energy = self.framework_energy  # type: ignore
 
-        self.set_adsorbate(adsorbate_atoms, adsorbate_energy=adsorbate_energy)
+        self.set_adsorbates(adsorbates, adsorbate_energy=adsorbate_energy)
 
         # General definitions for simulation parameters
         self.T = temperature
@@ -208,12 +210,35 @@ class BaseSimulator:
         self.ideal_supercell = self._get_ideal_supercell()
 
         self.conv_factors = {
-            "nmol": 1 / np.prod(self.ideal_supercell),
-            "mol/kg": (1 / units.mol) / self.get_framework_mass(),
-            "mg/g": (self.adsorbate_mass * 1e3) / self.get_framework_mass(),
-            "cm^3 STP/gr": mol2cm3 / units.mol / self.get_framework_mass() * 1e3,
-            "cm^3 STP/cm^3": 1e6 * mol2cm3 / units.mol / (self.framework.get_volume() * (1e-8**3)),
-            "% wt": self.adsorbate_mass / self.get_framework_mass() * 100,
+            "nmol": {
+                adsorbate.name: 1 / np.prod(self.ideal_supercell) for adsorbate in self.adsorbates
+            },
+            "mol/kg": {
+                adsorbate.name: (1 / units.mol) / self.get_framework_mass()
+                for adsorbate in self.adsorbates
+            },
+            "mg/g": {
+                adsorbate.name: (self.adsorbate_mass[adsorbate.name] * 1e3)
+                / self.get_framework_mass()
+                for adsorbate in self.adsorbates
+            },
+            "cm^3 STP/gr": {
+                adsorbate.name: mol2cm3 / units.mol / self.get_framework_mass() * 1e3
+                for adsorbate in self.adsorbates
+            },
+            "cm^3 STP/cm^3": {
+                adsorbate.name: 1e6
+                * mol2cm3
+                / units.mol
+                / (self.framework.get_volume() * (1e-8**3))
+                for adsorbate in self.adsorbates
+            },
+            "% wt": {
+                adsorbate.name: (
+                    self.adsorbate_mass[adsorbate.name] / self.get_framework_mass() * 100
+                )
+                for adsorbate in self.adsorbates
+            },
         }
 
         self.vdw: np.ndarray = (
@@ -318,10 +343,10 @@ class BaseSimulator:
         # Get the framework density in g/cm^3
         self.framework_density = get_density(self.framework)
 
-    def set_adsorbate(
+    def set_adsorbates(
         self,
-        adsorbate_atoms: ase.Atoms,
-        adsorbate_energy: float | None = None,
+        adsorbates: Adsorbate | list[Adsorbate],
+        adsorbate_energy: float | list | dict[str, float] | None = None,
         n_adsorbates: int = 0,
     ) -> None:
         """
@@ -329,28 +354,82 @@ class BaseSimulator:
 
         Parameters
         ----------
-        adsorbate_atoms : ase.Atoms
-            The new adsorbate structure as an ASE Atoms object.
+        adsorbates : Adsorbate
+            The list of adsorbate structure(s) as an Adsorbate object.
         adsorbate_energy : float or None, optional
             The energy of the adsorbate in eV. If None, the energy will be calculated using the provided model.
         n_adsorbates : int
             Number of adsorbate molecules in the framework.
         """
-        self.adsorbate = adsorbate_atoms
-        self.adsorbate.set_tags(np.ones(len(self.adsorbate), dtype=int))
-        self.adsorbate.calc = self.model
-        self.adsorbate.set_cell(self.framework.get_cell())
-        self.adsorbate.set_pbc([True, True, True])
+        if not isinstance(adsorbates, (Adsorbate, list)):
+            raise ValueError(
+                "Adsorbates must be an Adsorbate object or a list of Adsorbate objects. Not ",
+                type(adsorbates),
+            )
 
-        if adsorbate_energy:
+        if isinstance(adsorbates, Adsorbate):
+            adsorbates = [adsorbates]
+
+        self.adsorbates = adsorbates
+
+        # Check if mol fractions sum to 1
+        self.adsorbate_mol_fractions = {
+            adsorbate.name: adsorbate.mol_fraction for adsorbate in self.adsorbates
+        }
+        if not np.isclose(sum(self.adsorbate_mol_fractions.values()), 1.0):
+            raise ValueError(
+                "Mole fractions must sum to 1. Current sum: {}".format(
+                    sum(self.adsorbate_mol_fractions.values())
+                )
+            )
+
+        # Set tags and properties for each adsorbate
+        for i, adsorbate in enumerate(self.adsorbates):
+            adsorbate.tag = i + 1
+            adsorbate.structure.set_cell(self.framework.get_cell())
+            adsorbate.structure.set_pbc([True, True, True])
+            adsorbate.structure.calc = self.model
+
+        if isinstance(adsorbate_energy, float):
+            if len(self.adsorbates) != 1:
+                raise ValueError(
+                    "If multiple adsorbates are provided, adsorbate_energy must be a list or dict."
+                )
+
+            self.adsorbate_energy = {self.adsorbates[0].name: adsorbate_energy}
+
+        elif isinstance(adsorbate_energy, list):
+            if len(adsorbate_energy) != len(self.adsorbates):
+                raise ValueError(
+                    "Length of adsorbate_energy list must match the number of adsorbates."
+                )
+            self.adsorbate_energy = {
+                adsorbate.name: energy
+                for adsorbate, energy in zip(self.adsorbates, adsorbate_energy)
+            }
+
+        elif isinstance(adsorbate_energy, dict):
+            if set(adsorbate_energy.keys()) != set(adsorbate.name for adsorbate in self.adsorbates):
+                raise ValueError(
+                    "Keys of adsorbate_energy dict must match the names of the adsorbates."
+                )
             self.adsorbate_energy = adsorbate_energy
-        else:
-            self.adsorbate_energy = self.adsorbate.get_potential_energy()
 
-        self.n_adsorbate_atoms = len(self.adsorbate)
-        self.adsorbate_mass = np.sum(self.adsorbate.get_masses()) / units.kg
-        self.n_atoms_framework -= self.n_adsorbate_atoms * n_adsorbates
-        self.n_adsorbates = n_adsorbates
+        else:
+            self.adsorbate_energy = {
+                adsorbate.name: adsorbate.structure.get_potential_energy()
+                for adsorbate in self.adsorbates
+            }
+
+        self.n_adsorbate_atoms = {
+            adsorbate.name: len(adsorbate.structure) for adsorbate in self.adsorbates
+        }
+        self.adsorbate_mass = {
+            adsorbate.name: adsorbate.get_molar_mass() / units.kg for adsorbate in self.adsorbates
+        }
+
+        # self.n_atoms_framework -= self.n_adsorbate_atoms * n_adsorbates
+        # self.n_adsorbates = n_adsorbates
 
     def set_state(self, state: ase.Atoms) -> None:
         """
@@ -451,28 +530,32 @@ Start optimizing adsorbate structure...
             flush=True,
         )
 
-        resultsDict, optAdsorbate = crystalOptimization(
-            atoms_in=self.adsorbate,
-            calculator=self.model,
-            optimizer=LBFGS,  # type: ignore
-            fmax=max_force,
-            opt_cell=False,
-            fix_symmetry=False,
-            hydrostatic_strain=True,
-            constant_volume=True,
-            scalar_pressure=self.P,
-            max_steps=max_steps,
-            trajectory="Adsorbate_Optimization.traj",
-            verbose=True,
-            symm_tol=1e3,
-            out_file=self.out_file,  # type: ignore
-        )
+        for i in range(len(self.adsorbates)):
 
-        self.adsorbate = optAdsorbate.copy()
-        self.adsorbate.set_constraint(None)
-        self.adsorbate.set_cell(self.framework.get_cell())
-        self.adsorbate.calc = self.model
-        self.adsorbate_energy = self.adsorbate.get_potential_energy()
+            resultsDict, optAdsorbate = crystalOptimization(
+                atoms_in=self.adsorbates[i].structure,
+                calculator=self.model,
+                optimizer=LBFGS,  # type: ignore
+                fmax=max_force,
+                opt_cell=False,
+                fix_symmetry=False,
+                hydrostatic_strain=True,
+                constant_volume=True,
+                scalar_pressure=self.P,
+                max_steps=max_steps,
+                trajectory=f"Adsorbate_{self.adsorbates[i].name}_Optimization.traj",
+                verbose=True,
+                symm_tol=1e3,
+                out_file=self.out_file,  # type: ignore
+            )
+
+            self.adsorbates[i].structure = optAdsorbate.copy()
+            self.adsorbates[i].structure.set_constraint(None)
+            self.adsorbates[i].structure.set_cell(self.framework.get_cell())
+            self.adsorbates[i].structure.calc = self.model
+            self.adsorbate_energy = {
+                self.adsorbates[i].name: self.adsorbates[i].structure.get_potential_energy()
+            }
 
     def npt(
         self,
