@@ -196,7 +196,7 @@ class GCMC(BaseSimulator):
         super().__init__(
             model=model,
             framework_atoms=framework_atoms,
-            adsorbate_atoms=adsorbate_atoms,
+            adsorbates=adsorbate_atoms,
             temperature=temperature,
             pressure=pressure,
             device=device,
@@ -449,7 +449,7 @@ class GCMC(BaseSimulator):
 
         self.set_state(state)
 
-        self.n_adsorbates = int((len(state) - self.n_atoms_framework) / len(self.adsorbate))
+        self.n_adsorbates = int((len(state) - self.n_atoms_framework) / len(self.adsorbates))
 
         average_binding_energy = (
             (
@@ -484,7 +484,7 @@ class GCMC(BaseSimulator):
         inserted_adsorbates = 0
         while inserted_adsorbates < n_adsorbates and n_attempts < max_attempts:
             n_attempts += 1
-            atoms_trial = random_mol_insertion(temp_system, self.adsorbate, self.rnd_generator)
+            atoms_trial = random_mol_insertion(temp_system, self.adsorbates, self.rnd_generator)
 
             overlaped = check_overlap_vesin(
                 atoms=atoms_trial,
@@ -846,7 +846,7 @@ class GCMC(BaseSimulator):
             True if the insertion was accepted, False otherwise.
         """
 
-        atoms_trial = random_mol_insertion(self.current_system, self.adsorbate, self.rnd_generator)
+        atoms_trial = random_mol_insertion(self.current_system, self.adsorbates, self.rnd_generator)
 
         overlaped = check_overlap_vesin(
             atoms=atoms_trial,
@@ -959,7 +959,7 @@ class GCMC(BaseSimulator):
         inserted = False
         for _ in range(1000):
             # Try at least 1000 times to insert the molecule without overlap
-            temp = random_mol_insertion(atoms_trial, self.adsorbate, self.rnd_generator)
+            temp = random_mol_insertion(atoms_trial, self.adsorbates, self.rnd_generator)
 
             overlaped = check_overlap_vesin(
                 atoms=temp,

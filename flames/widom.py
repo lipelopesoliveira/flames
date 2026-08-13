@@ -131,7 +131,7 @@ class Widom(BaseSimulator):
         super().__init__(
             model=model,
             framework_atoms=framework_atoms,
-            adsorbate_atoms=adsorbate_atoms,
+            adsorbates=adsorbate_atoms,
             temperature=temperature,
             pressure=0.0,
             device=device,
@@ -403,7 +403,7 @@ class Widom(BaseSimulator):
         # Ensure atoms_trial is always defined so it can be returned in failure cases
         atoms_trial = self.framework.copy()
 
-        atoms_trial = random_mol_insertion(self.framework, self.adsorbate, self.rnd_generator)
+        atoms_trial = random_mol_insertion(self.framework, self.adsorbates, self.rnd_generator)
 
         overlaped = check_overlap_vesin(
             atoms=atoms_trial,

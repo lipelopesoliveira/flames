@@ -165,7 +165,7 @@ def test_gcmc_run(tmpdir):
         acentricFactor=0.3449,
         automatic_supercell=False,
     )
-    gcmc.set_adsorbate(adsorbate, n_adsorbates=5, adsorbate_energy=adsorbate.info["total_energy"])
+    gcmc.set_adsorbates(adsorbate, n_adsorbates=5, adsorbate_energy=adsorbate.info["total_energy"])
     gcmc.insert_adsorbates(5)
     assert abs(gcmc.adsorbate_energy - adsorbate.info["total_energy"]) < 1e-12
     assert gcmc.n_adsorbate_atoms == 3
@@ -208,7 +208,7 @@ def test_gcmc_run(tmpdir):
         acentricFactor=0.3449,
         automatic_supercell=False,
     )
-    gcmc.set_adsorbate(adsorbate, n_adsorbates=5, adsorbate_energy=adsorbate.info["total_energy"])
+    gcmc.set_adsorbates(adsorbate, n_adsorbates=5, adsorbate_energy=adsorbate.info["total_energy"])
     gcmc.restart()
     assert gcmc.base_iteration == 20
     assert gcmc.n_adsorbates == 9

@@ -110,7 +110,7 @@ class TMMC(BaseSimulator):
         super().__init__(
             model=model,
             framework_atoms=framework_atoms,
-            adsorbate_atoms=adsorbate_atoms,
+            adsorbates=adsorbate_atoms,
             temperature=temperature,
             pressure=pressure,
             device=device,
@@ -275,7 +275,7 @@ class TMMC(BaseSimulator):
         else:
             state: ase.Atoms = read(state_file)  # type: ignore
 
-        del state[-len(self.adsorbate) :]
+        del state[-len(self.adsorbates) :]
         self.set_state(state)
         self.logger.print_load_state_info(n_atoms=len(state))
 
@@ -339,7 +339,7 @@ class TMMC(BaseSimulator):
         """
         for _ in range(self.max_overlap_tries):
             atoms_trial = random_mol_insertion(
-                self.current_system, self.adsorbate, self.rnd_generator
+                self.current_system, self.adsorbates, self.rnd_generator
             )
 
             overlaped = check_overlap(
