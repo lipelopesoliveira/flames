@@ -230,7 +230,7 @@ def random_position_cell(
 
 
 def random_mol_insertion(
-    framework: ase.Atoms, molecule: ase.Atoms, rnd_generator: np.random.Generator
+    framework: ase.Atoms, molecule: ase.Atoms | list[ase.Atoms], rnd_generator: np.random.Generator
 ) -> ase.Atoms:
     """
     Generates a random position within the unit cell defined by the lattice vectors.

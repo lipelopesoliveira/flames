@@ -40,8 +40,8 @@ class BaseLogger:
     def print_header(self):
         """Prints the header for the simulation output."""
         atomic_numbers = set(
-            list(self.sim.framework.get_atomic_numbers())
-            + list(self.sim.adsorbate.get_atomic_numbers())
+            set(list(self.sim.framework.get_atomic_numbers()))
+            | set().union(*[set(list(adsorbate.structure.get_atomic_numbers())) for adsorbate in self.sim.adsorbates])
         )
 
         header = f"""
@@ -122,38 +122,55 @@ fits the cutoff radius of {self.sim.cutoff} Å or manually create a supercell.\n
         for atom in self.sim.framework:
             header += "  {:2} {:12.7f} {:12.7f} {:12.7f}\n".format(atom.symbol, *atom.position)
 
-        header += f"""
+        for adsorbate in self.sim.adsorbates:
+            header += f"""
 ===========================================================================
-Adsorbate: {self.sim.adsorbate.get_chemical_formula()}
-Adsorbate: {self.sim.n_adsorbate_atoms} atoms, {self.sim.adsorbate_mass} kg
-Adsorbate energy: {self.sim.adsorbate_energy} eV
+Adsorbate: {adsorbate.structure.get_chemical_formula()}
+Adsorbate: {self.sim.n_adsorbate_atoms[adsorbate.name]} atoms, {self.sim.adsorbate_mass[adsorbate.name]} kg
+Adsorbate energy: {self.sim.adsorbate_energy[adsorbate.name]} eV
 
 Atomic positions:
 """
-        for atom in self.sim.adsorbate:
-            header += "  {:2} {:12.7f} {:12.7f} {:12.7f}\n".format(atom.symbol, *atom.position)
+            for atom in adsorbate.structure:
+                header += "  {:2} {:12.7f} {:12.7f} {:12.7f}\n".format(atom.symbol, *atom.position)
 
-        # Only prints if EOS parameters are set in the simulator
-        if _ := getattr(self.sim, "criticalTemperature", None):
+            # Only prints if EOS parameters are set in the simulator
+            if adsorbate.eos:
+                header += f"""
+===========================================================================
+Equation of State Parameters: {type(adsorbate.eos).__name__}
+
+    Critical temparure [K]: {adsorbate.eos.Tc:.6f}
+    Critical pressure [Pa]: {adsorbate.eos.Pc:.6f}
+    Acentric factor [-]:    {adsorbate.eos.omega:.6f}
+
+    {adsorbate.eos.get_stable_phase_properties(self.sim.T, self.sim.P)}
+
+    MolFraction:           {adsorbate.mol_fraction:.8f} [-]
+    Compressibility:       {adsorbate.eos.get_compressibility(self.sim.T, self.sim.P):.6f} [-]
+    Fugacity coeff.:       {adsorbate.eos.get_fugacity_coefficient(self.sim.T, self.sim.P):.10f} [-]
+    Bulk phase pressure:   {self.sim.P * adsorbate.eos.get_fugacity_coefficient(self.sim.T, self.sim.P):.6f} [Pa]
+
+    Density of the bulk fluid phase:      {adsorbate.eos.get_bulk_phase_density(self.sim.T, self.sim.P):.6f} [kg/m^3]
+
+    Amount of excess molecules:        {adsorbate.eos.get_bulk_phase_molar_density(self.sim.T, self.sim.P) * self.sim.V * self.sim.void_fraction:.10f} [-]
+
+"""
             header += f"""
 ===========================================================================
-Equation of State Parameters:
+Conversion factors:
+    Conversion factor molecules/unit cell -> mol/kg:         {self.sim.conv_factors['mol/kg'][adsorbate.name]:.9f}
+    Conversion factor molecules/unit cell -> mg/g:           {self.sim.conv_factors['mg/g'][adsorbate.name]:.9f}
+    Conversion factor molecules/unit cell -> cm^3 STP/gr:    {self.sim.conv_factors['cm^3 STP/gr'][adsorbate.name]:.9f}
+    Conversion factor molecules/unit cell -> cm^3 STP/cm^3:  {self.sim.conv_factors['cm^3 STP/cm^3'][adsorbate.name]:.9f}
+    Conversion factor molecules/unit cell -> %wt:            {self.sim.conv_factors['mg/g'][adsorbate.name] * 1e-1:.9f}
 
-    Critical temparure [K]: {self.sim.criticalTemperature:.6f}
-    Critical pressure [Pa]: {self.sim.criticalPressure:.6f}
-    Acentric factor [-]:    {self.sim.acentricFactor:.6f}
-
-    Vapour=stable, Liquid=metastable
-
-    MolFraction:           1.0000000000 [-]
-    Compressibility:       {self.sim.eos.get_compressibility():.6f} [-]
-    Fugacity coeff.:       {self.sim.fugacity_coeff:.10f} [-]
-    Bulk phase pressure:   {self.sim.P * self.sim.fugacity_coeff:.6f} [Pa]
-
-    Density of the bulk fluid phase:      {self.sim.eos.get_bulk_phase_density():.6f} [kg/m^3]
-
-    Amount of excess molecules:        {self.sim.eos.get_bulk_phase_molar_density() * self.sim.V * self.sim.void_fraction:.10f} [-]
-
+Partial pressure:
+        {self.sim.P * self.sim.fugacity_coeff:>25.15f} Pascal
+        {self.sim.P * self.sim.fugacity_coeff / 1e5:>25.15f} bar
+        {self.sim.P * self.sim.fugacity_coeff / 101325:>25.15f} atm
+        {self.sim.P * self.sim.fugacity_coeff / (101325 * 760):>25.15f} Torr
+===========================================================================
 """
 
         header += """
@@ -164,22 +181,6 @@ Shortest distances:
         for i, j in list(itertools.combinations(atomic_numbers, 2)):
             header += f"  {ase.Atom(i).symbol:2} - {ase.Atom(j).symbol:2}: {self.sim.vdw[i] + self.sim.vdw[j]:.3f} Å\n"
 
-        header += f"""
-===========================================================================
-Conversion factors:
-    Conversion factor molecules/unit cell -> mol/kg:         {self.sim.conv_factors['mol/kg']:.9f}
-    Conversion factor molecules/unit cell -> mg/g:           {self.sim.conv_factors['mg/g']:.9f}
-    Conversion factor molecules/unit cell -> cm^3 STP/gr:    {self.sim.conv_factors['cm^3 STP/gr']:.9f}
-    Conversion factor molecules/unit cell -> cm^3 STP/cm^3:  {self.sim.conv_factors['cm^3 STP/cm^3']:.9f}
-    Conversion factor molecules/unit cell -> %wt:            {self.sim.conv_factors['mg/g'] * 1e-1:.9f}
-
-Partial pressure:
-        {self.sim.P * self.sim.fugacity_coeff:>25.15f} Pascal
-        {self.sim.P * self.sim.fugacity_coeff / 1e5:>25.15f} bar
-        {self.sim.P * self.sim.fugacity_coeff / 101325:>25.15f} atm
-        {self.sim.P * self.sim.fugacity_coeff / (101325 * 760):>25.15f} Torr
-===========================================================================
-"""
         self._print(header)
 
     def print_restart_info(self) -> None:
@@ -523,13 +524,13 @@ class WidomLogger(BaseLogger):
 Starting Widom simulation
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-Iteration  |  ΔE (eV)  |  ΔE (kJ/mol)  | kH [mol kg-1 Pa-1]  |  ΔH (kJ/mol) | Time (s)
----------------------------------------------------------------------------------------"""
+Iteration  |     dE (eV)    |  dE (kJ/mol)  | kH [mol kg-1 Pa-1]  |  dH (kJ/mol) | Time (s)
+-------------------------------------------------------------------------------------------"""
         self._print(header)
 
     def print_iteration_info(self, iteration_data: list):
         """Prints a single log line for a Widom iteration."""
-        line_str = "{:^10} | {:^9.6e} | {:>13.2f} | {:>19.3e} | {:12.2f} | {:8.2f}"
+        line_str = "{:^10} | {:>14.6e} | {:>13.2f} | {:>19.3e} | {:12.2f} | {:8.2f}"
         self._print(line_str.format(*iteration_data))
 
     def print_summary(self):

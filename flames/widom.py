@@ -10,6 +10,7 @@ from ase.io import write
 from tqdm import tqdm
 
 from flames import VERSION
+from flames.adsorbate import Adsorbate
 from flames.base_simulator import BaseSimulator
 from flames.logger import WidomLogger
 from flames.operations import check_overlap_vesin, random_mol_insertion
@@ -30,7 +31,7 @@ class Widom(BaseSimulator):
 
     :param adsorbate_atoms:
         The adsorbate molecule to be inserted into the framework.
-    :type adsorbate_atoms: ase.Atoms
+    :type adsorbate_atoms: Adsorbate
 
     :param temperature:
         Temperature of the ideal reservoir in Kelvin.
@@ -105,7 +106,7 @@ class Widom(BaseSimulator):
     def __init__(
         self,
         framework_atoms: ase.Atoms,
-        adsorbate_atoms: ase.Atoms,
+        adsorbate_atoms: Adsorbate,
         temperature: float,
         model: calculator.Calculator,
         vdw_radii: np.ndarray,
@@ -174,6 +175,16 @@ class Widom(BaseSimulator):
         self.MAX_ENERGY_ERROR = 1e5
         self.save_snapshots = save_snapshots
         self.save_only_adsorbate = save_only_adsorbate
+
+    def __post_init__(self) -> None:
+        """
+        Post-initialization to set up the Widom simulation.
+        """
+
+
+        # Check if there is only on adsorbate molecule
+        if len(self.adsorbates) != 1:
+            raise ValueError("Widom insertion method currently supports only one adsorbate molecule.")
 
     def _compute_kH(self) -> float:
         """
@@ -403,13 +414,13 @@ class Widom(BaseSimulator):
         # Ensure atoms_trial is always defined so it can be returned in failure cases
         atoms_trial = self.framework.copy()
 
-        atoms_trial = random_mol_insertion(self.framework, self.adsorbates, self.rnd_generator)
+        atoms_trial = random_mol_insertion(self.framework, self.adsorbates[0].structure, self.rnd_generator)
 
         overlaped = check_overlap_vesin(
             atoms=atoms_trial,
             group1_indices=np.arange(self.n_atoms_framework),
             group2_indices=np.arange(
-                self.n_atoms_framework, self.n_atoms_framework + self.n_adsorbate_atoms
+                self.n_atoms_framework, self.n_atoms_framework + list(self.n_adsorbate_atoms.values())[0]
             ),
             vdw_radii=self.vdw,
         )
@@ -423,7 +434,7 @@ class Widom(BaseSimulator):
         atoms_trial.calc = self.model
 
         # Calculate the interaction energy of the trial configuration
-        deltaE = atoms_trial.get_potential_energy() - self.framework_energy - self.adsorbate_energy
+        deltaE = atoms_trial.get_potential_energy() - self.framework_energy - self.adsorbate_energy[self.adsorbates[0].name]
 
         # Add interaction energy to the info dictionary
         atoms_trial.info["interaction_energy"] = deltaE
