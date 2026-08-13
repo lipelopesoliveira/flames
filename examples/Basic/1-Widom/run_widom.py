@@ -10,6 +10,7 @@ from ase.io import read
 from mace.calculators import mace_mp
 
 from flames.widom import Widom
+from flames.adsorbate import Adsorbate
 
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
@@ -18,8 +19,13 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-FrameworkPath = "mg-mof-74.cif"
-AdsorbatePath = "co2.xyz"
+# Load the framework structure
+framework: ase.Atoms = read("mg-mof-74.cif")  # type: ignore
+
+adsorbate = Adsorbate(
+    name="CO2",
+    structure="co2.xyz",
+)
 
 model = mace_mp(
     model="medium-0b2",
@@ -30,12 +36,6 @@ model = mace_mp(
     device=device,
 )
 
-
-# Load the framework structure
-framework: ase.Atoms = read(FrameworkPath)  # type: ignore
-
-# Load the adsorbate structure
-adsorbate: ase.Atoms = read(AdsorbatePath)  # type: ignore
 
 Temperature = 298.0
 
