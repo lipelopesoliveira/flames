@@ -1,7 +1,7 @@
 from copy import deepcopy
 from typing import Any
 
-import ase.atoms
+from ase.atoms import Atoms
 import ase.io
 import numpy as np
 
@@ -24,7 +24,7 @@ class Adsorbate:
     def __init__(
         self,
         name: str,
-        structure: ase.atoms.Atoms | str = ase.atoms.Atoms(),
+        structure: Atoms | str = Atoms(),
         molar_mass: float | None = None,
         mol_fraction: float = 1.0,
         weights: MoveWeights | dict[str, float] | None = None,
@@ -119,12 +119,12 @@ class Adsorbate:
             self.structure.set_tags(np.ones(len(self.structure), dtype=int) * value)  # type: ignore
 
     @property
-    def structure(self) -> ase.atoms.Atoms:
-        """ase.atoms.Atoms: The structure of the adsorbate."""
+    def structure(self) -> Atoms | list[Atoms]:
+        """Atoms: The structure of the adsorbate."""
         return self._structure
 
     @structure.setter
-    def structure(self, value: ase.atoms.Atoms) -> None:
+    def structure(self, value: Atoms | list[Atoms]) -> None:
         """
         Sets the structure of the adsorbate, ensuring it is stored as a list of Atoms.
 
@@ -135,7 +135,7 @@ class Adsorbate:
         Raises:
             ValueError: If the input is not a recognized structure type or valid file.
         """
-        if isinstance(value, ase.atoms.Atoms):
+        if isinstance(value, Atoms):
             self._structure = value
         else:
             raise ValueError("Structure must be an ASE Atoms object")
@@ -231,7 +231,7 @@ class Adsorbate:
             generator = np.random.default_rng()
         return self.weights.pick_random_move(generator=generator)
 
-    def pick_structure(self) -> ase.atoms.Atoms:
+    def pick_structure(self) -> Atoms:
         """
         Randomly selects and returns a copy of one of the adsorbate's structures.
 
@@ -240,7 +240,7 @@ class Adsorbate:
                 If None, the default RNG is used.
 
         Returns:
-            ase.atoms.Atoms: A deep copy of the selected atomic structure.
+            Atoms: A deep copy of the selected atomic structure.
 
         Raises:
             ValueError: If no structure has been assigned to the adsorbate.
