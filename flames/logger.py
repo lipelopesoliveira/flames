@@ -144,7 +144,7 @@ Equation of State Parameters: {type(adsorbate.eos).__name__}
     Critical pressure [Pa]: {adsorbate.eos.Pc:.6f}
     Acentric factor [-]:    {adsorbate.eos.omega:.6f}
 
-    {adsorbate.eos.get_stable_phase_properties(self.sim.T, self.sim.P)}
+    {adsorbate.eos.get_stable_phase_properties(self.sim.T, self.sim.P)[2]}
 
     MolFraction:           {adsorbate.mol_fraction:.8f} [-]
     Compressibility:       {adsorbate.eos.get_compressibility(self.sim.T, self.sim.P):.6f} [-]
@@ -208,7 +208,7 @@ Current average binding energy: {avg_binding_energy:.3f} kJ/mol
 ===========================================================================
 """)
 
-    def print_debug_movement(self, movement, deltaE, prefactor, acc, rnd_number) -> None:
+    def print_debug_movement(self, movement, deltaE, prefactor, acc, rnd_number, adsorbate_name) -> None:
         """
         Print debug information about the current state of the simulation.
         This method is called to provide detailed information about the current state of the system.
@@ -216,6 +216,7 @@ Current average binding energy: {avg_binding_energy:.3f} kJ/mol
         self._print(f"""
 =======================================================================================================
 Movement type: {movement}
+Adsorbate: {adsorbate_name}
 Interaction energy: {deltaE} eV, {(deltaE / (units.kJ / units.mol))} kJ/mol
 Exponential factor:     {-self.sim.beta * deltaE:.3E}
 Exponential:            {np.exp(-self.sim.beta * deltaE):.3E}
@@ -252,8 +253,10 @@ class GCMCLogger(BaseLogger):
 
         header = "Movement statistics:\n"
 
-        for key, value in self.sim.move_weights.items():
-            header += f"  {key.capitalize():11}: {value:.3f}\n"
+        for adsorbate in self.sim.adsorbates:
+            header += f"\nAdsorbate: {adsorbate.name}\n"
+            for key, value in adsorbate.weights.__dict__.items():
+                header += f" {key.capitalize():11}: {value:.3f}\n"
 
         header += """
 ===========================================================================
@@ -267,40 +270,40 @@ Starting GCMC simulation
 ---------- | ----------- | -------- | ------------ | ---------- | ------ | ------ | ------ | ------ | ------ | -------"""
         self._print(header)
 
-    def print_step_info(self, step, average_ads_energy, step_time) -> None:
+    def print_step_info(self, step, average_ads_energy, step_time, adsorbate_name) -> None:
 
         line_str = "{:^11}|{:^13}|{:>9.2f} |{:>13.4f} |{:>11.4f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:9.2f}"
 
         self._print(
             line_str.format(
                 step,
-                self.sim.n_adsorbates,
-                self.sim.n_adsorbates * self.sim.conv_factors["mol/kg"],
+                sum(self.sim.uptake_list[-1]),
+                sum(self.sim.uptake_list[-1]) * self.sim.conv_factors["mol/kg"][adsorbate_name],
                 self.sim.current_total_energy,
                 average_ads_energy,
                 (
-                    np.average(self.sim.mov_dict["insertion"]) * 100
-                    if len(self.sim.mov_dict["insertion"]) > 0
+                    np.average(self.sim.n_movements["insertion"]) * 100
+                    if len(self.sim.n_movements["insertion"]) > 0
                     else 0
                 ),
                 (
-                    np.average(self.sim.mov_dict["deletion"]) * 100
-                    if len(self.sim.mov_dict["deletion"]) > 0
+                    np.average(self.sim.n_movements["deletion"]) * 100
+                    if len(self.sim.n_movements["deletion"]) > 0
                     else 0
                 ),
                 (
-                    np.average(self.sim.mov_dict["translation"]) * 100
-                    if len(self.sim.mov_dict["translation"]) > 0
+                    np.average(self.sim.n_movements["translation"]) * 100
+                    if len(self.sim.n_movements["translation"]) > 0
                     else 0
                 ),
                 (
-                    np.average(self.sim.mov_dict["rotation"]) * 100
-                    if len(self.sim.mov_dict["rotation"]) > 0
+                    np.average(self.sim.n_movements["rotation"]) * 100
+                    if len(self.sim.n_movements["rotation"]) > 0
                     else 0
                 ),
                 (
-                    np.average(self.sim.mov_dict["reinsertion"]) * 100
-                    if len(self.sim.mov_dict["reinsertion"]) > 0
+                    np.average(self.sim.n_movements["reinsertion"]) * 100
+                    if len(self.sim.n_movements["reinsertion"]) > 0
                     else 0
                 ),
                 step_time,
@@ -338,12 +341,13 @@ Current steps are: {self.sim.base_iteration}
         line_str = "{:^11}|{:^13}|{:>9.2f} |{:>13.4f} |{:>11.4f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:9.2f}"
         self._print(line_str.format(*iteration_data.values()))
 
-    def print_debug_movement(self, movement, deltaE, prefactor, acc, rnd_number) -> None:
+    def print_debug_movement(self, movement, deltaE, prefactor, acc, rnd_number, adsorbate_name) -> None:
         """Prints detailed debug information for a single MC move."""
         self._print(f"""
 =======================================================================================================
 Movement type: {movement}
 Current number of adsorbates: {self.sim.n_adsorbates}
+Adsorbate: {adsorbate_name}
 Interaction energy: {deltaE} eV, {(deltaE / (units.kJ / units.mol))} kJ/mol
 Exponential factor:     {-self.sim.beta * deltaE:.3E}
 Exponential:            {np.exp(-self.sim.beta * deltaE):.3E}

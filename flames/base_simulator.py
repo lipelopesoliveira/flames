@@ -192,6 +192,8 @@ class BaseSimulator:
 
         self.set_adsorbates(adsorbates, adsorbate_energy=adsorbate_energy)
 
+        self.mol_fractions = {adsorbate.name: adsorbate.mol_fraction for adsorbate in self.adsorbates}
+
         # General definitions for simulation parameters
         self.T = temperature
         self.P = pressure
