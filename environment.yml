@@ -19,5 +19,5 @@ dependencies:
     - pymser
     - vesin
     - cuequivariance-torch
-    - mace-torch=0.3.12
+    - mace-torch==0.3.12
     - torch-dftd
