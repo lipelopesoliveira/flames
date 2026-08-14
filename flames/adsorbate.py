@@ -52,7 +52,7 @@ class Adsorbate:
         self._tag = tag
 
         if isinstance(structure, str):
-            self._structure = ase.io.read(structure, **kwargs)
+            self._structure: Atoms = ase.io.read(structure, **kwargs) # type: ignore
         else:
             self._structure = structure
 
@@ -115,12 +115,12 @@ class Adsorbate:
             self.structure.set_tags(np.ones(len(self.structure), dtype=int) * value)  # type: ignore
 
     @property
-    def structure(self) -> Atoms | list[Atoms]:
+    def structure(self) -> Atoms:
         """Atoms: The structure of the adsorbate."""
         return self._structure
 
     @structure.setter
-    def structure(self, value: Atoms | list[Atoms]) -> None:
+    def structure(self, value: Atoms) -> None:
         """
         Sets the structure of the adsorbate, ensuring it is stored as a list of Atoms.
 
