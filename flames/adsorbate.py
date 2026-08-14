@@ -52,7 +52,7 @@ class Adsorbate:
         self._tag = tag
 
         if isinstance(structure, str):
-            self._structure: Atoms = ase.io.read(structure, **kwargs) # type: ignore
+            self._structure: Atoms = ase.io.read(structure, **kwargs)  # type: ignore
         else:
             self._structure = structure
 
