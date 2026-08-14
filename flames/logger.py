@@ -31,7 +31,7 @@ class BaseLogger:
         """
         self.sim = simulation
         self.out_file = output_file
-        self.warnings = []
+        self.warnings: list[str] = []
 
     def _print(self, *args, **kwargs) -> None:
         """Internal print function to direct output to file or console."""
