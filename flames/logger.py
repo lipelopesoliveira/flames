@@ -32,10 +32,17 @@ class BaseLogger:
         """
         self.sim = simulation
         self.out_file = output_file
+        self.warnings = []
 
     def _print(self, *args, **kwargs):
         """Internal print function to direct output to file or console."""
         print(*args, **kwargs, file=self.out_file, flush=True)
+
+    def _warning(self, message: str):
+        """Internal warning function to direct warnings to file or console."""
+
+        self.warnings.append(message)
+        print(f"WARNING: {message}", file=self.out_file, flush=True)
 
     def print_header(self):
         """Prints the header for the simulation output."""
@@ -438,6 +445,12 @@ Simulation duration: {datetime.datetime.now() - self.sim.start_time}
 ===========================================================================
 """)
 
+        if len(self.warnings) > 0:
+            print("\n".join(["=" * 75] * 3))
+            print(f"{len(self.warnings)} Warnings during the simulation:")
+            for warning in self.warnings:
+                self._print(f"WARNING: {warning}")
+
 
 class TMMCLogger(BaseLogger):
     """
@@ -572,3 +585,9 @@ Simulation finished at {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 Simulation duration: {datetime.datetime.now() - self.sim.start_time}
 ===========================================================================
 """)
+
+        if len(self.warnings) > 0:
+            print("\n".join(["=" * 75] * 3))
+            print(f"{len(self.warnings)} Warnings during the simulation:")
+            for warning in self.warnings:
+                self._print(f"WARNING: {warning}")
