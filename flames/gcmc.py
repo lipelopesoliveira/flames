@@ -461,11 +461,9 @@ class GCMC(BaseSimulator):
 
             # Look for the current adsorbate's tag in the system
             indices = np.where(self.current_system.get_tags() == adsorbate.tag)[0]
-            
+
             if len(indices) > 0:
-                adsorbates_list.extend(
-                    indices.reshape(-1, len(adsorbate.structure)).tolist()
-                )
+                adsorbates_list.extend(indices.reshape(-1, len(adsorbate.structure)).tolist())
 
         return adsorbates_list
 
@@ -535,17 +533,15 @@ class GCMC(BaseSimulator):
             uptake = np.array(self.uptake_list)[:, i]
 
             average, avg_uncertainty = pymser.calc_equilibrated_average(
-                uptake,
-                eq_results["t0"],
-                uncertainty,
-                int(eq_results["ac_time"])
+                uptake, eq_results["t0"], uncertainty, int(eq_results["ac_time"])
             )
 
             eq_results[f"average_{ads.name}"] = average
             eq_results[f"uncertainty_{ads.name}"] = avg_uncertainty
 
             enthalpy, enthalpy_sd = pymser.calc_equilibrated_enthalpy(
-                energy=np.array(self.total_ads_list[equilibration_steps:]) / units.kB,  # Convert to K
+                energy=np.array(self.total_ads_list[equilibration_steps:])
+                / units.kB,  # Convert to K
                 number_of_molecules=uptake[equilibration_steps:],
                 temperature=self.T,
                 eq_index=eq_results["t0"],
@@ -637,7 +633,7 @@ class GCMC(BaseSimulator):
                 "ac_time": self.equilibrated_results.get("ac_time", None),
                 "uncorr_samples": self.equilibrated_results.get("uncorr_samples", None),
             },
-            "results": {}
+            "results": {},
         }
 
         for ads in self.adsorbates:
@@ -653,22 +649,22 @@ class GCMC(BaseSimulator):
                     "sd": stdv * factor[ads.name],
                 }
                 for unit, factor in self.conv_factors.items()
-                }
+            }
 
             results["results"][ads.name]["excess_uptake"] = {
-                        unit: {
-                            "mean": (avrg - self.excess_nmol[ads.name]) * factor[ads.name],
-                            "sd": stdv * factor[ads.name],
-                        }
-                        for unit, factor in self.conv_factors.items()
-                    }
+                unit: {
+                    "mean": (avrg - self.excess_nmol[ads.name]) * factor[ads.name],
+                    "sd": stdv * factor[ads.name],
+                }
+                for unit, factor in self.conv_factors.items()
+            }
 
             results["results"][ads.name]["enthalpy"] = {
-                    "kJ_mol": {
-                        "mean": self.equilibrated_results.get(f"enthalpy_{ads.name}_kJ_per_mol", None),
-                        "sd": self.equilibrated_results.get(f"enthalpy_{ads.name}_sd_kJ_per_mol", None),
-                    }
+                "kJ_mol": {
+                    "mean": self.equilibrated_results.get(f"enthalpy_{ads.name}_kJ_per_mol", None),
+                    "sd": self.equilibrated_results.get(f"enthalpy_{ads.name}_sd_kJ_per_mol", None),
                 }
+            }
 
         with open(os.path.join(self.out_folder, file_name), "w") as f:
             json.dump(results, f, indent=4)
@@ -938,7 +934,9 @@ class GCMC(BaseSimulator):
             return False
 
         # Randomly select an adsorbate molecule to delete
-        ads_indices = self.rnd_generator.choice(self.get_adsorbates_index(tag=adsorbate_tag), axis=0)
+        ads_indices = self.rnd_generator.choice(
+            self.get_adsorbates_index(tag=adsorbate_tag), axis=0
+        )
 
         mol_name = [
             adsorbate.name for adsorbate in self.adsorbates if adsorbate.tag == adsorbate_tag
@@ -998,7 +996,9 @@ class GCMC(BaseSimulator):
             return False
 
         # Randomly select an adsorbate molecule to reinsertion
-        ads_indices = self.rnd_generator.choice(self.get_adsorbates_index(tag=adsorbate_tag), axis=0)
+        ads_indices = self.rnd_generator.choice(
+            self.get_adsorbates_index(tag=adsorbate_tag), axis=0
+        )
 
         # Create a trial system for the deletion
         atoms_trial = self.current_system.copy()
@@ -1063,7 +1063,9 @@ class GCMC(BaseSimulator):
         if adsorbate_tag not in ads_tags:
             return False
 
-        ads_indices = self.rnd_generator.choice(self.get_adsorbates_index(tag=adsorbate_tag), axis=0)
+        ads_indices = self.rnd_generator.choice(
+            self.get_adsorbates_index(tag=adsorbate_tag), axis=0
+        )
         atoms_trial = self.current_system.copy()
 
         pos = atoms_trial.get_positions()  # type: ignore
@@ -1135,7 +1137,9 @@ class GCMC(BaseSimulator):
         pos = atoms_trial.get_positions()  # type: ignore
 
         # Randomly select an adsorbate molecule to rotate
-        ads_indices = self.rnd_generator.choice(self.get_adsorbates_index(tag=adsorbate_tag), axis=0)
+        ads_indices = self.rnd_generator.choice(
+            self.get_adsorbates_index(tag=adsorbate_tag), axis=0
+        )
 
         pos[ads_indices[0] : ads_indices[-1] + 1] = random_rotation_limited(
             original_position=pos[ads_indices[0] : ads_indices[-1] + 1],

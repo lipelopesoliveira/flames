@@ -128,7 +128,7 @@ Perpendicular cell:
 WARNING: Ideal supercell size is {self.sim._get_ideal_supercell()} (x, y, z).
 Consider using automatic_supercell=True to create a supercell that
 fits the cutoff radius of {self.sim.cutoff} Å or manually create a supercell.\n
-"""         
+"""
             self.warnings.append(warning_msg)
             header += warning_msg
 
@@ -433,6 +433,7 @@ Simulation finished at {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 Simulation duration: {datetime.datetime.now() - self.sim.start_time}
 ===========================================================================
 """)
+
 
 class TMMCLogger(BaseLogger):
     """
