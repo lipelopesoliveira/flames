@@ -38,7 +38,7 @@ class BaseLogger:
         """Internal print function to direct output to file or console."""
         print(*args, **kwargs, file=self.out_file, flush=True)
 
-    def _warning(self, message: str):
+    def _print_warning(self, message: str):
         """Internal warning function to direct warnings to file or console."""
 
         self.warnings.append(message)
@@ -123,11 +123,14 @@ Perpendicular cell:
 
 """
         if not np.array_equal(self.sim._get_ideal_supercell(), np.array([1, 1, 1])):
-            header += f"""\n
+
+            warning_msg = f"""\n
 WARNING: Ideal supercell size is {self.sim._get_ideal_supercell()} (x, y, z).
 Consider using automatic_supercell=True to create a supercell that
 fits the cutoff radius of {self.sim.cutoff} Å or manually create a supercell.\n
-"""
+"""         
+            self.warnings.append(warning_msg)
+            header += warning_msg
 
         header += "Atomic positions:\n"
 
@@ -248,20 +251,6 @@ class GCMCLogger(BaseLogger):
     Separates the presentation logic from the simulation logic.
     """
 
-    def __init__(self, simulation, output_file: Optional[TextIO] = None):
-        """
-        Initializes the logger.
-
-        Parameters
-        ----------
-        simulation : GCMC
-            The GCMC simulation instance to log.
-        output_file : TextIO | None, optional
-            A file path or stream to write the output to. If None, prints to stdout.
-        """
-        self.sim = simulation
-        self.out_file = output_file
-
     def print_run_header(self) -> None:
         """Prints the header for the main GCMC loop."""
 
@@ -377,28 +366,8 @@ Accepted: {rnd_number < acc}
     def print_summary(self) -> None:
         """Prints the final summary of the simulation results."""
 
-        eq_results = pymser.equilibrate(
-            self.sim.uptake_list,
-            LLM=True,
-            batch_size=int(len(self.sim.uptake_list) / 50),
-            ADF_test=False,
-            uncertainty="uSD",
-            print_results=False,
-        )
-
-        avg_uptake = eq_results["average"]
-        std_uptake = eq_results["uncertainty"]
-
-        avg_uptake_excess = avg_uptake - self.sim.excess_nmol
-
-        enthalpy, enthalpy_sd = pymser.calc_equilibrated_enthalpy(
-            energy=np.array(self.sim.total_ads_list) / units.kB,  # Convert to K
-            number_of_molecules=self.sim.uptake_list,
-            temperature=self.sim.T,
-            eq_index=eq_results["t0"],
-            uncertainty="SD",
-            ac_time=int(eq_results["ac_time"]),
-        )
+        self.sim.equilibrate()
+        eq_results = self.sim.equilibrated_results
 
         self._print(f"""
 ===========================================================================
@@ -416,41 +385,54 @@ Finishing GCMC simulation
     Number of uncorrelated samples:      {eq_results['uncorr_samples']:.1f}
     Autocorrelation time:                {eq_results['ac_time']:.1f}
     ------------------------------------------------------------------------------
-    
-    Average properties of the system:
+    """)
+
+        for ads in self.sim.adsorbates:
+
+            avg_uptake = eq_results[f"average_{ads.name}"]
+            std_uptake = eq_results[f"uncertainty_{ads.name}"]
+
+            enthalpy = eq_results[f"enthalpy_{ads.name}_kJ_per_mol"]
+            enthalpy_sd = eq_results[f"enthalpy_{ads.name}_sd_kJ_per_mol"]
+
+            avg_uptake_excess = avg_uptake - self.sim.excess_nmol[ads.name]
+
+            cf = self.sim.conv_factors
+
+            self._print(f"""
+    Average properties of the system: {ads.name}
     ------------------------------------------------------------------------------
     Average loading absolute [molecules/unit cell]       {avg_uptake:12.5f} +/- {std_uptake:12.5f} [-]
-    Average loading absolute [mol/kg framework]          {avg_uptake * self.sim.conv_factors["mol/kg"]:12.5f} +/- {std_uptake * self.sim.conv_factors["mol/kg"]:12.5f} [-]
-    Average loading absolute [mg/g framework]            {avg_uptake * self.sim.conv_factors["mg/g"]:12.5f} +/- {std_uptake * self.sim.conv_factors["mg/g"]:12.5f} [-]
-    Average loading absolute [cm^3 (STP)/gr framework]   {avg_uptake * self.sim.conv_factors["cm^3 STP/gr"]:12.5f} +/- {std_uptake * self.sim.conv_factors["cm^3 STP/gr"]:12.5f} [-]
-    Average loading absolute [cm^3 (STP)/cm^3 framework] {avg_uptake * self.sim.conv_factors["cm^3 STP/cm^3"]:12.5f} +/- {std_uptake * self.sim.conv_factors["cm^3 STP/cm^3"]:12.5f} [-]
-    Average loading absolute [%wt framework]             {avg_uptake * self.sim.conv_factors["mg/g"] * 1e-1:12.5f} +/- {std_uptake * self.sim.conv_factors["mg/g"] * 1e-1:12.5f} [-]
+    Average loading absolute [mol/kg framework]          {avg_uptake * cf["mol/kg"][ads.name]:12.5f} +/- {std_uptake * cf["mol/kg"][ads.name]:12.5f} [-]
+    Average loading absolute [mg/g framework]            {avg_uptake * cf["mg/g"][ads.name]:12.5f} +/- {std_uptake * cf["mg/g"][ads.name]:12.5f} [-]
+    Average loading absolute [cm^3 (STP)/gr framework]   {avg_uptake * cf["cm^3 STP/gr"][ads.name]:12.5f} +/- {std_uptake * cf["cm^3 STP/gr"][ads.name]:12.5f} [-]
+    Average loading absolute [cm^3 (STP)/cm^3 framework] {avg_uptake * cf["cm^3 STP/cm^3"][ads.name]:12.5f} +/- {std_uptake * cf["cm^3 STP/cm^3"][ads.name]:12.5f} [-]
+    Average loading absolute [%wt framework]             {avg_uptake * cf["mg/g"][ads.name] * 1e-1:12.5f} +/- {std_uptake * cf["mg/g"][ads.name] * 1e-1:12.5f} [-]
 
     Average excess absolute [molecules/unit cell]        {avg_uptake_excess:12.5f} +/- {std_uptake:12.5f} [-]
-    Average loading absolute [mol/kg framework]          {avg_uptake_excess * self.sim.conv_factors["mol/kg"]:12.5f} +/- {std_uptake * self.sim.conv_factors["mol/kg"]:12.5f} [-]
-    Average loading absolute [mg/g framework]            {avg_uptake_excess * self.sim.conv_factors["mg/g"]:12.5f} +/- {std_uptake * self.sim.conv_factors["mg/g"]:12.5f} [-]
-    Average loading absolute [cm^3 (STP)/gr framework]   {avg_uptake_excess * self.sim.conv_factors["cm^3 STP/gr"]:12.5f} +/- {std_uptake * self.sim.conv_factors["cm^3 STP/gr"]:12.5f} [-]
-    Average loading absolute [cm^3 (STP)/cm^3 framework] {avg_uptake_excess * self.sim.conv_factors["cm^3 STP/cm^3"]:12.5f} +/- {std_uptake * self.sim.conv_factors["cm^3 STP/cm^3"]:12.5f} [-]
-    Average loading absolute [%wt framework]             {avg_uptake_excess * self.sim.conv_factors["mg/g"] * 1e-1:12.5f} +/- {std_uptake * self.sim.conv_factors["mg/g"] * 1e-1:12.5f} [-]
+    Average loading absolute [mol/kg framework]          {avg_uptake_excess * cf["mol/kg"][ads.name]:12.5f} +/- {std_uptake * cf["mol/kg"][ads.name]:12.5f} [-]
+    Average loading absolute [mg/g framework]            {avg_uptake_excess * cf["mg/g"][ads.name]:12.5f} +/- {std_uptake * cf["mg/g"][ads.name]:12.5f} [-]
+    Average loading absolute [cm^3 (STP)/gr framework]   {avg_uptake_excess * cf["cm^3 STP/gr"][ads.name]:12.5f} +/- {std_uptake * cf["cm^3 STP/gr"][ads.name]:12.5f} [-]
+    Average loading absolute [cm^3 (STP)/cm^3 framework] {avg_uptake_excess * cf["cm^3 STP/cm^3"][ads.name]:12.5f} +/- {std_uptake * cf["cm^3 STP/cm^3"][ads.name]:12.5f} [-]
+    Average loading absolute [%wt framework]             {avg_uptake_excess * cf["mg/g"][ads.name] * 1e-1:12.5f} +/- {std_uptake * cf["mg/g"][ads.name] * 1e-1:12.5f} [-]
 
 
     Enthalpy of adsorption: [kJ/mol]                     {enthalpy:12.5f} +/- {enthalpy_sd:12.5f} [kJ/mol]
+""")
+        warning_text = "\n".join([f"WARNING: {warning}" for warning in self.warnings])
 
+        self._print(f"""
 ===========================================================================
 GCMC simulation finished successfully!
+
+{len(self.warnings)} Warnings during the simulation.
+{warning_text}
 ===========================================================================
 
 Simulation finished at {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 Simulation duration: {datetime.datetime.now() - self.sim.start_time}
 ===========================================================================
 """)
-
-        if len(self.warnings) > 0:
-            print("\n".join(["=" * 75] * 3))
-            print(f"{len(self.warnings)} Warnings during the simulation:")
-            for warning in self.warnings:
-                self._print(f"WARNING: {warning}")
-
 
 class TMMCLogger(BaseLogger):
     """
@@ -523,20 +505,6 @@ class WidomLogger(BaseLogger):
     Separates the presentation logic from the simulation logic.
     """
 
-    def __init__(self, simulation, output_file: Optional[TextIO] = None):
-        """
-        Initializes the logger.
-
-        Parameters
-        ----------
-        simulation : Widom
-            The Widom simulation instance to log.
-        output_file : TextIO | None, optional
-            A file path or stream to write the output to. If None, prints to stdout.
-        """
-        self.sim = simulation
-        self.out_file = output_file
-
     def _print(self, *args, **kwargs):
         """Internal print function to direct output to file or console."""
         print(*args, **kwargs, file=self.out_file, flush=True)
@@ -565,6 +533,8 @@ Iteration  |     dE (eV)    |  dE (kJ/mol)  | kH [mol kg-1 Pa-1]  |  dH (kJ/mol)
         This method is called at the end of the simulation to display the final results and elapsed time.
         """
 
+        warning_text = "\n".join([f"WARNING: {warning}" for warning in self.warnings])
+
         self._print(f"""
 ===========================================================================
 
@@ -579,6 +549,9 @@ Finishing Widom simulation
 
 ===========================================================================
 Simulation finished successfully!
+
+{len(self.warnings)} Warnings during the simulation.
+{warning_text}
 ===========================================================================
 
 Simulation finished at {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}

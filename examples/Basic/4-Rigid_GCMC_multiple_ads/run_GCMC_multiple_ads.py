@@ -79,7 +79,7 @@ gcmc.logger.print_header()
 
 gcmc.run(MCSteps)
 
-gcmc.equilibrate()
-#gcmc.logger.print_summary()
+#gcmc.equilibrate()
+gcmc.logger.print_summary()
 
 gcmc.save_results()

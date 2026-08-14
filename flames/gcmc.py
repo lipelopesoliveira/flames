@@ -670,8 +670,6 @@ class GCMC(BaseSimulator):
                     }
                 }
 
-
-        print(results)
         with open(os.path.join(self.out_folder, file_name), "w") as f:
             json.dump(results, f, indent=4)
 
@@ -903,7 +901,7 @@ class GCMC(BaseSimulator):
         )
 
         if deltaE < -self.max_deltaE:
-            self.logger._warning(
+            self.logger._print_warning(
                 f"WARNING: Energy difference {deltaE:.4f} eV exceeds the maximum allowed {self.max_deltaE:.4f} eV."
             )
 
@@ -959,7 +957,7 @@ class GCMC(BaseSimulator):
         deltaE = e_new + self.adsorbate_energy[mol_name] - self.current_total_energy
 
         if deltaE < -self.max_deltaE:
-            self.logger._warning(
+            self.logger._print_warning(
                 f"WARNING: Energy difference {deltaE:.4f} eV exceeds the maximum allowed {self.max_deltaE:.4f} eV."
             )
 
@@ -1028,7 +1026,7 @@ class GCMC(BaseSimulator):
         deltaE = e_new - self.current_total_energy
 
         if deltaE < -self.max_deltaE:
-            self.logger._warning(
+            self.logger._print_warning(
                 f"WARNING: Energy difference {deltaE:.4f} eV exceeds the maximum allowed {self.max_deltaE:.4f} eV."
             )
 
@@ -1097,7 +1095,7 @@ class GCMC(BaseSimulator):
         deltaE = e_trial - self.current_total_energy
 
         if deltaE < -self.max_deltaE:
-            self.logger._warning(
+            self.logger._print_warning(
                 f"WARNING: Energy difference {deltaE:.4f} eV exceeds the maximum allowed {self.max_deltaE:.4f} eV."
             )
 
@@ -1165,7 +1163,7 @@ class GCMC(BaseSimulator):
         deltaE = e_trial - self.current_total_energy
 
         if deltaE < -self.max_deltaE:
-            self.logger._warning(
+            self.logger._print_warning(
                 f"WARNING: Energy difference {deltaE:.4f} eV exceeds the maximum allowed {self.max_deltaE:.4f} eV."
             )
 
