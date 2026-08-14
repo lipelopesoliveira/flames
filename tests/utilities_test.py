@@ -9,6 +9,7 @@ from flames.utilities import check_weights
 # -----------------------------
 # VALID INPUT TEST
 # -----------------------------
+@pytest.mark.filterwarnings("ignore::UserWarning")
 def test_check_weights_valid_input():
     move_weights = {
         "insertion": 2.0,
