@@ -216,8 +216,8 @@ class GCMC(BaseSimulator):
         # Parameters for storing the main results during the simulation
         self.n_adsorbates: dict[str, int] = {adsorbate.name: 0 for adsorbate in self.adsorbates}
         self.uptake_list: np.ndarray = np.zeros((1, len(self.adsorbates)), dtype=int)
-        self.total_energy_list: list[float] = []
-        self.total_ads_list: list[float] = []
+        self.total_energy_list: list[float] = [0]
+        self.total_ads_list: list[float] = [0]
 
         self.max_translation = max_translation
         self.max_rotation = max_rotation
@@ -514,6 +514,8 @@ class GCMC(BaseSimulator):
             + "Expected a non-negative integer."
         )
 
+        # Equilibration uses the total uptake for determining the equilibration point.
+        # The total uptake is only equilibrated if all components are equilibrated.
         total_uptake = np.array(self.uptake_list).sum(axis=-1)
 
         eq_results = pymser.equilibrate(
@@ -529,14 +531,30 @@ class GCMC(BaseSimulator):
             print_results=False,
         )
 
-        enthalpy, enthalpy_sd = pymser.calc_equilibrated_enthalpy(
-            energy=np.array(self.total_ads_list[equilibration_steps:]) / units.kB,  # Convert to K
-            number_of_molecules=total_uptake[equilibration_steps:],
-            temperature=self.T,
-            eq_index=eq_results["t0"],
-            uncertainty="SD",
-            ac_time=int(eq_results["ac_time"]),
-        )
+        for i, ads in enumerate(self.adsorbates):
+            uptake = np.array(self.uptake_list)[:, i]
+
+            average, avg_uncertainty = pymser.calc_equilibrated_average(
+                uptake,
+                eq_results["t0"],
+                uncertainty,
+                int(eq_results["ac_time"])
+            )
+
+            eq_results[f"average_{ads.name}"] = average
+            eq_results[f"uncertainty_{ads.name}"] = avg_uncertainty
+
+            enthalpy, enthalpy_sd = pymser.calc_equilibrated_enthalpy(
+                energy=np.array(self.total_ads_list[equilibration_steps:]) / units.kB,  # Convert to K
+                number_of_molecules=uptake[equilibration_steps:],
+                temperature=self.T,
+                eq_index=eq_results["t0"],
+                uncertainty="SD",
+                ac_time=int(eq_results["ac_time"]),
+            )
+
+            eq_results[f"enthalpy_{ads.name}_kJ_per_mol"] = float(enthalpy)
+            eq_results[f"enthalpy_{ads.name}_sd_kJ_per_mol"] = float(enthalpy_sd)
 
         eq_results["LLM"] = LLM
         eq_results["average"] = float(eq_results["average"])
@@ -547,9 +565,6 @@ class GCMC(BaseSimulator):
         eq_results["equilibrated"] = eq_results["t0"] < 0.75 * len(
             total_uptake[equilibration_steps:]
         )
-
-        eq_results["enthalpy_kJ_per_mol"] = float(enthalpy)
-        eq_results["enthalpy_sd_kJ_per_mol"] = float(enthalpy_sd)
 
         self.equilibrated_results = eq_results
 
@@ -622,34 +637,41 @@ class GCMC(BaseSimulator):
                 "ac_time": self.equilibrated_results.get("ac_time", None),
                 "uncorr_samples": self.equilibrated_results.get("uncorr_samples", None),
             },
-            "enthalpy": {
-                "kJ_mol": {
-                    "mean": self.equilibrated_results.get("enthalpy_kJ_per_mol", None),
-                    "sd": self.equilibrated_results.get("enthalpy_sd_kJ_per_mol", None),
+            "results": {}
+        }
+
+        for ads in self.adsorbates:
+            results["results"][ads.name] = {}
+
+            avrg = float(self.equilibrated_results.get(f"average_{ads.name}", 0))
+            stdv = float(self.equilibrated_results.get(f"uncertainty_{ads.name}", 0))
+
+            # --- Uptake data (computed from conversion factors) ---
+            results["results"][ads.name]["absolute_uptake"] = {
+                unit: {
+                    "mean": (avrg) * factor[ads.name],
+                    "sd": stdv * factor[ads.name],
                 }
-            },
-        }
+                for unit, factor in self.conv_factors.items()
+                }
 
-        # --- Uptake data (computed from conversion factors) ---
-        avrg = self.equilibrated_results.get("average", 0)
-        stdv = self.equilibrated_results.get("uncertainty", 0)
+            results["results"][ads.name]["excess_uptake"] = {
+                        unit: {
+                            "mean": (avrg - self.excess_nmol[ads.name]) * factor[ads.name],
+                            "sd": stdv * factor[ads.name],
+                        }
+                        for unit, factor in self.conv_factors.items()
+                    }
 
-        results["absolute_uptake"] = {
-            unit: {
-                "mean": avrg * factor,
-                "sd": stdv * factor,
-            }
-            for unit, factor in self.conv_factors.items()
-        }
+            results["results"][ads.name]["enthalpy"] = {
+                    "kJ_mol": {
+                        "mean": self.equilibrated_results.get(f"enthalpy_{ads.name}_kJ_per_mol", None),
+                        "sd": self.equilibrated_results.get(f"enthalpy_{ads.name}_sd_kJ_per_mol", None),
+                    }
+                }
 
-        results["excess_uptake"] = {
-            unit: {
-                "mean": (avrg - self.excess_nmol) * factor,
-                "sd": stdv * factor,
-            }
-            for unit, factor in self.conv_factors.items()
-        }
 
+        print(results)
         with open(os.path.join(self.out_folder, file_name), "w") as f:
             json.dump(results, f, indent=4)
 

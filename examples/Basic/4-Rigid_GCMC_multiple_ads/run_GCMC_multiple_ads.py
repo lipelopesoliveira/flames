@@ -25,10 +25,18 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 # Load the framework structure
 framework: ase.Atoms = read("mg-mof-74.cif")  # type: ignore
 
-adsorbate = Adsorbate(
+adsorbate_1 = Adsorbate(
     name="CO2",
     structure="co2.xyz",
     eos={"criticalTemperature": 304.1282, "criticalPressure": 7377300.0, "acentricFactor": 0.22394},
+    mol_fraction=0.7,
+)
+
+adsorbate_2 = Adsorbate(
+    name="H2O",
+    structure="h2o.xyz",
+    eos={"criticalTemperature": 628.0, "criticalPressure": 14100000.0, "acentricFactor": 0.5293},
+    mol_fraction=0.3,
 )
 
 model = mace_mp(
@@ -52,7 +60,7 @@ print(
 gcmc = GCMC(
     model=model,
     framework_atoms=framework,
-    adsorbates=adsorbate,
+    adsorbates=[adsorbate_1, adsorbate_2],
     temperature=Temperature,
     pressure=pressure,
     device=device,
