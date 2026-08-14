@@ -445,6 +445,7 @@ class GCMC(BaseSimulator):
     def get_adsorbates_index(self, tag: int | None = None) -> list[list]:
         """
         Get a list of index of the adsorbate molecules in the current system.
+        If a tag is provided, only returns the indices for adsorbates matching that tag.
 
         Returns
         -------
@@ -453,13 +454,18 @@ class GCMC(BaseSimulator):
         """
         adsorbates_list = []
 
-        for i in range(len(self.adsorbates)):
+        for adsorbate in self.adsorbates:
+            # If a tag is provided and doesn't match this adsorbate, skip to the next one
+            if tag is not None and adsorbate.tag != tag:
+                continue
 
-            ads_tag = self.adsorbates[i].tag if tag is None else tag
-            indices = np.where(self.current_system.get_tags() == ads_tag)[0]
+            # Look for the current adsorbate's tag in the system
+            indices = np.where(self.current_system.get_tags() == adsorbate.tag)[0]
+            
             if len(indices) > 0:
-                indices.reshape(-1, len(self.adsorbates[i].structure))
-                adsorbates_list.append(indices.tolist())
+                adsorbates_list.extend(
+                    indices.reshape(-1, len(adsorbate.structure)).tolist()
+                )
 
         return adsorbates_list
 
@@ -912,7 +918,7 @@ class GCMC(BaseSimulator):
             return False
 
         # Randomly select an adsorbate molecule to delete
-        ads_indices = self.rnd_generator.choice(self.get_adsorbates_index(tag=adsorbate_tag))
+        ads_indices = self.rnd_generator.choice(self.get_adsorbates_index(tag=adsorbate_tag), axis=0)
 
         mol_name = [
             adsorbate.name for adsorbate in self.adsorbates if adsorbate.tag == adsorbate_tag
@@ -972,7 +978,7 @@ class GCMC(BaseSimulator):
             return False
 
         # Randomly select an adsorbate molecule to reinsertion
-        ads_indices = self.rnd_generator.choice(self.get_adsorbates_index(tag=adsorbate_tag))
+        ads_indices = self.rnd_generator.choice(self.get_adsorbates_index(tag=adsorbate_tag), axis=0)
 
         # Create a trial system for the deletion
         atoms_trial = self.current_system.copy()
@@ -1037,7 +1043,7 @@ class GCMC(BaseSimulator):
         if adsorbate_tag not in ads_tags:
             return False
 
-        ads_indices = self.rnd_generator.choice(self.get_adsorbates_index(tag=adsorbate_tag))
+        ads_indices = self.rnd_generator.choice(self.get_adsorbates_index(tag=adsorbate_tag), axis=0)
         atoms_trial = self.current_system.copy()
 
         pos = atoms_trial.get_positions()  # type: ignore
@@ -1109,7 +1115,7 @@ class GCMC(BaseSimulator):
         pos = atoms_trial.get_positions()  # type: ignore
 
         # Randomly select an adsorbate molecule to rotate
-        ads_indices = self.rnd_generator.choice(self.get_adsorbates_index(tag=adsorbate_tag))
+        ads_indices = self.rnd_generator.choice(self.get_adsorbates_index(tag=adsorbate_tag), axis=0)
 
         pos[ads_indices[0] : ads_indices[-1] + 1] = random_rotation_limited(
             original_position=pos[ads_indices[0] : ads_indices[-1] + 1],

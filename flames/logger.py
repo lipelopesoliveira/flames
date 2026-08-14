@@ -43,13 +43,13 @@ class BaseLogger:
             set(list(self.sim.framework.get_atomic_numbers()))
             | set().union(
                 *[
-                    set(list(adsorbate.structure.get_atomic_numbers()))
+                    set(adsorbate.structure.get_atomic_numbers())
                     for adsorbate in self.sim.adsorbates
                 ]
             )
         )
 
-        header = f"""
+        header = rf"""
 ===========================================================================
          _______  __          ___      .___  ___.  _______     _______.
         |   ____||  |        /   \     |   \/   | |   ____|   /       |

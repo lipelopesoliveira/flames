@@ -81,8 +81,7 @@ def robust_mic_sq(dx, dy, dz, cell) -> float:
                 rz = dz + sx * cell[0, 2] + sy * cell[1, 2] + sz * cell[2, 2]
 
                 r_sq = rx * rx + ry * ry + rz * rz
-                if r_sq < min_r_sq:
-                    min_r_sq = r_sq
+                min_r_sq = min(min_r_sq, r_sq)
 
     return min_r_sq
 

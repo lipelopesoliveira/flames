@@ -263,7 +263,7 @@ class PengRobinsonEOS(BaseEOS):
         else:
             raise ValueError(
                 "Unexpected number of physical roots found. Check EOS parameters."
-                "Number of physical roots: {}".format(len(physical_roots))
+                f"Number of physical roots: {len(physical_roots)}"
             )
 
         return Z, phi, phase

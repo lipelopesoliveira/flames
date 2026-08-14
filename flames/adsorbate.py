@@ -68,15 +68,11 @@ class Adsorbate:
 
     def __repr__(self) -> str:
         """Returns a string representation of the Adsorbate object."""
-        return "Adsorbate(name={}, mol_fraction={}, molar_mass={}, structure={}, weights={}, eos={})".format(
-            self.name, self.mol_fraction, self.molar_mass, self.structure, self.weights, self.eos
-        )
+        return f"Adsorbate(name={self.name}, mol_fraction={self.mol_fraction}, molar_mass={self.molar_mass}, structure={self.structure}, weights={self.weights}, eos={self.eos})"
 
     def __str__(self) -> str:
         """Returns a human-readable string summarizing the Adsorbate."""
-        return "Adsorbate: {}, Mole Fraction: {}, Molar Mass: {}, Structure: {}, Weights: {}, EOS: {}".format(
-            self.name, self.mol_fraction, self.molar_mass, self.structure, self.weights, self.eos
-        )
+        return f"Adsorbate: {self.name}, Mole Fraction: {self.mol_fraction}, Molar Mass: {self.molar_mass}, Structure: {self.structure}, Weights: {self.weights}, EOS: {self.eos}"
 
     @property
     def molar_mass(self) -> float:

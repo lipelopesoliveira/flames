@@ -382,9 +382,7 @@ class BaseSimulator:
         }
         if not np.isclose(sum(self.adsorbate_mol_fractions.values()), 1.0):
             raise ValueError(
-                "Mole fractions must sum to 1. Current sum: {}".format(
-                    sum(self.adsorbate_mol_fractions.values())
-                )
+                f"Mole fractions must sum to 1. Current sum: {sum(self.adsorbate_mol_fractions.values())}"
             )
 
         # Set tags and properties for each adsorbate

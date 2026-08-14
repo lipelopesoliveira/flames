@@ -189,9 +189,7 @@ def crystalOptimization(
         traj.close()
 
     print(
-        "Optimization finished. Total time: {:.2f} minutes".format(
-            (datetime.datetime.now() - start_time).total_seconds() / 60
-        ),
+        f"Optimization finished. Total time: {(datetime.datetime.now() - start_time).total_seconds() / 60:.2f} minutes",
         file=out_file,
         flush=True,
     )
@@ -217,13 +215,13 @@ def crystalOptimization(
 
         if symm is not None:
             print(
-                """
+                f"""
     Symmetry information
     --------------------------------------------
-    Space Group Number: {}
-    Space Group Symbol: {}
-    Lattice type: {}
-    """.format(symm.number, symm.international, atoms.cell.get_bravais_lattice().longname),
+    Space Group Number: {symm.number}
+    Space Group Symbol: {symm.international}
+    Lattice type: {atoms.cell.get_bravais_lattice().longname}
+    """,
                 file=out_file,
                 flush=True,
             )
@@ -362,9 +360,7 @@ def nVT_Berendsen(
         stress_ave = (stress[0] + stress[1] + stress[2]) / 3.0
         elapsed_time = (datetime.datetime.now() - start_time).total_seconds()
         print(
-            "  {:>7}  | {:13.6f}  | {:13.6f}  |  {:11.3f}  |  {:7.2f} | {:9.1f}".format(
-                step, epot, etot, temp_K, stress_ave, elapsed_time
-            ),
+            f"  {step:>7}  | {epot:13.6f}  | {etot:13.6f}  |  {temp_K:11.3f}  |  {stress_ave:7.2f} | {elapsed_time:9.1f}",
             file=out_file,
             flush=True,
         )
@@ -395,17 +391,13 @@ def nVT_Berendsen(
 
     dyn.run(num_md_steps)
 
-    footer = """
+    footer = f"""
 ======================================================================================
-    NVT MD simulation completed at {}
-    Log file saved to: {}
-    Total simulation time: {:.2f} seconds
+    NVT MD simulation completed at {datetime.datetime.now()}
+    Log file saved to: {log_filename}
+    Total simulation time: {(datetime.datetime.now() - start_time).total_seconds():.2f} seconds
 ======================================================================================
-    """.format(
-        datetime.datetime.now(),
-        log_filename,
-        (datetime.datetime.now() - start_time).total_seconds(),
-    )
+    """
 
     print(footer, file=out_file, flush=True)
 
@@ -562,9 +554,7 @@ def nPT_Berendsen(
         volume = atoms.get_volume()
         elapsed_time = (datetime.datetime.now() - start_time).total_seconds()
         print(
-            "  {:>7}  | {:13.6f}  | {:13.6f}  |  {:11.3f}  |  {:7.2f} | {:11.2f} | {:9.1f}".format(
-                step, epot, etot, temp_K, stress_ave, volume, elapsed_time
-            ),
+            f"  {step:>7}  | {epot:13.6f}  | {etot:13.6f}  |  {temp_K:11.3f}  |  {stress_ave:7.2f} | {volume:11.2f} | {elapsed_time:9.1f}",
             file=out_file,
             flush=True,
         )
@@ -580,17 +570,13 @@ def nPT_Berendsen(
 
     dyn.run(num_md_steps)
 
-    footer = """
+    footer = f"""
 ======================================================================================
-    NPT MD simulation completed at {}
-    Log file saved to: {}
-    Total simulation time: {:.2f} seconds
+    NPT MD simulation completed at {datetime.datetime.now()}
+    Log file saved to: {log_filename}
+    Total simulation time: {(datetime.datetime.now() - start_time).total_seconds():.2f} seconds
 ======================================================================================
-    """.format(
-        datetime.datetime.now(),
-        log_filename,
-        (datetime.datetime.now() - start_time).total_seconds(),
-    )
+    """
 
     print(footer, file=out_file, flush=True)
 
@@ -739,9 +725,7 @@ def nPT_NoseHoover(
         volume = atoms.get_volume()
         elapsed_time = (datetime.datetime.now() - start_time).total_seconds()
         print(
-            "  {:>7}  | {:13.6f}  | {:13.6f}  |  {:11.3f}  |  {:7.2f} | {:11.2f} | {:9.1f}".format(
-                step, epot, etot, temp_K, stress_ave, volume, elapsed_time
-            ),
+            f"  {step:>7}  | {epot:13.6f}  | {etot:13.6f}  |  {temp_K:11.3f}  |  {stress_ave:7.2f} | {volume:11.2f} | {elapsed_time:9.1f}",
             file=out_file,
             flush=True,
         )
@@ -757,17 +741,13 @@ def nPT_NoseHoover(
 
     dyn.run(num_md_steps)
 
-    footer = """
+    footer = f"""
 ======================================================================================
-    NPT MD simulation completed at {}
-    Log file saved to: {}
-    Total simulation time: {:.2f} seconds
+    NPT MD simulation completed at {datetime.datetime.now()}
+    Log file saved to: {log_filename}
+    Total simulation time: {(datetime.datetime.now() - start_time).total_seconds():.2f} seconds
 ======================================================================================
-    """.format(
-        datetime.datetime.now(),
-        log_filename,
-        (datetime.datetime.now() - start_time).total_seconds(),
-    )
+    """
 
     print(footer, file=out_file, flush=True)
 
@@ -930,9 +910,7 @@ def nPT_MTKNPT(
         volume = atoms.get_volume()
         elapsed_time = (datetime.datetime.now() - start_time).total_seconds()
         print(
-            "  {:>7}  | {:13.6f}  | {:13.6f}  |  {:11.3f}  |  {:7.2f} | {:11.2f} | {:9.1f}".format(
-                step, epot, etot, temp_K, stress_ave, volume, elapsed_time
-            ),
+            f"  {step:>7}  | {epot:13.6f}  | {etot:13.6f}  |  {temp_K:11.3f}  |  {stress_ave:7.2f} | {volume:11.2f} | {elapsed_time:9.1f}",
             file=out_file,
             flush=True,
         )
@@ -948,17 +926,13 @@ def nPT_MTKNPT(
 
     dyn.run(num_md_steps)
 
-    footer = """
+    footer = f"""
 ======================================================================================
-    NPT MD simulation completed at {}
-    Log file saved to: {}
-    Total simulation time: {:.2f} seconds
+    NPT MD simulation completed at {datetime.datetime.now()}
+    Log file saved to: {log_filename}
+    Total simulation time: {(datetime.datetime.now() - start_time).total_seconds():.2f} seconds
 ======================================================================================
-    """.format(
-        datetime.datetime.now(),
-        log_filename,
-        (datetime.datetime.now() - start_time).total_seconds(),
-    )
+    """
 
     print(footer, file=out_file, flush=True)
 
