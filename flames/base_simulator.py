@@ -120,7 +120,7 @@ class BaseSimulator:
         self,
         model: calculator.Calculator,
         framework_atoms: ase.Atoms,
-        adsorbates: Adsorbate,
+        adsorbates: Adsorbate | list[Adsorbate],
         temperature: float,
         pressure: float,
         device: str,

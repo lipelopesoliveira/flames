@@ -9,6 +9,7 @@ from ase.calculators.cp2k import CP2K
 from ase.data import vdw_radii
 from ase.io import read
 
+from flames.adsorbate import Adsorbate
 from flames.widom import Widom
 
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -17,9 +18,6 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
-
-FrameworkPath = "MgMOF-74.cif"
-AdsorbatePath = "co2.xyz"
 
 inp = """&FORCE_EVAL
     &DFT
@@ -65,10 +63,13 @@ inp = """&FORCE_EVAL
 model = CP2K(print_level="MEDIUM", xc="PBE", potential_file="GTH_POTENTIALS", inp=inp, max_scf=20)
 
 # Load the framework structure
-framework: ase.Atoms = read(FrameworkPath)  # type: ignore
+framework: ase.Atoms = read("MgMOF-74.cif")  # type: ignore
 
 # Load the adsorbate structure
-adsorbate: ase.Atoms = read(AdsorbatePath)  # type: ignore
+adsorbate = Adsorbate(
+    name="CO2",
+    structure="co2.xyz",
+)
 
 Temperature = 298.0
 

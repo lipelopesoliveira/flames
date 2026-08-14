@@ -7,7 +7,6 @@ from typing import Optional, TextIO
 
 import ase
 import numpy as np
-import pymser
 from ase import units
 
 from flames import VERSION
@@ -34,17 +33,17 @@ class BaseLogger:
         self.out_file = output_file
         self.warnings = []
 
-    def _print(self, *args, **kwargs):
+    def _print(self, *args, **kwargs) -> None:
         """Internal print function to direct output to file or console."""
         print(*args, **kwargs, file=self.out_file, flush=True)
 
-    def _print_warning(self, message: str):
+    def _print_warning(self, message: str) -> None:
         """Internal warning function to direct warnings to file or console."""
 
         self.warnings.append(message)
         print(f"WARNING: {message}", file=self.out_file, flush=True)
 
-    def print_header(self):
+    def print_header(self) -> None:
         """Prints the header for the simulation output."""
         atomic_numbers = set(
             set(list(self.sim.framework.get_atomic_numbers()))
@@ -65,9 +64,9 @@ class BaseLogger:
         |  |     |  `----./  _____  \  |  |  |  | |  |____.----)   |   
         |__|     |_______/__/     \__\ |__|  |__| |_______|_______/    
                                                                
-          Flexible Lattice Adsorption by Monte Carlo Engine Simulation
-                        powered by Python + ASE
-                    Author: Felipe Lopes de Oliveira
+        Flexible Lattice Adsorption by Monte Carlo Engine Simulation
+                      powered by Python + ASE
+                  Author: Felipe Lopes de Oliveira
 ===========================================================================
 
 Code version: {VERSION}
@@ -251,6 +250,10 @@ class GCMCLogger(BaseLogger):
     Separates the presentation logic from the simulation logic.
     """
 
+    def _get_move_pct(self, move_name: str) -> float:
+        moves = self.sim.n_movements[move_name]
+        return np.average(moves) * 100 if len(moves) > 0 else 0.0
+
     def print_run_header(self) -> None:
         """Prints the header for the main GCMC loop."""
 
@@ -284,31 +287,11 @@ Starting GCMC simulation
                 sum(self.sim.uptake_list[-1]) * self.sim.conv_factors["mol/kg"][adsorbate_name],
                 self.sim.current_total_energy,
                 average_ads_energy,
-                (
-                    np.average(self.sim.n_movements["insertion"]) * 100
-                    if len(self.sim.n_movements["insertion"]) > 0
-                    else 0
-                ),
-                (
-                    np.average(self.sim.n_movements["deletion"]) * 100
-                    if len(self.sim.n_movements["deletion"]) > 0
-                    else 0
-                ),
-                (
-                    np.average(self.sim.n_movements["translation"]) * 100
-                    if len(self.sim.n_movements["translation"]) > 0
-                    else 0
-                ),
-                (
-                    np.average(self.sim.n_movements["rotation"]) * 100
-                    if len(self.sim.n_movements["rotation"]) > 0
-                    else 0
-                ),
-                (
-                    np.average(self.sim.n_movements["reinsertion"]) * 100
-                    if len(self.sim.n_movements["reinsertion"]) > 0
-                    else 0
-                ),
+                self._get_move_pct("insertion"),
+                self._get_move_pct("deletion"),
+                self._get_move_pct("translation"),
+                self._get_move_pct("rotation"),
+                self._get_move_pct("reinsertion"),
                 step_time,
             )
         )
@@ -321,7 +304,7 @@ Start optimizing {target} structure...
 ===========================================================================
 """)
 
-    def print_load_state_info(self, n_atoms, average_ads_energy):
+    def print_load_state_info(self, n_atoms, average_ads_energy) -> None:
         """Prints information about the loading state."""
         self._print(f"""
 ===========================================================================
@@ -441,7 +424,7 @@ class TMMCLogger(BaseLogger):
     Separates the presentation logic from the simulation logic.
     """
 
-    def print_run_header(self):
+    def print_run_header(self) -> None:
         """Prints the header for the main TMMC loop."""
         header = """
 ===========================================================================
@@ -455,7 +438,7 @@ Iteration  |  Number of  |    Tot En.   | Del. Energy  | Ins. Energy  |  Time
 ---------- | ----------- | ------------ | ------------ | ------------ | -------"""
         self._print(header)
 
-    def print_step_info(self, step, del_energy, ins_energy, step_time):
+    def print_step_info(self, step, del_energy, ins_energy, step_time) -> None:
         """Prints info on one TMMC step."""
         line_str = "{:^11}|{:^13}|{:>13.4f} |{:>13.4f} |{:>13.4f} |{:7.2f}"
         self._print(
@@ -496,8 +479,7 @@ Restart file requested.
 Loaded state with {len(state)} total atoms.
 Current total energy: {self.sim.current_total_energy:.3f} eV
 Current number of adsorbates: {self.sim.n_adsorbates}
-===========================================================================
-""")
+===========================================================================""")
 
 
 class WidomLogger(BaseLogger):
@@ -506,11 +488,11 @@ class WidomLogger(BaseLogger):
     Separates the presentation logic from the simulation logic.
     """
 
-    def _print(self, *args, **kwargs):
+    def _print(self, *args, **kwargs) -> None:
         """Internal print function to direct output to file or console."""
         print(*args, **kwargs, file=self.out_file, flush=True)
 
-    def print_run_header(self):
+    def print_run_header(self) -> None:
         """Prints the header for the main Widom loop."""
         header = """
 ===========================================================================
@@ -523,12 +505,12 @@ Iteration  |     dE (eV)    |  dE (kJ/mol)  | kH [mol kg-1 Pa-1]  |  dH (kJ/mol)
 -------------------------------------------------------------------------------------------"""
         self._print(header)
 
-    def print_iteration_info(self, iteration_data: list):
+    def print_iteration_info(self, iteration_data: list) -> None:
         """Prints a single log line for a Widom iteration."""
         line_str = "{:^10} | {:>14.6e} | {:>13.2f} | {:>19.3e} | {:12.2f} | {:8.2f}"
         self._print(line_str.format(*iteration_data))
 
-    def print_summary(self):
+    def print_summary(self) -> None:
         """
         Print the footer for the simulation output.
         This method is called at the end of the simulation to display the final results and elapsed time.

@@ -144,19 +144,13 @@ class GCMC(BaseSimulator):
         Void fraction of the adsorbate.
     :type void_fraction: float, optional
 
-    :param move_weights:
-        A dictionary containing the move weights for ``'insertion'``, ``'deletion'``, ``'translation'``, ``'rotation'``, and ``'reinsertion'``.
-        Default is equal weights for all moves.
-        Example: ``{'insertion': 0.3, 'deletion': 0.3, 'translation': 0.2, 'rotation': 0.2, 'reinsertion': 0.0}``
-    :type move_weights: dict, optional
-
     """
 
     def __init__(
         self,
         model: calculator.Calculator,
         framework_atoms: ase.Atoms,
-        adsorbates: Adsorbate,
+        adsorbates: Adsorbate | list[Adsorbate],
         temperature: float,
         pressure: float,
         device: str,
@@ -176,7 +170,7 @@ class GCMC(BaseSimulator):
         random_seed: int | None = None,
         cutoff_radius: float = 6.0,
         automatic_supercell: bool = True,
-        void_fraction: float = 0.0,
+        void_fraction: float | list[float] = 0.0,
     ) -> None:
         """
         Initialize the Grand Canonical Monte Carlo (GCMC) simulation.
@@ -537,7 +531,7 @@ class GCMC(BaseSimulator):
             )
 
             eq_results[f"average_{ads.name}"] = average
-            eq_results[f"uncertainty_{ads.name}"] = avg_uncertainty
+            eq_results[f"uncertainty_{ads.name}"] = avg_uncertainty  # type: ignore
 
             enthalpy, enthalpy_sd = pymser.calc_equilibrated_enthalpy(
                 energy=np.array(self.total_ads_list[equilibration_steps:])

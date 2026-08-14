@@ -3,10 +3,10 @@ import json
 import ase
 from ase.constraints import FixBondLengths
 from ase.data import vdw_radii
-from ase.io import read
 from mace.calculators import mace_mp
 from numba import get_num_threads, set_num_threads
 
+from flames.adsorbate import Adsorbate
 from flames.calculators.lennard_jones import CustomLennardJones
 from flames.gcmc import GCMC
 from flames.utilities import read_cif
@@ -33,11 +33,20 @@ calc2 = mace_mp(
 # Load the framework structure
 framework: ase.Atoms = read_cif("GZU-1.cif")  # type: ignore
 
-# Load the adsorbate structure
-adsorbate: ase.Atoms = read("ch4.xyz")  # type: ignore
+adsorbate = Adsorbate(
+    name="CH4",
+    structure="ch4.xyz",
+    move_weights={
+        "insertion": 0.333,
+        "deletion": 0.333,
+        "translation": 0,
+        "rotation": 0,
+        "reinsertion": 0.3333,
+    },
+)
 
 c = FixBondLengths([[0, 1], [0, 2], [0, 3], [0, 4]])
-adsorbate.set_constraint(c)
+adsorbate.structure.set_constraint(c)  # type: ignore
 
 Temperature = 198.0  # in Kelvin
 pressure = 1_000_000  # in Pa = 1 bar
@@ -51,7 +60,7 @@ print(
 gcmc = GCMC(
     model=calc1,
     framework_atoms=framework,
-    adsorbate_atoms=adsorbate,
+    adsorbates=adsorbate,
     temperature=Temperature,
     pressure=pressure,
     device="cpu",
@@ -62,13 +71,6 @@ gcmc = GCMC(
     output_to_file=True,
     cutoff_radius=8.0,
     automatic_supercell=True,
-    move_weights={
-        "insertion": 0.25,
-        "deletion": 0.25,
-        "translation": 0.25,
-        "rotation": 0,
-        "reinsertion": 0.25,
-    },
 )
 
 gcmc.logger.print_header()

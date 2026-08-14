@@ -1,7 +1,4 @@
 import os
-import sys
-
-sys.path.append("C:\\Users\\flopes\\Documents\\PRs\\flames")
 
 # Hide UserWarning and RuntimeWarning messages
 import warnings
@@ -79,7 +76,6 @@ gcmc.logger.print_header()
 
 gcmc.run(MCSteps)
 
-#gcmc.equilibrate()
 gcmc.logger.print_summary()
 
 gcmc.save_results()

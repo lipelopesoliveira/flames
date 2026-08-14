@@ -11,6 +11,7 @@ from ase.io import read
 from ase.optimize import LBFGS
 from mace.calculators import mace_mp
 
+from flames.adsorbate import Adsorbate
 from flames.ase_utils import crystalOptimization
 from flames.gcmc import GCMC
 
@@ -78,6 +79,12 @@ resultsDict, adsorbateOpt = crystalOptimization(
 # Remove constrains from adsorbateOpt
 adsorbateOpt.set_constraint(None)
 
+# Load the adsorbate structure
+adsorbate_opt = Adsorbate(
+    name="CO2",
+    structure=adsorbateOpt,
+    eos={"criticalTemperature": 304.1282, "criticalPressure": 7377300.0, "acentricFactor": 0.22394},
+)
 
 Temperature = 298.0  # in Kelvin
 pressure = 100_000  # in Pa = 1 bar
@@ -91,7 +98,7 @@ print(
 gcmc = GCMC(
     model=model,
     framework_atoms=frameworkOpt,
-    adsorbate_atoms=adsorbateOpt,
+    adsorbates=adsorbate_opt,
     temperature=Temperature,
     pressure=pressure,
     device=device,
@@ -100,9 +107,6 @@ gcmc = GCMC(
     save_frequency=1,
     debug=False,
     output_to_file=True,
-    criticalTemperature=304.1282,
-    criticalPressure=7377300.0,
-    acentricFactor=0.22394,
     cutoff_radius=6.0,
     automatic_supercell=True,
 )
