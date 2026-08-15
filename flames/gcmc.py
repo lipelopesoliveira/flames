@@ -1052,8 +1052,8 @@ class GCMC(BaseSimulator):
         if overlaped:
             return False
 
-        atoms_trial.calc = self.model  # type: ignore
-        e_new = atoms_trial.get_potential_energy()
+        temp.calc = self.model  # type: ignore
+        e_new = temp.get_potential_energy()
 
         deltaE = e_new - self.current_total_energy
 
@@ -1065,12 +1065,12 @@ class GCMC(BaseSimulator):
         # Apply the acceptance criteria for deletion
         if self._reinsertion_acceptance(deltaE=deltaE, adsorbate_tag=adsorbate_tag):
 
-            self.current_system = atoms_trial.copy()
+            self.current_system = temp.copy()
             self.current_total_energy = e_new
 
             return True
 
-        self._save_rejected(atoms_trial)
+        self._save_rejected(temp)
         return False
 
     def try_translation(self, adsorbate_tag: int) -> bool:

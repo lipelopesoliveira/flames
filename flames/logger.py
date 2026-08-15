@@ -363,7 +363,7 @@ Accepted: {rnd_number < acc}
             total_attempts = len(stats)
             acceptance_rate = np.mean(stats) * 100 if total_attempts > 0 else 0.0
             self._print(
-                f"Move: {move.capitalize():14} | Total attempts: {total_attempts:6} | Acceptance rate: {acceptance_rate:6.2f}%"
+                f"Move: {move.capitalize():14} | Total attempts: {total_attempts:6} | Total Accepted  {np.sum(stats):6} ({acceptance_rate:6.2f}%)"
             )
 
         self._print(f"""
