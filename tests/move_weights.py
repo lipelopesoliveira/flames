@@ -15,7 +15,7 @@ def test_default_initialization_normalizes_correctly():
     assert mw.translation == 0.25
     assert mw.rotation == 0.25
     assert mw.reinsertion == 0.0
-    assert mw.particle_swap == 0.0
+    assert mw.position_swap == 0.0
 
 
 def test_custom_initialization_normalizes_correctly():
@@ -27,7 +27,7 @@ def test_custom_initialization_normalizes_correctly():
         translation=6.0,
         rotation=0.0,
         reinsertion=0.0,
-        particle_swap=0.0,
+        position_swap=0.0,
     )
     assert mw.insertion == 0.2
     assert mw.deletion == 0.2
@@ -62,7 +62,7 @@ def test_zero_total_weight_raises_assertion_error():
             translation=0.0,
             rotation=0.0,
             reinsertion=0.0,
-            particle_swap=0.0,
+            position_swap=0.0,
         )
 
 
@@ -74,7 +74,7 @@ def test_from_dict_valid():
         "translation": 2.0,
         "rotation": 0.0,
         "reinsertion": 0.0,
-        "particle_swap": 0.0,
+        "position_swap": 0.0,
     }
     mw = MoveWeights.from_dict(data)
     assert mw.insertion == 0.25
@@ -118,7 +118,7 @@ def test_asdict_returns_correct_dictionary():
     assert isinstance(d, dict)
     assert d["insertion"] == 0.25
     assert d["translation"] == 0.5
-    assert d["particle_swap"] == 0.0
+    assert d["position_swap"] == 0.0
 
 
 def test_pick_random_move_returns_valid_key():
@@ -137,7 +137,7 @@ def test_pick_random_move_respects_probabilities():
         translation=10.0,
         rotation=0.0,
         reinsertion=0.0,
-        particle_swap=0.0,
+        position_swap=0.0,
     )
     rng = np.random.default_rng(seed=99)
     move = mw.pick_random_move(generator=rng)

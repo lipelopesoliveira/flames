@@ -266,6 +266,44 @@ def random_mol_insertion(
     return new_framework
 
 
+def swap_positions(framework: ase.Atoms, molecule1: list, molecule2: list) -> ase.Atoms:
+    """
+    Swaps the positions of two molecules within a framework.
+
+    Parameters:
+    ----------
+    framework (ase.Atoms):
+        The ASE Atoms object representing the framework.
+    molecule1 (list):
+        List of indices for atoms in the first molecule.
+    molecule2 (list):
+        List of indices for atoms in the second molecule.
+
+    Returns:
+    ----------
+        ase.Atoms: A new ASE Atoms object with the two molecules swapped.
+    """
+
+    # Create a copy of the framework to avoid modifying the original
+    new_framework = framework.copy()
+
+    mol_1_cm = unwrap_positions(
+        positions=framework.get_positions()[molecule1[0] : molecule1[-1] + 1], cell=framework.cell
+    ).mean(axis=0)
+    mol_2_cm = unwrap_positions(
+        positions=framework.get_positions()[molecule2[0] : molecule2[-1] + 1], cell=framework.cell
+    ).mean(axis=0)
+
+    # Calculate the translation vector to swap the molecules
+    translation_vector = mol_2_cm - mol_1_cm
+
+    # Apply the translation to the positions of the two molecules
+    new_framework.positions[molecule1[0] : molecule1[-1] + 1] += translation_vector
+    new_framework.positions[molecule2[0] : molecule2[-1] + 1] -= translation_vector
+
+    return new_framework
+
+
 def check_overlap(
     atoms: ase.Atoms, group1_indices: np.ndarray, group2_indices: np.ndarray, vdw_radii: np.ndarray
 ) -> bool:

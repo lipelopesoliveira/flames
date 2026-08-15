@@ -16,7 +16,7 @@
 - Improve the `BaseEOS` and `PengRobinsonEOS` classes for better reuse.
 - Added new tests for the `PengRobinsonEOS` to compare the results with `RASPA2` and ensure the accuracy of the calculations. The tests include comparisons of fugacity coefficients and bulk phase densities for different gases at various temperatures and pressures, providing a comprehensive validation of the EOS implementation.
 - Added warnings for energy differences that exceed the maximum allowed threshold during GCMC simulations. If the energy difference between the trial and current state exceeds the specified `max_deltaE`, a warning message is printed to inform the user of the potential issue. This helps users identify and address situations where large energy changes may indicate problems with the simulation or model.
-- Improve the `swap_particle` movements to swap two different adsorbates in the system.
+- Improve the `positions_swap` movements to swap two different adsorbates in the system.
 
 ### Fixed 🐛
 
@@ -30,9 +30,9 @@
 
 ### Modified 🛠
 
-️- Moved the `CustomLennardJones` and `CustomEwald` calculators to the `flames.calculators.lennard_jones` and `flames.calculators.ewald` modules, respectively. This change improves the organization of the codebase and makes it easier for users to locate and use these calculators in their simulations. 
-- Moved the `LLM` parameter in the `GCMC` class to the `save_results` method. This change allows users to specify whether to use the Left-most Local Minima (LLM) method for equilibration analysis when saving the results of a GCMC simulation, providing greater flexibility in how the results are analyzed and reported. The default value for this parameter is set to `False`, meaning that the LLM method will not be used by default unless specified otherwise.
-- Now the enthalpy of adsorption calculation in the `utilities.enthalpy_of_adsorption` function includes the average adsorbate energy in the calculation. This change ensures that the enthalpy of adsorption can be calculated accuratly for flexible molecules.
+- Moved the `CustomLennardJones` and `CustomEwald` calculators to the `flames.calculators.lennard_jones` and `flames.calculators.ewald` modules, respectively. This change improves the organization of the codebase and makes it easier for users to locate and use these calculators in their simulations.
+️- Moved the `LLM` parameter in the `GCMC` class to the `save_results` method. This change allows users to specify whether to use the Left-most Local Minima (LLM) method for equilibration analysis when saving the results of a GCMC simulation, providing greater flexibility in how the results are analyzed and reported. The default value for this parameter is set to `False`, meaning that the LLM method will not be used by default unless specified otherwise.
+️- Now the enthalpy of adsorption calculation in the `utilities.enthalpy_of_adsorption` function includes the average adsorbate energy in the calculation. This change ensures that the enthalpy of adsorption can be calculated accuratly for flexible molecules.
 
 ### Removed 🗑️
 

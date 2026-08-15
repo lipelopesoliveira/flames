@@ -19,6 +19,7 @@ from flames.operations import (
     random_mol_insertion,
     random_rotation_limited,
     random_translation,
+    swap_positions
 )
 
 
@@ -222,7 +223,7 @@ class GCMC(BaseSimulator):
             "rotation": self.try_rotation,
             "translation": self.try_translation,
             "reinsertion": self.try_reinsertion,
-            "particle_swap": self.try_particle_swap,
+            "position_swap": self.try_position_swap,
         }
 
         self.n_movements = {move: [] for move in self.movements.keys()}
@@ -802,7 +803,7 @@ class GCMC(BaseSimulator):
 
         if self.debug:
             self.logger.print_debug_movement(
-                movement="Particle Swap",
+                movement="Position Swap",
                 deltaE=deltaE,
                 prefactor=1,
                 acc=acc,
@@ -1213,7 +1214,7 @@ class GCMC(BaseSimulator):
         self._save_rejected(atoms_trial)
         return False
 
-    def try_particle_swap(self, adsorbate_tag: int) -> bool:
+    def try_position_swap(self, adsorbate_tag: int) -> bool:
         """
         Try to swap two adsorbate molecules positions in the system.
         This method randomly selects two adsorbate molecules and attempts to swap their positions
@@ -1249,21 +1250,8 @@ class GCMC(BaseSimulator):
             self.get_adsorbates_index(tag=adsorbate2_tag), axis=0
         )
 
-        atoms_trial = self.current_system.copy()
+        atoms_trial = swap_positions(self.current_system, ads1_indices, ads2_indices)
 
-        pos = atoms_trial.get_positions()  # type: ignore
-
-        ads_1_cm = np.mean(pos[ads1_indices[0] : ads1_indices[-1] + 1], axis=0)
-        ads_2_cm = np.mean(pos[ads2_indices[0] : ads2_indices[-1] + 1], axis=0)
-
-        # Translate the adsorbate molecules to the center of mass of the other molecule
-        translation_vector_1 = ads_2_cm - ads_1_cm
-        translation_vector_2 = ads_1_cm - ads_2_cm
-
-        pos[ads1_indices[0] : ads1_indices[-1] + 1] += translation_vector_1
-        pos[ads2_indices[0] : ads2_indices[-1] + 1] += translation_vector_2
-
-        atoms_trial.set_positions(pos)  # type: ignore
 
         overlaped1 = check_overlap_vesin(
             atoms=atoms_trial,

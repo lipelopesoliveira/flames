@@ -139,7 +139,7 @@ fits the cutoff radius of {self.sim.cutoff} Å or manually create a supercell.\n
         for adsorbate in self.sim.adsorbates:
             header += f"""
 ===========================================================================
-Adsorbate: {adsorbate.structure.get_chemical_formula()}
+Adsorbate: {adsorbate.name} ({adsorbate.tag})
 Adsorbate: {self.sim.n_adsorbate_atoms[adsorbate.name]} atoms, {self.sim.adsorbate_mass[adsorbate.name]} kg
 Adsorbate energy: {self.sim.adsorbate_energy[adsorbate.name]} eV
 
@@ -297,7 +297,7 @@ Starting GCMC simulation
                 self._get_move_pct("translation"),
                 self._get_move_pct("rotation"),
                 self._get_move_pct("reinsertion"),
-                self._get_move_pct("particle_swap"),
+                self._get_move_pct("position_swap"),
                 step_time,
             )
         )
