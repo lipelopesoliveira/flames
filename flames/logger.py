@@ -169,8 +169,12 @@ Equation of State Parameters: {type(adsorbate.eos).__name__}
 
     Amount of excess molecules:        {adsorbate.eos.get_bulk_phase_molar_density(self.sim.T, self.sim.P) * self.sim.V * self.sim.void_fraction:.10f} [-]
 
-"""         
-            partial_pressure = self.sim.P * adsorbate.eos.get_fugacity_coefficient(self.sim.T, self.sim.P) * adsorbate.mol_fraction
+"""
+            partial_pressure = (
+                self.sim.P
+                * adsorbate.eos.get_fugacity_coefficient(self.sim.T, self.sim.P)
+                * adsorbate.mol_fraction
+            )
             header += f"""
 ===========================================================================
 Conversion factors:

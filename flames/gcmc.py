@@ -777,38 +777,41 @@ class GCMC(BaseSimulator):
         return rnd_number < acc
 
     def _swap_acceptance(self, deltaE: float, adsorbate_tags: list[int]) -> bool:
-            """
-            Calculate the acceptance probability for translation or rotation of an adsorbate molecule as
-    
-            P_move = min(1, exp(-β ΔE))
-    
-            Parameters
-            ----------
-            deltaE : float
-                Energy difference between the new and old configuration in eV.
-            adsorbate_tags : list[int], optional
-                Tags identifying the adsorbate molecules. Default is None.
-            """
-    
-            exp_value = np.exp(-self.beta * deltaE)
-            acc = min(1, exp_value)
-    
-            ads_names = [next((ads.name for ads in self.adsorbates if ads.tag == tag), None) for tag in adsorbate_tags]
-    
-            rnd_number = self.rnd_generator.random()
-    
-            if self.debug:
-                self.logger.print_debug_movement(
-                    movement='Particle Swap',
-                    deltaE=deltaE,
-                    prefactor=1,
-                    acc=acc,
-                    rnd_number=rnd_number,
-                    adsorbate_name=ads_names,
-                )
-    
-            # Apply Metropolis acceptance/rejection rule
-            return rnd_number < acc
+        """
+        Calculate the acceptance probability for translation or rotation of an adsorbate molecule as
+
+        P_move = min(1, exp(-β ΔE))
+
+        Parameters
+        ----------
+        deltaE : float
+            Energy difference between the new and old configuration in eV.
+        adsorbate_tags : list[int], optional
+            Tags identifying the adsorbate molecules. Default is None.
+        """
+
+        exp_value = np.exp(-self.beta * deltaE)
+        acc = min(1, exp_value)
+
+        ads_names = [
+            next((ads.name for ads in self.adsorbates if ads.tag == tag), None)
+            for tag in adsorbate_tags
+        ]
+
+        rnd_number = self.rnd_generator.random()
+
+        if self.debug:
+            self.logger.print_debug_movement(
+                movement="Particle Swap",
+                deltaE=deltaE,
+                prefactor=1,
+                acc=acc,
+                rnd_number=rnd_number,
+                adsorbate_name=ads_names,
+            )
+
+        # Apply Metropolis acceptance/rejection rule
+        return rnd_number < acc
 
     def _move_acceptance(self, deltaE: float, movement_name: str, adsorbate_tag: int) -> bool:
         """
@@ -1296,17 +1299,13 @@ class GCMC(BaseSimulator):
                 f"WARNING: Energy difference {deltaE:.4f} eV exceeds the maximum allowed {self.max_deltaE:.4f} eV."
             )
 
-        if self._swap_acceptance(
-            deltaE=deltaE, adsorbate_tags=[adsorbate1_tag, adsorbate2_tag]
-        ):
+        if self._swap_acceptance(deltaE=deltaE, adsorbate_tags=[adsorbate1_tag, adsorbate2_tag]):
             self.current_system = atoms_trial.copy()
             self.current_total_energy = e_trial
             return True
 
         self._save_rejected(atoms_trial)
         return False
-
-        
 
     def _pick_random_move(self) -> tuple[int, str]:
         """
