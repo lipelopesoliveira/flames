@@ -272,14 +272,14 @@ class GCMCLogger(BaseLogger):
 Starting GCMC simulation
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
- Iteration |  Number of  |  Uptake  |    Tot En.   |Av. Ads. En.|  Pacc  |  Pdel  |  Ptra  |  Prot  |  Prin  |  Time
-     -     |  Molecules  | [mmol/g] |     [eV]     |  [kJ/mol]  |    %   |    %   |   %    |   %    |   %    |   [s]
----------- | ----------- | -------- | ------------ | ---------- | ------ | ------ | ------ | ------ | ------ | -------"""
+ Iteration |  Number of  |  Uptake  |    Tot En.   |Av. Ads. En.|  Pacc  |  Pdel  |  Ptra  |  Prot  |  Prin  |  Pswap  | Time
+     -     |  Molecules  | [mmol/g] |     [eV]     |  [kJ/mol]  |    %   |    %   |   %    |   %    |   %    |    %    |  [s]
+---------- | ----------- | -------- | ------------ | ---------- | ------ | ------ | ------ | ------ | ------ | ------- | -----"""
         self._print(header)
 
     def print_step_info(self, step, average_ads_energy, step_time, adsorbate_name) -> None:
 
-        line_str = "{:^11}|{:^13}|{:>9.2f} |{:>13.4f} |{:>11.4f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:9.2f}"
+        line_str = "{:^11}|{:^13}|{:>9.2f} |{:>13.4f} |{:>11.4f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:9.2f}"
 
         self._print(
             line_str.format(
@@ -293,6 +293,7 @@ Starting GCMC simulation
                 self._get_move_pct("translation"),
                 self._get_move_pct("rotation"),
                 self._get_move_pct("reinsertion"),
+                self._get_move_pct("particle_swap"),
                 step_time,
             )
         )
@@ -352,6 +353,14 @@ Accepted: {rnd_number < acc}
 
         self.sim.equilibrate()
         eq_results = self.sim.equilibrated_results
+
+        self._print("\nMovement statistics:\n")
+        for move, stats in self.sim.n_movements.items():
+            total_attempts = len(stats)
+            acceptance_rate = np.mean(stats) * 100 if total_attempts > 0 else 0.0
+            self._print(
+                f"Move: {move.capitalize():14} | Total attempts: {total_attempts:6} | Acceptance rate: {acceptance_rate:6.2f}%"
+            )
 
         self._print(f"""
 ===========================================================================
