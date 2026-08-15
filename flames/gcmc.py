@@ -19,7 +19,7 @@ from flames.operations import (
     random_mol_insertion,
     random_rotation_limited,
     random_translation,
-    swap_positions
+    swap_positions,
 )
 
 
@@ -1251,7 +1251,6 @@ class GCMC(BaseSimulator):
         )
 
         atoms_trial = swap_positions(self.current_system, ads1_indices, ads2_indices)
-
 
         overlaped1 = check_overlap_vesin(
             atoms=atoms_trial,

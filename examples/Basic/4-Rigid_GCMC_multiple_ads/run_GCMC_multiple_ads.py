@@ -31,7 +31,7 @@ adsorbate_1 = Adsorbate(
 
 adsorbate_2 = Adsorbate(
     name="H2O",
-    structure="h2o.xyz",
+    structure="H2O.xyz",
     eos={"criticalTemperature": 628.0, "criticalPressure": 14100000.0, "acentricFactor": 0.5293},
     mol_fraction=0.3,
 )
