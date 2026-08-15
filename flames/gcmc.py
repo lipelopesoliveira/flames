@@ -222,6 +222,7 @@ class GCMC(BaseSimulator):
             "rotation": self.try_rotation,
             "translation": self.try_translation,
             "reinsertion": self.try_reinsertion,
+            "particle_swap": self.try_particle_swap,
         }
 
         self.n_movements = {move: [] for move in self.movements.keys()}
@@ -775,7 +776,41 @@ class GCMC(BaseSimulator):
         # Apply Metropolis acceptance/rejection rule
         return rnd_number < acc
 
-    def _move_acceptance(self, deltaE, movement_name, adsorbate_tag=None) -> bool:
+    def _swap_acceptance(self, deltaE: float, adsorbate_tags: list[int]) -> bool:
+            """
+            Calculate the acceptance probability for translation or rotation of an adsorbate molecule as
+    
+            P_move = min(1, exp(-β ΔE))
+    
+            Parameters
+            ----------
+            deltaE : float
+                Energy difference between the new and old configuration in eV.
+            adsorbate_tags : list[int], optional
+                Tags identifying the adsorbate molecules. Default is None.
+            """
+    
+            exp_value = np.exp(-self.beta * deltaE)
+            acc = min(1, exp_value)
+    
+            ads_names = [next((ads.name for ads in self.adsorbates if ads.tag == tag), None) for tag in adsorbate_tags]
+    
+            rnd_number = self.rnd_generator.random()
+    
+            if self.debug:
+                self.logger.print_debug_movement(
+                    movement='Particle Swap',
+                    deltaE=deltaE,
+                    prefactor=1,
+                    acc=acc,
+                    rnd_number=rnd_number,
+                    adsorbate_name=ads_names,
+                )
+    
+            # Apply Metropolis acceptance/rejection rule
+            return rnd_number < acc
+
+    def _move_acceptance(self, deltaE: float, movement_name: str, adsorbate_tag: int) -> bool:
         """
         Calculate the acceptance probability for translation or rotation of an adsorbate molecule as
 
@@ -1174,6 +1209,104 @@ class GCMC(BaseSimulator):
 
         self._save_rejected(atoms_trial)
         return False
+
+    def try_particle_swap(self, adsorbate_tag: int) -> bool:
+        """
+        Try to swap two adsorbate molecules positions in the system.
+        This method randomly selects two adsorbate molecules and attempts to swap their positions
+        based on their center of mass.
+        It checks for van der Waals overlap and calculates the new potential energy.
+
+        Parameters
+        ----------
+        adsorbate_tag : int
+            The tag of the first adsorbate molecule to be swapped.
+
+        Returns
+        -------
+        bool
+            True if the swap was accepted, False otherwise.
+        """
+
+        adsorbate1_tag = adsorbate_tag
+        adsorbate2_tag = self.rnd_generator.choice(
+            [ads.tag for ads in self.adsorbates if ads.tag != adsorbate1_tag]
+        )
+
+        # Check if both adsorbate tags are present in the system
+        ads_tags = list(set(self.current_system.get_tags()))
+
+        if adsorbate1_tag not in ads_tags or adsorbate2_tag not in ads_tags:
+            return False
+
+        ads1_indices = self.rnd_generator.choice(
+            self.get_adsorbates_index(tag=adsorbate1_tag), axis=0
+        )
+        ads2_indices = self.rnd_generator.choice(
+            self.get_adsorbates_index(tag=adsorbate2_tag), axis=0
+        )
+
+        atoms_trial = self.current_system.copy()
+
+        pos = atoms_trial.get_positions()  # type: ignore
+
+        ads_1_cm = np.mean(pos[ads1_indices[0] : ads1_indices[-1] + 1], axis=0)
+        ads_2_cm = np.mean(pos[ads2_indices[0] : ads2_indices[-1] + 1], axis=0)
+
+        # Translate the adsorbate molecules to the center of mass of the other molecule
+        translation_vector_1 = ads_2_cm - ads_1_cm
+        translation_vector_2 = ads_1_cm - ads_2_cm
+
+        pos[ads1_indices[0] : ads1_indices[-1] + 1] += translation_vector_1
+        pos[ads2_indices[0] : ads2_indices[-1] + 1] += translation_vector_2
+
+        atoms_trial.set_positions(pos)  # type: ignore
+
+        overlaped1 = check_overlap_vesin(
+            atoms=atoms_trial,
+            group1_indices=np.concatenate(
+                [np.arange(0, ads1_indices[0]), np.arange(ads1_indices[-1] + 1, len(atoms_trial))]
+            ),
+            group2_indices=np.arange(ads1_indices[0], ads1_indices[-1] + 1),
+            vdw_radii=self.vdw,
+        )
+
+        if overlaped1:
+            return False
+
+        overlaped2 = check_overlap_vesin(
+            atoms=atoms_trial,
+            group1_indices=np.concatenate(
+                [np.arange(0, ads2_indices[0]), np.arange(ads2_indices[-1] + 1, len(atoms_trial))]
+            ),
+            group2_indices=np.arange(ads2_indices[0], ads2_indices[-1] + 1),
+            vdw_radii=self.vdw,
+        )
+
+        if overlaped2:
+            return False
+
+        atoms_trial.calc = self.model  # type: ignore
+        e_trial = atoms_trial.get_potential_energy()  # type: ignore
+
+        deltaE = e_trial - self.current_total_energy
+
+        if deltaE < -self.max_deltaE:
+            self.logger._print_warning(
+                f"WARNING: Energy difference {deltaE:.4f} eV exceeds the maximum allowed {self.max_deltaE:.4f} eV."
+            )
+
+        if self._swap_acceptance(
+            deltaE=deltaE, adsorbate_tags=[adsorbate1_tag, adsorbate2_tag]
+        ):
+            self.current_system = atoms_trial.copy()
+            self.current_total_energy = e_trial
+            return True
+
+        self._save_rejected(atoms_trial)
+        return False
+
+        
 
     def _pick_random_move(self) -> tuple[int, str]:
         """

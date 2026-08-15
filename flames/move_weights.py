@@ -25,7 +25,7 @@ class MoveWeights:
     translation: float = 1.0
     rotation: float = 1.0
     reinsertion: float = 0.0
-    identity_change: float = 0.0
+    particle_swap: float = 0.0
 
     def __post_init__(self) -> None:
         """Validates and normalizes weights immediately after initialization."""
