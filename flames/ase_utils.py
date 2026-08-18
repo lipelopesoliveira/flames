@@ -14,6 +14,7 @@ from ase.io.trajectory import Trajectory
 from ase.md import MDLogger
 from ase.md.langevin import Langevin
 from ase.md.nose_hoover_chain import MTKNPT, IsotropicMTKNPT, NoseHooverChainNVT
+from ase.md.melchionna import MelchionnaNPT
 from ase.md.npt import NPT
 from ase.md.nptberendsen import Inhomogeneous_NPTBerendsen, NPTBerendsen
 from ase.md.nvtberendsen import NVTBerendsen
@@ -784,6 +785,9 @@ def nPT_Berendsen(
     out_file: TextIO = sys.stdout,
     mc_trajectory=None,
     set_momenta: bool = True,
+    compressibility: float = 1e-4,
+    taut: float = 10.0,
+    taup: float = 500.0,
     **kwargs,
 ) -> ase.Atoms:
     """
@@ -801,8 +805,6 @@ def nPT_Berendsen(
         The target temperature in Kelvin.
     pressure : float, optional
         The desired pressure, in bar (1 bar = 1e5 Pa).
-    compressibility : float, optional
-        The compressibility of the material, in bar-1.
     time_step : float, optional
         The time step for the simulation in femtoseconds (default is 0.5 fs).
     num_md_steps : int, optional
@@ -822,6 +824,12 @@ def nPT_Berendsen(
         Trajectory of the underlying MC simulation.
     set_momenta : bool, optional
             Whether to set the atomic momenta to a Maxwell-Boltzmann distribution of the simulation temperature.
+    compressibility : float, optional
+            The compressibility of the material, in bar-1 (default is 1e-4 bar-1).
+    taut : float, optional
+            Time constant for the Berendsen thermostat in fs (default is 10.0 fs).
+    taup : float, optional
+            Time constant for the Berendsen barostat in fs (default is 500.0 fs).
     kwargs : optional
             Arguments passed to the ase molecular dynamics class.
 
@@ -853,9 +861,9 @@ def nPT_Berendsen(
         "timestep": time_step * units.fs,
         "temperature_K": temperature,
         "pressure_au": pressure * units.bar,
-        "compressibility_au": 1e-4 / units.bar,
-        "taut": 10.0 * units.fs,
-        "taup": 500.0 * units.fs,
+        "compressibility_au": compressibility / units.bar,
+        "taut": taut * units.fs,
+        "taup": taup * units.fs,
         "loginterval": movie_interval,
         "append_trajectory": True,
     }
@@ -962,6 +970,9 @@ def nPT_NoseHoover(
     out_file: TextIO = sys.stdout,
     mc_trajectory=None,
     set_momenta: bool = True,
+    ttime: float = 25.0,
+    ptime: float = 75.0,
+    bulk_modulus: float = 30.0,
     **kwargs,
 ) -> ase.Atoms:
     """
@@ -971,6 +982,10 @@ def nPT_NoseHoover(
 
     Warning: The Nose-Hoover-Parrinello-Rahman method changes the shape of the simulation cell, i.e.,
     it changes the cell angles. If you do not want to change the shape of the cell, use the NPT-Barendsen instead.
+
+    pfactor is calculated as (ptime)^2 * bulk_modulus, where ptime is the time constant for the
+    Parrinello-Rahman barostat in fs and bulk_modulus is the bulk modulus of the material in GPa.
+
 
     Parameters
     ----------
@@ -996,6 +1011,13 @@ def nPT_NoseHoover(
         Trajectory of the underlying MC simulation.
     set_momenta : bool, optional
             Whether to set the atomic momenta to a Maxwell-Boltzmann distribution of the simulation temperature.
+    ttime : float, optional
+            Time constant for the Nose-Hoover thermostat in fs (default is 25.0 fs).
+    ptime : float, optional
+            Time constant for the Parrinello-Rahman barostat in fs used to
+            calculate the pfactor (default is 75.0 fs).
+    bulk_modulus : float, optional
+    
     kwargs : optional
             Arguments passed to the ase molecular dynamics class.
 
@@ -1030,8 +1052,8 @@ def nPT_NoseHoover(
         "atoms": atoms,
         "timestep": time_step * units.fs,
         "temperature_K": temperature,
-        "ttime": 25.0 * units.fs,
-        "pfactor": (75.0 * units.fs) ** 2 * 30.0 * units.GPa,
+        "ttime": ttime * units.fs,
+        "pfactor": (ptime * units.fs) ** 2 * bulk_modulus * units.GPa,
         "externalstress": pressure * units.bar,
         "loginterval": movie_interval,
         "append_trajectory": True,
@@ -1078,7 +1100,7 @@ def nPT_NoseHoover(
         # Set zero total momentum to avoid drifting
         Stationary(atoms)
 
-    dyn = NPT(**dyn_params)
+    dyn = MelchionnaNPT(**dyn_params)
 
     # Print statements
     def print_md_log():
@@ -1134,6 +1156,12 @@ def nPT_MTKNPT(
     out_file: TextIO = sys.stdout,
     mc_trajectory=None,
     set_momenta: bool = True,
+    tdamp: float = 50.0,
+    pdamp: float = 500.0,
+    tchain: int = 3,
+    pchain: int = 3,
+    tloop: int = 1,
+    ploop: int = 1,
     **kwargs,
 ) -> ase.Atoms:
     """
@@ -1167,6 +1195,18 @@ def nPT_MTKNPT(
         Trajectory of the underlying MC simulation.
     set_momenta : bool, optional
             Whether to set the atomic momenta to a Maxwell-Boltzmann distribution of the simulation temperature.
+    tdamp : float, optional
+            The characteristic time scale for the thermostat in fs (default is 50.0 fs).
+    pdamp : float, optional
+            The characteristic time scale for the barostat in fs (default is 500.0 fs).
+    tchain : int, optional
+            The length of the Nosé-Hoover chain for the thermostat (default is 3).
+    pchain : int, optional
+            The length of the Nosé-Hoover chain for the barostat (default is 3).
+    tloop : int, optional
+            The number of loops for the Nosé-Hoover chain for the thermostat (default is 1).
+    ploop : int, optional
+            The number of loops for the Nosé-Hoover chain for the barostat (default is 1).
     kwargs : optional
             Arguments passed to the ase molecular dynamics class.
 
@@ -1201,12 +1241,12 @@ def nPT_MTKNPT(
         "atoms": atoms,
         "timestep": time_step * units.fs,
         "temperature_K": temperature,
-        "tdamp": 50.0 * units.fs,
-        "pdamp": 500.0 * units.fs,
-        "tchain": 3,
-        "pchain": 3,
-        "tloop": 1,
-        "ploop": 1,
+        "tdamp": tdamp * units.fs,
+        "pdamp": pdamp * units.fs,
+        "tchain": tchain,
+        "pchain": pchain,
+        "tloop": tloop,
+        "ploop": ploop,
         "pressure_au": pressure * units.bar,
         "loginterval": movie_interval,
         "append_trajectory": True,
