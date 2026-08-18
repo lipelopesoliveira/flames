@@ -10,6 +10,8 @@ from ase.calculators import calculator
 from ase.io import Trajectory
 from ase.optimize import LBFGS
 
+from flames.logger import BaseLogger
+
 from flames.adsorbate import Adsorbate
 from flames.ase_utils import (
     crystalOptimization,
@@ -163,6 +165,8 @@ class BaseSimulator:
             os.path.join(self.out_folder, "Movies", "Trajectory.traj"),
             "a",
         )
+
+        self.logger = BaseLogger(self, output_file=self.out_file)
 
         self.save_rejected = save_rejected
 
@@ -351,7 +355,6 @@ class BaseSimulator:
         self,
         adsorbates: Adsorbate | list[Adsorbate],
         adsorbate_energy: float | list | dict[str, float] | None = None,
-        n_adsorbates: int = 0,
     ) -> None:
         """
         Set the adsorbate structure for the simulation.
@@ -584,7 +587,8 @@ Start optimizing adsorbate structure...
             The mode of the NPT simulation (default is "iso_shape").
             Can be one of "iso_shape", "aniso_shape", or "aniso_flex".
         driver : str, optional
-            The driver to use for the NPT simulation. Can be Berendsen, NoseHoover or MTKNPT (default is "MTKNPT").
+            The driver to use for the NPT simulation.
+            Can be Berendsen, NoseHoover or MTKNPT (default is "MTKNPT").
         set_momenta : bool, optional
             Whether to set the atomic momenta to a Maxwell-Boltzmann distribution of the simulation temperature.
         output_interval : int, optional
@@ -604,6 +608,11 @@ Start optimizing adsorbate structure...
             calculator = self.model
 
         if (mode == "iso_shape" or mode == "aniso_shape") and driver == "Berendsen":
+
+            self.logger._print_warning(
+                "Berendsen barostat is not indicated to be used in GCMC simulations. "
+                "Use MTKNPT or NoseHoover instead."
+            )
 
             new_state = nPT_Berendsen(
                 atoms=self.current_system,
@@ -674,6 +683,7 @@ Start optimizing adsorbate structure...
         nsteps,
         time_step: float = 0.5,
         set_momenta: bool = True,
+        driver: str = "Berendsen",
         output_interval: int = 100,
         movie_interval: int = 100,
         calculator: calculator.Calculator | None = None,
@@ -701,20 +711,29 @@ Start optimizing adsorbate structure...
         """
         if not calculator:
             calculator = self.model
+    
+        if driver == "Berendsen":
+            self.logger._print_warning(
+                            "Berendsen barostat is not indicated to be used in GCMC simulations. "
+                            "Use MTKNPT or NoseHoover instead."
+                        )
+            
+            new_state = nVT_Berendsen(
+                atoms=self.current_system,
+                model=calculator,
+                temperature=self.T,
+                time_step=time_step,
+                num_md_steps=nsteps,
+                out_folder=self.out_folder,
+                out_file=self.out_file,  # type: ignore
+                output_interval=output_interval,
+                movie_interval=movie_interval,
+                mc_trajectory=self.trajectory,
+                set_momenta=set_momenta,
+                **kwargs,
+            )
 
-        new_state = nVT_Berendsen(
-            atoms=self.current_system,
-            model=calculator,
-            temperature=self.T,
-            time_step=time_step,
-            num_md_steps=nsteps,
-            out_folder=self.out_folder,
-            out_file=self.out_file,  # type: ignore
-            output_interval=output_interval,
-            movie_interval=movie_interval,
-            mc_trajectory=self.trajectory,
-            set_momenta=set_momenta,
-            **kwargs,
-        )
+            self.set_state(new_state)
+        else:
+            raise ValueError(f"Driver must be 'Berendsen'. Not {driver}.")
 
-        self.set_state(new_state)

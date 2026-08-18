@@ -33,6 +33,7 @@
 - Moved the `CustomLennardJones` and `CustomEwald` calculators to the `flames.calculators.lennard_jones` and `flames.calculators.ewald` modules, respectively. This change improves the organization of the codebase and makes it easier for users to locate and use these calculators in their simulations.
 ️- Moved the `LLM` parameter in the `GCMC` class to the `save_results` method. This change allows users to specify whether to use the Left-most Local Minima (LLM) method for equilibration analysis when saving the results of a GCMC simulation, providing greater flexibility in how the results are analyzed and reported. The default value for this parameter is set to `False`, meaning that the LLM method will not be used by default unless specified otherwise.
 ️- Now the enthalpy of adsorption calculation in the `utilities.enthalpy_of_adsorption` function includes the average adsorbate energy in the calculation. This change ensures that the enthalpy of adsorption can be calculated accuratly for flexible molecules.
+- Add a warning message when the Berendsen termostat/barostat is used in combination with GCMC simulations. The warning informs users that the Berendsen method may not be suitable for GCMC simulations and suggests using the MTKNPT or Nose-Hoover methods instead. This helps users make informed decisions about the choice of thermostat/barostat for their simulations.
 
 ### Removed 🗑️
 
