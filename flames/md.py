@@ -14,7 +14,6 @@ from ase.md.langevin import Langevin
 from ase.md.md import MolecularDynamics
 from ase.md.melchionna import MelchionnaNPT
 from ase.md.nose_hoover_chain import (
-    MTKNPT,
     IsotropicMTKNPT,
     MTKBarostat,
     NoseHooverChainNVT,
@@ -160,7 +159,7 @@ def run_md_simulation(
             raise ValueError(f"Unsupported NVT thermostat: {thermostat}")
 
     elif ensemble == "NPT":
-        isotropic = kwargs.pop("isotropic", True)
+        isotropic = kwargs.pop("isotropic", False)
         vol_constraint = kwargs.pop("vol_constraint", False)
 
         if thermostat == "berendsen":
@@ -183,10 +182,8 @@ def run_md_simulation(
                 raise ValueError(
                     "The combination of isotropic=True and vol_constraint=True is not supported for MTK."
                 )
-            elif isotropic and not vol_constraint:
+            if isotropic and not vol_constraint:
                 dyn_class = IsotropicMTKNPT
-            elif not isotropic and vol_constraint:
-                dyn_class = MTKNPT_sigma0
             else:
                 dyn_class = MTKNPT
 
@@ -197,7 +194,7 @@ def run_md_simulation(
             dyn_params["pchain"] = kwargs.pop("pchain", 3)
             dyn_params["tloop"] = kwargs.pop("tloop", 1)
             dyn_params["ploop"] = kwargs.pop("ploop", 1)
-            dyn_params["vol_constraint"] = kwargs.pop("vol_constraint", False)
+            dyn_params["vol_constraint"] = vol_constraint
         else:
             raise ValueError(f"Unsupported NPT thermostat: {thermostat}")
     else:
@@ -282,8 +279,21 @@ def _md_core(
         Number of MD Steps: {num_md_steps}
         Output Interval: {output_interval} steps
         Movie Interval: {dyn_params['loginterval']} steps
-======================================================================================
+
+    Method-Specific Parameters:
+        Driver: {dyn_class.__name__}
 """
+    for key, value in dyn_params.items():
+        if key not in [
+            "atoms",
+            "trajectory",
+            "timestep",
+            "loginterval",
+            "temperature_K",
+            "pressure_au",
+        ]:
+            header += f"        {key}: {value}\n"
+
     print(header, file=out_file, flush=True)
 
     print(
@@ -341,7 +351,7 @@ def _md_core(
     return atoms
 
 
-class MTKNPT_sigma0(MolecularDynamics):
+class MTKNPT(MolecularDynamics):
     """Isothermal-isobaric molecular dynamics with volume-and-cell fluctuations
     by Martyna-Tobias-Klein (MTK) method [1].
 
@@ -428,7 +438,6 @@ class MTKNPT_sigma0(MolecularDynamics):
             pdamp=pdamp,
             pchain=pchain,
             ploop=ploop,
-            mask=self.mask,
         )
 
         self._temperature_K = temperature_K
@@ -467,13 +476,6 @@ class MTKNPT_sigma0(MolecularDynamics):
         self._integrate_p_cell(dt2)
         self._p = self._thermostat.integrate_nhc(self._p, dt2)
         self._integrate_p_cell_by_barostat(dt2)
-
-        # A traceless constraint is applied to the cell momenta to ensure that the cell volume remains constant.
-        # Rogge, S. M. J. et al. Theory Comput. 11, 5583–5597 (2015) DOI: 10.1021/acs.jctc.5b00748
-        # This may not be necessary if the barostat is already enforcing a volume constraint, but it is included here for safety.
-        # Needs to be checked if this is the correct way to enforce the volume constraint.
-        # if self.vol_constraint:
-        #    self._p_g -= np.trace(self._p_g) / 3.0 * np.eye(3)
 
         self._update_atoms()
 
