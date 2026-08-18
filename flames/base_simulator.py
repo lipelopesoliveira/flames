@@ -10,8 +10,6 @@ from ase.calculators import calculator
 from ase.io import Trajectory
 from ase.optimize import LBFGS
 
-from flames.logger import BaseLogger
-
 from flames.adsorbate import Adsorbate
 from flames.ase_utils import (
     crystalOptimization,
@@ -19,7 +17,10 @@ from flames.ase_utils import (
     nPT_MTKNPT,
     nPT_NoseHoover,
     nVT_Berendsen,
+    nVT_Langevin,
+    nVT_NoseHoover,
 )
+from flames.logger import BaseLogger
 from flames.utilities import (
     calculate_unit_cells,
     get_density,
@@ -611,7 +612,7 @@ Start optimizing adsorbate structure...
 
             self.logger._print_warning(
                 "Berendsen barostat is not indicated to be used in GCMC simulations. "
-                "Use MTKNPT or NoseHoover instead."
+                "It is implemented for testing purposes only. Use MTKNPT or NoseHoover instead."
             )
 
             new_state = nPT_Berendsen(
@@ -683,7 +684,7 @@ Start optimizing adsorbate structure...
         nsteps,
         time_step: float = 0.5,
         set_momenta: bool = True,
-        driver: str = "Berendsen",
+        driver: str = "NoseHoover",
         output_interval: int = 100,
         movie_interval: int = 100,
         calculator: calculator.Calculator | None = None,
@@ -697,9 +698,11 @@ Start optimizing adsorbate structure...
         nsteps : int
             Number of steps to run the NVT simulation.
         time_step : float, optional
-            Time step for the NVT simulation (default is 0.5 fs).
+            Time step for the NVT simulation in femtoseconds (default is 0.5 fs).
         set_momenta : bool, optional
             Whether to set the atomic momenta to a Maxwell-Boltzmann distribution of the simulation temperature.
+        driver : str, optional
+            The driver to use for the NVT simulation. Can be "NoseHoover" (default), Langevin, or "Berendsen" (Not recommended, for testing purposes only).
         output_interval : int, optional
             The interval for logging output (default is 100 steps).
         movie_interval : int, optional
@@ -708,16 +711,76 @@ Start optimizing adsorbate structure...
             The calculator to use for energy calculations. If None, the default model will be used.
         kwargs : optional
             Arguments passed to the ase molecular dynamics class.
+
+        For NoseHoover:
+        - tdamp : float, optional
+            Time constant for the thermostat in fs (default is 50.0 fs).
+        - tchain : int, optional
+            Length of the Nose-Hoover chain (default is 3).
+        - tloop : int, optional
+            Number of loops for the Nose-Hoover chain (default is 1).
+
+        For Langevin:
+        - friction : float, optional
+            Friction coefficient for the Langevin thermostat in fs^-1 (default is 0.1 fs^-1).
+
+        For Berendsen:
+        - tau : float, optional
+            Time constant for the Berendsen thermostat in fs (default is 1.0 fs).
         """
         if not calculator:
             calculator = self.model
-    
+
+        assert driver in [
+            "Berendsen",
+            "Langevin",
+            "NoseHoover",
+        ], "Driver must be one of 'Berendsen', 'Langevin', or 'NoseHoover'."
+
+        if driver == "NoseHoover":
+
+            new_state = nVT_NoseHoover(
+                atoms=self.current_system,
+                model=calculator,
+                temperature=self.T,
+                time_step=time_step,
+                num_md_steps=nsteps,
+                out_folder=self.out_folder,
+                out_file=self.out_file,  # type: ignore
+                output_interval=output_interval,
+                movie_interval=movie_interval,
+                mc_trajectory=self.trajectory,
+                set_momenta=set_momenta,
+                **kwargs,
+            )
+
+            self.set_state(new_state)
+
+        if driver == "Langevin":
+
+            new_state = nVT_Langevin(
+                atoms=self.current_system,
+                model=calculator,
+                temperature=self.T,
+                time_step=time_step,
+                num_md_steps=nsteps,
+                out_folder=self.out_folder,
+                out_file=self.out_file,  # type: ignore
+                output_interval=output_interval,
+                movie_interval=movie_interval,
+                mc_trajectory=self.trajectory,
+                set_momenta=set_momenta,
+                **kwargs,
+            )
+
+            self.set_state(new_state)
+
         if driver == "Berendsen":
             self.logger._print_warning(
-                            "Berendsen barostat is not indicated to be used in GCMC simulations. "
-                            "Use MTKNPT or NoseHoover instead."
-                        )
-            
+                "Berendsen barostat is not indicated to be used in GCMC simulations. "
+                "It is implemented for testing purposes only. Use NoseHoover or Langevin instead."
+            )
+
             new_state = nVT_Berendsen(
                 atoms=self.current_system,
                 model=calculator,
@@ -734,6 +797,3 @@ Start optimizing adsorbate structure...
             )
 
             self.set_state(new_state)
-        else:
-            raise ValueError(f"Driver must be 'Berendsen'. Not {driver}.")
-

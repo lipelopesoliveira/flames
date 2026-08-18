@@ -12,7 +12,8 @@ from ase.filters import FrechetCellFilter
 from ase.geometry import get_distances
 from ase.io.trajectory import Trajectory
 from ase.md import MDLogger
-from ase.md.nose_hoover_chain import MTKNPT, IsotropicMTKNPT
+from ase.md.langevin import Langevin
+from ase.md.nose_hoover_chain import MTKNPT, IsotropicMTKNPT, NoseHooverChainNVT
 from ase.md.npt import NPT
 from ase.md.nptberendsen import Inhomogeneous_NPTBerendsen, NPTBerendsen
 from ase.md.nvtberendsen import NVTBerendsen
@@ -247,6 +248,7 @@ def nVT_Berendsen(
     out_file: TextIO = sys.stdout,
     mc_trajectory=None,
     set_momenta: bool = True,
+    taut: float = 1.0,
     **kwargs,
 ) -> ase.Atoms:
     """
@@ -278,6 +280,8 @@ def nVT_Berendsen(
         Trajectory of the underlying MC simulation.
     set_momenta : bool, optional
             Whether to set the atomic momenta to a Maxwell-Boltzmann distribution of the simulation temperature.
+    taut : float, optional
+            Time constant for the Berendsen thermostat in fs (default is 1.0 fs).
     kwargs : optional
             Arguments passed to the ase molecular dynamics class.
 
@@ -309,7 +313,7 @@ def nVT_Berendsen(
         "atoms": atoms,
         "timestep": time_step * units.fs,
         "temperature_K": temperature,
-        "taut": 1.0 * units.fs,
+        "taut": taut * units.fs,
         "loginterval": movie_interval,
         "append_trajectory": True,
     }
@@ -349,6 +353,368 @@ def nVT_Berendsen(
 
     # run Berendsen MD
     dyn = NVTBerendsen(**dyn_params)
+
+    # Print statements
+    def print_md_log() -> None:
+        step = dyn.get_number_of_steps()
+        etot = atoms.get_total_energy()
+        epot = atoms.get_potential_energy()
+        temp_K = atoms.get_temperature()
+        stress = atoms.get_stress(include_ideal_gas=True) / units.GPa
+        stress_ave = (stress[0] + stress[1] + stress[2]) / 3.0
+        elapsed_time = (datetime.datetime.now() - start_time).total_seconds()
+        print(
+            f"  {step:>7}  | {epot:13.6f}  | {etot:13.6f}  |  {temp_K:11.3f}  |  {stress_ave:7.2f} | {elapsed_time:9.1f}",
+            file=out_file,
+            flush=True,
+        )
+
+    dyn.attach(print_md_log, interval=output_interval)
+    dyn.attach(
+        MDLogger(dyn, atoms, log_filename, header=True, stress=True, peratom=False, mode="a"),
+        interval=output_interval,
+    )
+
+    # Now run the dynamics
+    start_time = datetime.datetime.now()
+    print(
+        "    Step   |  Pot. Energy   |  Total Energy  |  Temperature  |  Stress  | Elapsed Time ",
+        file=out_file,
+        flush=True,
+    )
+    print(
+        "    [-]    |      [eV]      |      [eV]      |      [K]      |   [GPa]  |     [s]      ",
+        file=out_file,
+        flush=True,
+    )
+    print(
+        " --------- | -------------- | -------------- | ------------- | -------- | -------------",
+        file=out_file,
+        flush=True,
+    )
+
+    dyn.run(num_md_steps)
+
+    footer = f"""
+======================================================================================
+    NVT MD simulation completed at {datetime.datetime.now()}
+    Log file saved to: {log_filename}
+    Total simulation time: {(datetime.datetime.now() - start_time).total_seconds():.2f} seconds
+======================================================================================
+    """
+
+    print(footer, file=out_file, flush=True)
+
+    return atoms
+
+
+def nVT_NoseHoover(
+    atoms: ase.Atoms,
+    model: Calculator,
+    temperature: float,
+    time_step: float = 0.5,
+    num_md_steps: int = 1000000,
+    output_interval: int = 100,
+    movie_interval: int = 1,
+    out_folder: str = ".",
+    out_file: TextIO = sys.stdout,
+    mc_trajectory=None,
+    set_momenta: bool = True,
+    tdamp: float = 50.0,
+    tchain: int = 3,
+    tloop: int = 1,
+    **kwargs,
+) -> ase.Atoms:
+    """
+    Run NVT molecular dynamics simulation using the Nose-Hoover thermostat.
+
+    In Nosé-Hoover dynamics, an additional term is added to the Hamiltonian
+    to represent the coupling to the heat bath. This adds an friction term
+    to the equations of motion, which is dynamically adjusted to maintain the
+    desired temperature. The friction coefficient itself is also thermalized,
+    leading to a chain of thermostats (a Nosé-Hoover chain). By default,
+    a chain length of 3 thermostats is used in ASE, but this can be adjusted by
+    setting the `tchain` paramter.
+
+    Parameters
+    ----------
+    atoms : ase.Atoms
+        The atomic structure to simulate.
+    temperature : float
+        The target temperature in Kelvin.
+    time_step : float, optional
+        The time step for the simulation in femtoseconds (default is 0.5 fs).
+    num_md_steps : int, optional
+        The total number of MD steps to run (default is 1,000,000).
+    output_interval : int, optional
+        The interval for logging output (default is 100 steps).
+    movie_interval : int, optional
+        The interval for saving trajectory frames (default is 1 step).
+    out_folder : str, optional
+        The folder where the output files will be saved (default is the current directory).
+    out_file : TextIO, optional
+        The output file to write the simulation log to (default is sys.stdout).
+    mc_trajectory : ase.io.trajectory.Trajectory
+        Trajectory of the underlying MC simulation.
+    set_momenta : bool, optional
+            Whether to set the atomic momenta to a Maxwell-Boltzmann distribution of the simulation temperature.
+    tdamp : float, optional
+        The characteristic time scale for the thermostat in ASE time units.
+        Typically, it is set to 100 times of timestep.
+    tchain : int, optional
+        The length of the Nosé-Hoover chain (default is 3).
+    tloop : int, optional
+        The number of loops for the Nosé-Hoover chain (default is 1).
+    kwargs : optional
+            Arguments passed to the ase molecular dynamics class.
+
+    Returns
+    -------
+    ase.Atoms
+        The final atomic structure after the MD simulation.
+    """
+
+    atoms.calc = model
+
+    existing_md_traj = [
+        i for i in os.listdir(out_folder) if i.startswith("NVT-NoseHoover") and i.endswith(".traj")
+    ]
+    traj_filename = os.path.join(
+        out_folder, f"NVT-NoseHoover_{temperature:.2f}K_{len(existing_md_traj)}.traj"
+    )
+
+    traj_file = Trajectory(filename=traj_filename, mode="a", atoms=atoms)
+
+    log_filename = os.path.join(
+        out_folder, f"NVT-NoseHoover_{temperature:.2f}K_{len(existing_md_traj)}.log"
+    )
+
+    if "trajectory" not in kwargs:
+        kwargs["trajectory"] = mc_trajectory if mc_trajectory else traj_file
+
+    dyn_params = {
+        "atoms": atoms,
+        "timestep": time_step * units.fs,
+        "temperature_K": temperature,
+        "tdamp ": tdamp * units.fs,
+        "tchain ": tchain,
+        "tloop ": tloop,
+        "loginterval": movie_interval,
+        "append_trajectory": True,
+    }
+    dyn_params.update(kwargs)
+
+    header = """
+===========================================================================
+    Starting NVT MD Simulation using Nosé-Hoover Thermostat
+
+    Parameters:
+        Temperature: {:.2f} K
+        Time Step: {:.2f} fs
+        Number of MD Steps: {}
+        Output Interval: {} steps
+        Movie Interval: {} steps
+        Time Constant (tdamp): {:.2f} fs
+        Chain Length (tchain): {}
+        Number of Loops (tloop): {}
+
+===========================================================================
+""".format(
+        dyn_params["temperature_K"],
+        dyn_params["timestep"] / units.fs,
+        num_md_steps,
+        output_interval,
+        dyn_params["loginterval"],
+        dyn_params["tdamp"] / units.fs,
+        dyn_params["tchain"],
+        dyn_params["tloop"],
+    )
+
+    print(header, file=out_file, flush=True)
+
+    if set_momenta:
+        # Set the momenta corresponding to the given "temperature"
+        MaxwellBoltzmannDistribution(
+            atoms, temperature_K=dyn_params["temperature_K"], force_temp=True
+        )
+        # Set zero total momentum to avoid drifting
+        Stationary(atoms)
+
+    # run Nosé-Hoover MD
+    dyn = NoseHooverChainNVT(**dyn_params)
+
+    # Print statements
+    def print_md_log() -> None:
+        step = dyn.get_number_of_steps()
+        etot = atoms.get_total_energy()
+        epot = atoms.get_potential_energy()
+        temp_K = atoms.get_temperature()
+        stress = atoms.get_stress(include_ideal_gas=True) / units.GPa
+        stress_ave = (stress[0] + stress[1] + stress[2]) / 3.0
+        elapsed_time = (datetime.datetime.now() - start_time).total_seconds()
+        print(
+            f"  {step:>7}  | {epot:13.6f}  | {etot:13.6f}  |  {temp_K:11.3f}  |  {stress_ave:7.2f} | {elapsed_time:9.1f}",
+            file=out_file,
+            flush=True,
+        )
+
+    dyn.attach(print_md_log, interval=output_interval)
+    dyn.attach(
+        MDLogger(dyn, atoms, log_filename, header=True, stress=True, peratom=False, mode="a"),
+        interval=output_interval,
+    )
+
+    # Now run the dynamics
+    start_time = datetime.datetime.now()
+    print(
+        "    Step   |  Pot. Energy   |  Total Energy  |  Temperature  |  Stress  | Elapsed Time ",
+        file=out_file,
+        flush=True,
+    )
+    print(
+        "    [-]    |      [eV]      |      [eV]      |      [K]      |   [GPa]  |     [s]      ",
+        file=out_file,
+        flush=True,
+    )
+    print(
+        " --------- | -------------- | -------------- | ------------- | -------- | -------------",
+        file=out_file,
+        flush=True,
+    )
+
+    dyn.run(num_md_steps)
+
+    footer = f"""
+======================================================================================
+    NVT MD simulation completed at {datetime.datetime.now()}
+    Log file saved to: {log_filename}
+    Total simulation time: {(datetime.datetime.now() - start_time).total_seconds():.2f} seconds
+======================================================================================
+    """
+
+    print(footer, file=out_file, flush=True)
+
+    return atoms
+
+
+def nVT_Langevin(
+    atoms: ase.Atoms,
+    model: Calculator,
+    temperature: float,
+    time_step: float = 0.5,
+    num_md_steps: int = 1000000,
+    output_interval: int = 100,
+    movie_interval: int = 1,
+    out_folder: str = ".",
+    out_file: TextIO = sys.stdout,
+    mc_trajectory=None,
+    set_momenta: bool = True,
+    friction: float = 0.01,
+    **kwargs,
+) -> ase.Atoms:
+    """
+    Run NVT molecular dynamics simulation using the Langevin dynamics.
+
+    In Langevin dynamics, an additional friction term is added to the equations of motion
+    to represent the coupling to the heat bath. This leads to a stochastic differential equation
+    that samples the canonical ensemble.
+
+    Parameters
+    ----------
+    atoms : ase.Atoms
+        The atomic structure to simulate.
+    temperature : float
+        The target temperature in Kelvin.
+    time_step : float, optional
+        The time step for the simulation in femtoseconds (default is 0.5 fs).
+    num_md_steps : int, optional
+        The total number of MD steps to run (default is 1,000,000).
+    output_interval : int, optional
+        The interval for logging output (default is 100 steps).
+    movie_interval : int, optional
+        The interval for saving trajectory frames (default is 1 step).
+    out_folder : str, optional
+        The folder where the output files will be saved (default is the current directory).
+    out_file : TextIO, optional
+        The output file to write the simulation log to (default is sys.stdout).
+    mc_trajectory : ase.io.trajectory.Trajectory
+        Trajectory of the underlying MC simulation.
+    set_momenta : bool, optional
+            Whether to set the atomic momenta to a Maxwell-Boltzmann distribution of the simulation temperature.
+    friction : float, optional
+        The friction coefficient for the Langevin dynamics (default is 0.01 fs^-1).
+        A typical range for the friction coefficient may be 0.001~0.1 fs^-1 (1~100 ps^-1)
+    kwargs : optional
+            Arguments passed to the ase molecular dynamics class.
+
+    Returns
+    -------
+    ase.Atoms
+        The final atomic structure after the MD simulation.
+    """
+
+    atoms.calc = model
+
+    existing_md_traj = [
+        i for i in os.listdir(out_folder) if i.startswith("NVT-Langevin") and i.endswith(".traj")
+    ]
+    traj_filename = os.path.join(
+        out_folder, f"NVT-Langevin_{temperature:.2f}K_{len(existing_md_traj)}.traj"
+    )
+
+    traj_file = Trajectory(filename=traj_filename, mode="a", atoms=atoms)
+
+    log_filename = os.path.join(
+        out_folder, f"NVT-Langevin_{temperature:.2f}K_{len(existing_md_traj)}.log"
+    )
+
+    if "trajectory" not in kwargs:
+        kwargs["trajectory"] = mc_trajectory if mc_trajectory else traj_file
+
+    dyn_params = {
+        "atoms": atoms,
+        "timestep": time_step * units.fs,
+        "temperature_K": temperature,
+        "friction": friction,
+        "loginterval": movie_interval,
+        "append_trajectory": True,
+    }
+    dyn_params.update(kwargs)
+
+    header = """
+===========================================================================
+    Starting NVT MD Simulation using Langevin Dynamics
+
+    Parameters:
+        Temperature: {:.2f} K
+        Time Step: {:.2f} fs
+        Number of MD Steps: {}
+        Output Interval: {} steps
+        Movie Interval: {} steps
+        Friction Coefficient (friction): {:.2f} fs^-1
+
+===========================================================================
+""".format(
+        dyn_params["temperature_K"],
+        dyn_params["timestep"] / units.fs,
+        num_md_steps,
+        output_interval,
+        dyn_params["loginterval"],
+        dyn_params["friction"],
+    )
+
+    print(header, file=out_file, flush=True)
+
+    if set_momenta:
+        # Set the momenta corresponding to the given "temperature"
+        MaxwellBoltzmannDistribution(
+            atoms, temperature_K=dyn_params["temperature_K"], force_temp=True
+        )
+        # Set zero total momentum to avoid drifting
+        Stationary(atoms)
+
+    # run Langevin MD
+    dyn = Langevin(**dyn_params)
 
     # Print statements
     def print_md_log() -> None:
