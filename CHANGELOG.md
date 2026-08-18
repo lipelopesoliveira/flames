@@ -9,6 +9,7 @@
 - Add a new `Adsorbate` class to manage adsorbate molecules in the simulations. This class allows users to define adsorbate molecules, their structures, and associated properties such as name, equation of state (EOS), and move weights. The `Adsorbate` class provides methods for retrieving random configurations of the adsorbate molecules, facilitating their use in GCMC and Widom simulations. It also supports reading adsorbate structures from files and allows for flexible management of multiple adsorbate configurations.
 - Added a warning method in `Logger` to print warnings to the output file. It also prints all warnings of the simulation at the end of the simulation. This feature helps users identify potential issues or concerns during the simulation process, allowing for better monitoring and debugging of the simulations.
 - Added support for multiple adsorbates in the `GCMC` classes. Users can now specify a list of `Adsorbate` objects when initializing this class, allowing for simulations involving multiple types of adsorbate molecules. The simulation will handle the insertion, deletion, translation, and rotation moves for each adsorbate type based on their defined move weights and mol fractions.
+- Added Nose-Hoover and Langevin termostats to the `BaseSimulator` class for NVT and NPT Molecular Dynamics (MD) simulations.
 
 ### Enhanced ✨
 
