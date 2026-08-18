@@ -473,8 +473,10 @@ class MTKNPT_sigma0(MolecularDynamics):
 
         # A traceless constraint is applied to the cell momenta to ensure that the cell volume remains constant.
         # Rogge, S. M. J. et al. Theory Comput. 11, 5583–5597 (2015) DOI: 10.1021/acs.jctc.5b00748
-        if self.vol_constraint:
-            self._p_g -= np.trace(self._p_g) / 3.0 * np.eye(3)
+        # This may not be necessary if the barostat is already enforcing a volume constraint, but it is included here for safety.
+        # Needs to be checked if this is the correct way to enforce the volume constraint.
+        #if self.vol_constraint:
+        #    self._p_g -= np.trace(self._p_g) / 3.0 * np.eye(3)
 
         self._update_atoms()
 
