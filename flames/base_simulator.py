@@ -21,12 +21,12 @@ from flames.ase_utils import (
     nVT_NoseHoover,
 )
 from flames.logger import BaseLogger
+from flames.md import run_md_simulation
 from flames.utilities import (
     calculate_unit_cells,
     get_density,
     get_perpendicular_lengths,
 )
-from flames.md import run_md_simulation
 
 
 class BaseSimulator:
@@ -600,11 +600,11 @@ Start optimizing adsorbate structure...
             The calculator to use for energy calculations. If None, the default model will be used.
         **kwargs : optional
             Additional parameters passed directly to the specific MD thermostat (e.g., taut, tdamp, friction).
-    
+
             NVT Berendsen:
                 - taut : float, optional
                     Time constant for the Berendsen thermostat in fs (default is 1.0 fs).
-    
+
             NVT Nose-Hoover:
                 - tdamp : float, optional
                     Time constant for the Nose-Hoover thermostat in fs (default is 50.0 fs).
@@ -612,11 +612,11 @@ Start optimizing adsorbate structure...
                     Number of thermostats in the Nose-Hoover chain (default is 3).
                 - tloop : int, optional
                     Number of loops for the Nose-Hoover chain (default is 1).
-    
+
             NVT Langevin:
                 - friction : float, optional
                     Friction coefficient for the Langevin dynamics (default is 0.01).
-    
+
             NPT Berendsen:
                 - isotropic : bool, optional
                     Whether to use isotropic pressure coupling (default is True).
@@ -626,7 +626,7 @@ Start optimizing adsorbate structure...
                     Time constant for the Berendsen thermostat in fs (default is 10.0 fs).
                 - taup : float, optional
                     Time constant for the Berendsen barostat in fs (default is 500.0 fs).
-    
+
             NPT Nose-Hoover:
                 - ttime : float, optional
                     Time constant for the Nose-Hoover thermostat in fs (default is 25.0 fs).
@@ -634,7 +634,7 @@ Start optimizing adsorbate structure...
                     Time constant for the Parrinello-Rahman barostat in fs (default is 75.0 fs).
                 - bulk_modulus : float, optional
                     Bulk modulus of the material in GPa (default is 30.0 GPa).
-    
+
             NPT MTK:
                 - tdamp : float, optional
                     Time constant for the Nose-Hoover thermostat in fs (default is 50.0 fs).
@@ -672,7 +672,7 @@ Start optimizing adsorbate structure...
         )
 
         self.set_state(new_state)
-        
+
         self.set_framework(new_state[: self.n_atoms_framework].copy())  # type: ignore
 
     def npt(

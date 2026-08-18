@@ -341,8 +341,6 @@ def _md_core(
     return atoms
 
 
-
-
 class MTKNPT_sigma0(MolecularDynamics):
     """Isothermal-isobaric molecular dynamics with volume-and-cell fluctuations
     by Martyna-Tobias-Klein (MTK) method [1].
@@ -474,7 +472,7 @@ class MTKNPT_sigma0(MolecularDynamics):
         # Rogge, S. M. J. et al. Theory Comput. 11, 5583–5597 (2015) DOI: 10.1021/acs.jctc.5b00748
         # This may not be necessary if the barostat is already enforcing a volume constraint, but it is included here for safety.
         # Needs to be checked if this is the correct way to enforce the volume constraint.
-        #if self.vol_constraint:
+        # if self.vol_constraint:
         #    self._p_g -= np.trace(self._p_g) / 3.0 * np.eye(3)
 
         self._update_atoms()
