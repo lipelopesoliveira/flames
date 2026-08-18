@@ -26,6 +26,7 @@ from flames.utilities import (
     get_density,
     get_perpendicular_lengths,
 )
+from flames.md import run_md_simulation
 
 
 class BaseSimulator:
@@ -562,6 +563,117 @@ Start optimizing adsorbate structure...
             self.adsorbate_energy = {
                 self.adsorbates[i].name: self.adsorbates[i].structure.get_potential_energy()  # type: ignore
             }
+
+    def md(
+        self,
+        nsteps,
+        time_step: float = 0.5,
+        ensemble: str = "NVT",
+        thermostat: str = "NoseHoover",
+        set_momenta: bool = True,
+        output_interval: int = 100,
+        movie_interval: int = 100,
+        calculator: calculator.Calculator | None = None,
+        **kwargs,
+    ) -> None:
+        """
+        Run a molecular dynamics simulation using the specified ensemble and thermostat.
+
+        Parameters
+        ----------
+        nsteps : int
+            Number of steps to run the MD simulation.
+        time_step : float, optional
+            Time step for the MD simulation in femtoseconds (default is 0.5 fs).
+        ensemble : str, optional
+            The ensemble to use for the MD simulation (default is "NVT").
+            Can be one of "NVT" or "NPT".
+        thermostat : str, optional
+            The thermostat to use for the MD simulation (default is "NoseHoover").
+        set_momenta : bool, optional
+            Whether to set the atomic momenta to a Maxwell-Boltzmann distribution of the simulation temperature.
+        output_interval : int, optional
+            The interval for logging output (default is 100 steps).
+        movie_interval : int, optional
+            The interval for saving trajectory frames (default is 100 steps).
+        calculator : ase.calculators.calculator.Calculator or None, optional
+            The calculator to use for energy calculations. If None, the default model will be used.
+        **kwargs : optional
+            Additional parameters passed directly to the specific MD thermostat (e.g., taut, tdamp, friction).
+    
+            NVT Berendsen:
+                - taut : float, optional
+                    Time constant for the Berendsen thermostat in fs (default is 1.0 fs).
+    
+            NVT Nose-Hoover:
+                - tdamp : float, optional
+                    Time constant for the Nose-Hoover thermostat in fs (default is 50.0 fs).
+                - tchain : int, optional
+                    Number of thermostats in the Nose-Hoover chain (default is 3).
+                - tloop : int, optional
+                    Number of loops for the Nose-Hoover chain (default is 1).
+    
+            NVT Langevin:
+                - friction : float, optional
+                    Friction coefficient for the Langevin dynamics (default is 0.01).
+    
+            NPT Berendsen:
+                - isotropic : bool, optional
+                    Whether to use isotropic pressure coupling (default is True).
+                - compressibility : float, optional
+                    Compressibility of the material in bar^-1 (default is 1e-4 bar^-1).
+                - taut : float, optional
+                    Time constant for the Berendsen thermostat in fs (default is 10.0 fs).
+                - taup : float, optional
+                    Time constant for the Berendsen barostat in fs (default is 500.0 fs).
+    
+            NPT Nose-Hoover:
+                - ttime : float, optional
+                    Time constant for the Nose-Hoover thermostat in fs (default is 25.0 fs).
+                - ptime : float, optional
+                    Time constant for the Parrinello-Rahman barostat in fs (default is 75.0 fs).
+                - bulk_modulus : float, optional
+                    Bulk modulus of the material in GPa (default is 30.0 GPa).
+    
+            NPT MTK:
+                - tdamp : float, optional
+                    Time constant for the Nose-Hoover thermostat in fs (default is 50.0 fs).
+                - pdamp : float, optional
+                    Time constant for the Nose-Hoover barostat in fs (default is 500.0 fs).
+                - tchain : int, optional
+                    Number of thermostats in the Nose-Hoover chain (default is 3).
+                - pchain : int, optional
+                    Number of barostats in the Nose-Hoover chain (default is 3).
+                - tloop : int, optional
+                    Number of loops for the Nose-Hoover thermostat chain (default is 1).
+                - ploop : int, optional
+                    Number of loops for the Nose-Hoover barostat chain (default is 1).
+                - vol_constraint : bool, optional
+                    If True, the (N, V, sigma_a = 0, T)-ensemble is sampled, which allows for full
+                    cell fluctuations while keeping the cell volume fixed (default is False).
+        """
+
+        new_state = run_md_simulation(
+            atoms=self.current_system,
+            model=calculator if calculator else self.model,
+            temperature=self.T,
+            pressure=self.P * 1e-5,
+            time_step=time_step,
+            num_md_steps=nsteps,
+            ensemble=ensemble,
+            thermostat=thermostat,
+            out_folder=self.out_folder,
+            out_file=self.out_file,  # type: ignore
+            output_interval=output_interval,
+            movie_interval=movie_interval,
+            mc_trajectory=self.trajectory,
+            set_momenta=set_momenta,
+            **kwargs,
+        )
+
+        self.set_state(new_state)
+        
+        self.set_framework(new_state[: self.n_atoms_framework].copy())  # type: ignore
 
     def npt(
         self,

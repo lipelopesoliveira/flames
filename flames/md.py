@@ -122,7 +122,6 @@ def run_md_simulation(
             - vol_constraint : bool, optional
                 If True, the (N, V, sigma_a = 0, T)-ensemble is sampled, which allows for full
                 cell fluctuations while keeping the cell volume fixed (default is False).
-
     """
     ensemble = ensemble.upper()
     thermostat = thermostat.lower()
