@@ -45,6 +45,7 @@ adsorbate = Adsorbate(
     },
 )
 
+# Constraints for the adsorbate molecule !! Currently it is not working !!
 c = FixBondLengths([[0, 1], [0, 2], [0, 3], [0, 4]])
 adsorbate.structure.set_constraint(c)  # type: ignore
 
@@ -77,10 +78,11 @@ gcmc.logger.print_header()
 
 for j in range(5):
     gcmc.run(MCSteps)
-    gcmc.npt(
+    gcmc.md(
         nsteps=MDSteps,
         time_step=0.5,
-        mode="aniso_flex",
+        ensemble="NPT",
+        thermostat="MTK",
         calculator=calc2,
         movie_interval=1,
         output_interval=1000,

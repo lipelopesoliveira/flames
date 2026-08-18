@@ -71,7 +71,14 @@ gcmc.logger.print_header()
 
 for j in range(5):
     gcmc.run(MCSteps)
-    gcmc.npt(nsteps=MDSteps, time_step=0.5, mode="aniso_flex", movie_interval=1)
+    gcmc.md(
+        nsteps=MDSteps,
+        time_step=0.5,
+        ensemble="NPT",
+        thermostat="MTK",
+        movie_interval=1,
+    )
+
 
 gcmc.run(MCSteps)
 gcmc.logger.print_summary()
