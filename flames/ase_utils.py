@@ -15,7 +15,6 @@ from ase.md import MDLogger
 from ase.md.langevin import Langevin
 from ase.md.melchionna import MelchionnaNPT
 from ase.md.nose_hoover_chain import MTKNPT, IsotropicMTKNPT, NoseHooverChainNVT
-from ase.md.npt import NPT
 from ase.md.nptberendsen import Inhomogeneous_NPTBerendsen, NPTBerendsen
 from ase.md.nvtberendsen import NVTBerendsen
 from ase.md.velocitydistribution import MaxwellBoltzmannDistribution, Stationary
