@@ -13,8 +13,8 @@ from ase.geometry import get_distances
 from ase.io.trajectory import Trajectory
 from ase.md import MDLogger
 from ase.md.langevin import Langevin
-from ase.md.nose_hoover_chain import MTKNPT, IsotropicMTKNPT, NoseHooverChainNVT
 from ase.md.melchionna import MelchionnaNPT
+from ase.md.nose_hoover_chain import MTKNPT, IsotropicMTKNPT, NoseHooverChainNVT
 from ase.md.npt import NPT
 from ase.md.nptberendsen import Inhomogeneous_NPTBerendsen, NPTBerendsen
 from ase.md.nvtberendsen import NVTBerendsen
@@ -1017,7 +1017,7 @@ def nPT_NoseHoover(
             Time constant for the Parrinello-Rahman barostat in fs used to
             calculate the pfactor (default is 75.0 fs).
     bulk_modulus : float, optional
-    
+
     kwargs : optional
             Arguments passed to the ase molecular dynamics class.
 
