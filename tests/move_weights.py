@@ -10,12 +10,12 @@ from flames.move_weights import InsertionDeletionError, MoveKeyError, MoveWeight
 def test_default_initialization_normalizes_correctly():
     """Test that default values (1,1,1,1,0,0) normalize to 0.25 each."""
     mw = MoveWeights()
-    assert mw.insertion == 0.25
-    assert mw.deletion == 0.25
-    assert mw.translation == 0.25
-    assert mw.rotation == 0.25
+    assert mw.insertion == 0.5
+    assert mw.deletion == 0.5
+    assert mw.translation == 0.0
+    assert mw.rotation == 0.0
     assert mw.reinsertion == 0.0
-    assert mw.position_swap == 0.0
+    assert mw.identity_swap == 0.0
 
 
 def test_custom_initialization_normalizes_correctly():
@@ -27,7 +27,7 @@ def test_custom_initialization_normalizes_correctly():
         translation=6.0,
         rotation=0.0,
         reinsertion=0.0,
-        position_swap=0.0,
+        identity_swap=0.0,
     )
     assert mw.insertion == 0.2
     assert mw.deletion == 0.2
@@ -62,7 +62,7 @@ def test_zero_total_weight_raises_assertion_error():
             translation=0.0,
             rotation=0.0,
             reinsertion=0.0,
-            position_swap=0.0,
+            identity_swap=0.0,
         )
 
 
@@ -74,7 +74,7 @@ def test_from_dict_valid():
         "translation": 2.0,
         "rotation": 0.0,
         "reinsertion": 0.0,
-        "position_swap": 0.0,
+        "identity_swap": 0.0,
     }
     mw = MoveWeights.from_dict(data)
     assert mw.insertion == 0.25
@@ -90,7 +90,7 @@ def test_from_dict_invalid_type_raises_assertion_error():
 def test_from_dict_invalid_keys_raises_move_key_error():
     """Test that from_dict rejects unknown keys."""
     data = {"insertion": 1.0, "deletion": 1.0, "fake_move": 5.0}
-    with pytest.raises(MoveKeyError, match="Invalid keys provided"):
+    with pytest.raises(MoveKeyError, match="Error: move_weights must contain exactly the keys:"):
         MoveWeights.from_dict(data)
 
 
@@ -100,15 +100,15 @@ def test_from_dict_missing_keys_warns():
         "insertion": 2.0,
         "deletion": 2.0,
         "translation": 4.0,
-        # Missing rotation, reinsertion, identity_change
+        # Missing rotation, reinsertion, identity_swap
     }
     with pytest.warns(UserWarning, match="Warning: Missing the key"):
         mw = MoveWeights.from_dict(data)
 
-    # Note: Because the current implementation doesn't explicitly set data[key] = 0.0
-    # in the loop, the dataclass falls back to default `rotation=1.0`.
-    # If you fix the logic in your class, you should assert mw.rotation == 0.0 here!
-    assert mw.insertion is not None
+    assert mw.rotation == 0.0
+    assert mw.reinsertion == 0.0
+    assert mw.identity_swap == 0.0
+    assert mw.insertion == 2.0 / 8.0  # Normalized value
 
 
 def test_asdict_returns_correct_dictionary():
@@ -118,7 +118,7 @@ def test_asdict_returns_correct_dictionary():
     assert isinstance(d, dict)
     assert d["insertion"] == 0.25
     assert d["translation"] == 0.5
-    assert d["position_swap"] == 0.0
+    assert d["identity_swap"] == 0.0
 
 
 def test_pick_random_move_returns_valid_key():
@@ -137,7 +137,7 @@ def test_pick_random_move_respects_probabilities():
         translation=10.0,
         rotation=0.0,
         reinsertion=0.0,
-        position_swap=0.0,
+        identity_swap=0.0,
     )
     rng = np.random.default_rng(seed=99)
     move = mw.pick_random_move(generator=rng)

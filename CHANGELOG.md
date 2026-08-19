@@ -18,7 +18,7 @@
 - Improve the `BaseEOS` and `PengRobinsonEOS` classes for better reuse.
 - Added new tests for the `PengRobinsonEOS` to compare the results with `RASPA2` and ensure the accuracy of the calculations. The tests include comparisons of fugacity coefficients and bulk phase densities for different gases at various temperatures and pressures, providing a comprehensive validation of the EOS implementation.
 - Added warnings for energy differences that exceed the maximum allowed threshold during GCMC simulations. If the energy difference between the trial and current state exceeds the specified `max_deltaE`, a warning message is printed to inform the user of the potential issue. This helps users identify and address situations where large energy changes may indicate problems with the simulation or model.
-- Improve the `positions_swap` movements to swap two different adsorbates in the system.
+- Improve the `identity_swap` movements to swap two different adsorbates in the system.
 
 ### Fixed 🐛
 

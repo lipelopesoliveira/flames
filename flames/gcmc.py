@@ -223,7 +223,7 @@ class GCMC(BaseSimulator):
             "rotation": self.try_rotation,
             "translation": self.try_translation,
             "reinsertion": self.try_reinsertion,
-            "position_swap": self.try_position_swap,
+            "identity_swap": self.try_identity_swap,
             "nve_md": self.try_nve_md,
             "nvt_md": self.try_nvt_md,
             "npt_md": self.try_npt_md
@@ -784,7 +784,7 @@ class GCMC(BaseSimulator):
         """
         Calculate the acceptance probability for translation or rotation of an adsorbate molecule as
 
-        P_move = min(1, exp(-β ΔE))
+        P_move = min(1, N_a / (N_b + 1) . f_b / f_a . exp(-β ΔE))
 
         Parameters
         ----------
@@ -794,21 +794,28 @@ class GCMC(BaseSimulator):
             Tags identifying the adsorbate molecules. Default is None.
         """
 
-        exp_value = np.exp(-self.beta * deltaE)
-        acc = min(1, exp_value)
-
         ads_names = [
-            next((ads.name for ads in self.adsorbates if ads.tag == tag), None)
-            for tag in adsorbate_tags
-        ]
+                    next((ads.name for ads in self.adsorbates if ads.tag == tag), None)
+                    for tag in adsorbate_tags
+                ]
+
+        N_a = self.n_adsorbates[ads_names[0]] if ads_names[0] else 0
+        N_b = self.n_adsorbates[ads_names[1]] if ads_names[1] else 0
+
+        f_a = next((ads.eos.get_fugacity_coefficient(self.T, self.P) for ads in self.adsorbates if ads.name == ads_names[0]), 1.0)  # type: ignore
+        f_b = next((ads.eos.get_fugacity_coefficient(self.T, self.P) for ads in self.adsorbates if ads.name == ads_names[1]), 1.0)  # type: ignore
+
+        exp_value = np.exp(-self.beta * deltaE)
+        pre_factor = (N_a / (N_b + 1)) * (f_b / f_a)
+        acc = min(1, pre_factor * exp_value)
 
         rnd_number = self.rnd_generator.random()
 
         if self.debug:
             self.logger.print_debug_movement(
-                movement="Position Swap",
+                movement="Identity Swap",
                 deltaE=deltaE,
-                prefactor=1,
+                prefactor=pre_factor,
                 acc=acc,
                 rnd_number=rnd_number,
                 adsorbate_name=ads_names,
@@ -1310,12 +1317,11 @@ class GCMC(BaseSimulator):
         self._save_rejected(atoms_trial)
         return False
 
-    def try_position_swap(self, adsorbate_tag: int) -> bool:
+    def try_identity_swap(self, adsorbate_tag: int) -> bool:
         """
-        Try to swap two adsorbate molecules positions in the system.
-        This method randomly selects two adsorbate molecules and attempts to swap their positions
-        based on their center of mass.
-        It checks for van der Waals overlap and calculates the new potential energy.
+        Try to swap the identity of two adsorbate molecules in the system.
+        This method randomly selects two adsorbate molecules and attempts to swap their
+        identities.
 
         Parameters
         ----------
@@ -1333,49 +1339,47 @@ class GCMC(BaseSimulator):
             [ads.tag for ads in self.adsorbates if ads.tag != adsorbate1_tag]
         )
 
+        ads1_name = next((ads.name for ads in self.adsorbates if ads.tag == adsorbate1_tag), 'None')
+        ads2_name = next((ads.name for ads in self.adsorbates if ads.tag == adsorbate2_tag), 'None')
+
         # Check if both adsorbate tags are present in the system
         ads_tags = list(set(self.current_system.get_tags()))
 
-        if adsorbate1_tag not in ads_tags or adsorbate2_tag not in ads_tags:
+        if adsorbate1_tag not in ads_tags:
             return False
 
         ads1_indices = self.rnd_generator.choice(
             self.get_adsorbates_index(tag=adsorbate1_tag), axis=0
         )
-        ads2_indices = self.rnd_generator.choice(
-            self.get_adsorbates_index(tag=adsorbate2_tag), axis=0
-        )
 
-        atoms_trial = swap_positions(self.current_system, ads1_indices, ads2_indices)
+        atoms_trial = self.current_system.copy()
+        atoms_trial.calc = self.model  # type: ignore
 
-        overlaped1 = check_overlap_vesin(
-            atoms=atoms_trial,
-            group1_indices=np.concatenate(
-                [np.arange(0, ads1_indices[0]), np.arange(ads1_indices[-1] + 1, len(atoms_trial))]
-            ),
-            group2_indices=np.arange(ads1_indices[0], ads1_indices[-1] + 1),
-            vdw_radii=self.vdw,
-        )
+        cm_position = atoms_trial[ads1_indices[0] : ads1_indices[-1] + 1].get_center_of_mass() 
 
-        if overlaped1:
+        to_insert = [ads.structure.copy() for ads in self.adsorbates if ads.tag == adsorbate2_tag][0]
+        to_insert.set_positions(to_insert.get_positions() - to_insert.get_center_of_mass() + cm_position)  # type: ignore
+
+        # Delete the adsorbate atoms from the trial structure
+        del atoms_trial[ads1_indices[0] : ads1_indices[-1] + 1]
+
+        atoms_trial += to_insert
+
+        overlaped = check_overlap_vesin(
+                    atoms=atoms_trial,
+                    group1_indices=np.arange(len(atoms_trial) - len(to_insert)),
+                    group2_indices=np.arange(len(atoms_trial) - len(to_insert), len(atoms_trial)),
+                    vdw_radii=self.vdw,
+                )
+
+        if overlaped:
             return False
 
-        overlaped2 = check_overlap_vesin(
-            atoms=atoms_trial,
-            group1_indices=np.concatenate(
-                [np.arange(0, ads2_indices[0]), np.arange(ads2_indices[-1] + 1, len(atoms_trial))]
-            ),
-            group2_indices=np.arange(ads2_indices[0], ads2_indices[-1] + 1),
-            vdw_radii=self.vdw,
-        )
-
-        if overlaped2:
-            return False
 
         atoms_trial.calc = self.model  # type: ignore
         e_trial = atoms_trial.get_potential_energy()  # type: ignore
 
-        deltaE = e_trial - self.current_total_energy
+        deltaE = e_trial - self.current_total_energy - self.adsorbate_energy[ads2_name] + self.adsorbate_energy[ads1_name]
 
         if deltaE < -self.max_deltaE:
             self.logger._print_warning(
@@ -1385,6 +1389,8 @@ class GCMC(BaseSimulator):
         if self._swap_acceptance(deltaE=deltaE, adsorbate_tags=[adsorbate1_tag, adsorbate2_tag]):
             self.current_system = atoms_trial.copy()
             self.current_total_energy = e_trial
+            self.n_adsorbates[ads1_name] -= 1
+            self.n_adsorbates[ads2_name] += 1
             return True
 
         self._save_rejected(atoms_trial)

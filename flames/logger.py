@@ -300,7 +300,7 @@ Starting GCMC simulation
                 self._get_move_pct("translation"),
                 self._get_move_pct("rotation"),
                 self._get_move_pct("reinsertion"),
-                self._get_move_pct("position_swap"),
+                self._get_move_pct("identity_swap"),
                 step_time,
             )
         )
