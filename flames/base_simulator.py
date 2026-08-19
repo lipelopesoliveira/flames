@@ -8,7 +8,7 @@ from ase import units
 from ase.build import make_supercell
 from ase.calculators import calculator
 from ase.io import Trajectory
-from ase.io.trajectory import TrajectoryWriter, TrajectoryReader
+from ase.io.trajectory import TrajectoryReader, TrajectoryWriter
 from ase.optimize import LBFGS
 
 from flames.adsorbate import Adsorbate
@@ -684,7 +684,6 @@ Start optimizing adsorbate structure...
 
         self.set_state(new_state)
         self.set_framework(new_state[: self.n_atoms_framework].copy())  # type: ignore
-            
 
     def npt(
         self,
@@ -798,9 +797,7 @@ Start optimizing adsorbate structure...
                 f"Driver must be one of 'Berendsen', 'NoseHoover' or 'MTKNPT'. Not {driver}."
             )
 
-
         return new_state
-
 
     def nvt(
         self,

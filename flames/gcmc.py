@@ -19,7 +19,6 @@ from flames.operations import (
     random_mol_insertion,
     random_rotation_limited,
     random_translation,
-    swap_positions,
 )
 
 
@@ -226,7 +225,7 @@ class GCMC(BaseSimulator):
             "identity_swap": self.try_identity_swap,
             "nve_md": self.try_nve_md,
             "nvt_md": self.try_nvt_md,
-            "npt_md": self.try_npt_md
+            "npt_md": self.try_npt_md,
         }
 
         self.n_movements = {move: [] for move in self.movements.keys()}
@@ -795,9 +794,9 @@ class GCMC(BaseSimulator):
         """
 
         ads_names = [
-                    next((ads.name for ads in self.adsorbates if ads.tag == tag), None)
-                    for tag in adsorbate_tags
-                ]
+            next((ads.name for ads in self.adsorbates if ads.tag == tag), None)
+            for tag in adsorbate_tags
+        ]
 
         N_a = self.n_adsorbates[ads_names[0]] if ads_names[0] else 0
         N_b = self.n_adsorbates[ads_names[1]] if ads_names[1] else 0
@@ -933,7 +932,11 @@ class GCMC(BaseSimulator):
             New volume.
         """
 
-        detaH = deltaE + self.P * (v_new - v_old) - self.n_adsorbates * np.log(v_new / v_old) / self.beta
+        detaH = (
+            deltaE
+            + self.P * (v_new - v_old)
+            - self.n_adsorbates * np.log(v_new / v_old) / self.beta
+        )
 
         exp_value = np.exp(-self.beta * detaH)
         acc = min(1, exp_value)
@@ -947,7 +950,7 @@ class GCMC(BaseSimulator):
                 prefactor=1,
                 acc=acc,
                 rnd_number=rnd_number,
-                adsorbate_name='System',
+                adsorbate_name="System",
             )
 
         # Apply Metropolis acceptance/rejection rule
@@ -1339,8 +1342,8 @@ class GCMC(BaseSimulator):
             [ads.tag for ads in self.adsorbates if ads.tag != adsorbate1_tag]
         )
 
-        ads1_name = next((ads.name for ads in self.adsorbates if ads.tag == adsorbate1_tag), 'None')
-        ads2_name = next((ads.name for ads in self.adsorbates if ads.tag == adsorbate2_tag), 'None')
+        ads1_name = next((ads.name for ads in self.adsorbates if ads.tag == adsorbate1_tag), "None")
+        ads2_name = next((ads.name for ads in self.adsorbates if ads.tag == adsorbate2_tag), "None")
 
         # Check if both adsorbate tags are present in the system
         ads_tags = list(set(self.current_system.get_tags()))
@@ -1355,9 +1358,11 @@ class GCMC(BaseSimulator):
         atoms_trial = self.current_system.copy()
         atoms_trial.calc = self.model  # type: ignore
 
-        cm_position = atoms_trial[ads1_indices[0] : ads1_indices[-1] + 1].get_center_of_mass() 
+        cm_position = atoms_trial[ads1_indices[0] : ads1_indices[-1] + 1].get_center_of_mass()
 
-        to_insert = [ads.structure.copy() for ads in self.adsorbates if ads.tag == adsorbate2_tag][0]
+        to_insert = [ads.structure.copy() for ads in self.adsorbates if ads.tag == adsorbate2_tag][
+            0
+        ]
         to_insert.set_positions(to_insert.get_positions() - to_insert.get_center_of_mass() + cm_position)  # type: ignore
 
         # Delete the adsorbate atoms from the trial structure
@@ -1366,20 +1371,24 @@ class GCMC(BaseSimulator):
         atoms_trial += to_insert
 
         overlaped = check_overlap_vesin(
-                    atoms=atoms_trial,
-                    group1_indices=np.arange(len(atoms_trial) - len(to_insert)),
-                    group2_indices=np.arange(len(atoms_trial) - len(to_insert), len(atoms_trial)),
-                    vdw_radii=self.vdw,
-                )
+            atoms=atoms_trial,
+            group1_indices=np.arange(len(atoms_trial) - len(to_insert)),
+            group2_indices=np.arange(len(atoms_trial) - len(to_insert), len(atoms_trial)),
+            vdw_radii=self.vdw,
+        )
 
         if overlaped:
             return False
 
-
         atoms_trial.calc = self.model  # type: ignore
         e_trial = atoms_trial.get_potential_energy()  # type: ignore
 
-        deltaE = e_trial - self.current_total_energy - self.adsorbate_energy[ads2_name] + self.adsorbate_energy[ads1_name]
+        deltaE = (
+            e_trial
+            - self.current_total_energy
+            - self.adsorbate_energy[ads2_name]
+            + self.adsorbate_energy[ads1_name]
+        )
 
         if deltaE < -self.max_deltaE:
             self.logger._print_warning(
@@ -1430,10 +1439,10 @@ class GCMC(BaseSimulator):
             trajectory_file=temp_trajectory,
         )
 
-        if self._nvtmd_acceptance(deltaE=atoms_trial.get_potential_energy() - self.current_total_energy): # type: ignore
-            self.current_system = atoms_trial.copy() # type: ignore
-            self.current_total_energy = atoms_trial.get_potential_energy() # type: ignore
-            print('NVT-MD move accepted.')
+        if self._nvtmd_acceptance(deltaE=atoms_trial.get_potential_energy() - self.current_total_energy):  # type: ignore
+            self.current_system = atoms_trial.copy()  # type: ignore
+            self.current_total_energy = atoms_trial.get_potential_energy()  # type: ignore
+            print("NVT-MD move accepted.")
 
             print(temp_trajectory)
 
@@ -1442,8 +1451,8 @@ class GCMC(BaseSimulator):
                 self.trajectory.write(frame)  # type: ignore
             return True
 
-        print('NVT-MD move rejected.')
-        self._save_rejected(atoms_trial) # type: ignore
+        print("NVT-MD move rejected.")
+        self._save_rejected(atoms_trial)  # type: ignore
         return False
 
     def try_npt_md(self) -> bool:

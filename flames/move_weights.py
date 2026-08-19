@@ -2,7 +2,9 @@ import warnings
 from dataclasses import dataclass, fields
 
 import numpy as np
+
 from flames.exceptions import InsertionDeletionError, MoveKeyError
+
 
 @dataclass
 class MoveWeights:

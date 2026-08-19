@@ -16,9 +16,16 @@ class MoveKeyError(Exception):
 
     def __init__(self, moves: list):
         valid_keys = {
-            "insertion", "deletion", "translation", "rotation",
-            "reinsertion", "position_swap", "nve_md", "nvt_md", "npt_md"
-            }
+            "insertion",
+            "deletion",
+            "translation",
+            "rotation",
+            "reinsertion",
+            "position_swap",
+            "nve_md",
+            "nvt_md",
+            "npt_md",
+        }
 
         self.message = (
             "Error: move_weights must contain exactly the keys:" + ", ".join(valid_keys) + ".\n"
