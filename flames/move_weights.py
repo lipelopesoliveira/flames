@@ -2,16 +2,7 @@ import warnings
 from dataclasses import dataclass, fields
 
 import numpy as np
-
-
-# Custom exceptions from your original code
-class MoveKeyError(Exception):
-    pass
-
-
-class InsertionDeletionError(Exception):
-    pass
-
+from flames.exceptions import InsertionDeletionError, MoveKeyError
 
 @dataclass
 class MoveWeights:
@@ -26,6 +17,9 @@ class MoveWeights:
     rotation: float = 1.0
     reinsertion: float = 0.0
     position_swap: float = 0.0
+    nve_md: float = 0.0
+    nvt_md: float = 0.0
+    npt_md: float = 0.0
 
     def __post_init__(self) -> None:
         """Validates and normalizes weights immediately after initialization."""
@@ -46,9 +40,7 @@ class MoveWeights:
     def _validate_consistence(self) -> None:
         """Ensures that insertion and deletion weights are equal."""
         if self.insertion != self.deletion:
-            raise InsertionDeletionError(
-                f"Insertion ({self.insertion}) and deletion ({self.deletion}) weights must be equal."
-            )
+            raise InsertionDeletionError(self.insertion, self.deletion)
 
     def _normalize_weights(self) -> None:
         """Normalizes the weights so that they sum to 1."""
@@ -74,7 +66,7 @@ class MoveWeights:
         # Check for invalid keys
         invalid_keys = set(data.keys()) - valid_keys
         if invalid_keys:
-            raise MoveKeyError(f"Invalid keys provided: {invalid_keys}")
+            raise MoveKeyError(list(invalid_keys))
 
         # Replicate your original warning for missing keys
         missing_keys = valid_keys - set(data.keys())

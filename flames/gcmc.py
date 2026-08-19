@@ -224,6 +224,9 @@ class GCMC(BaseSimulator):
             "translation": self.try_translation,
             "reinsertion": self.try_reinsertion,
             "position_swap": self.try_position_swap,
+            "nve_md": self.try_nve_md,
+            "nvt_md": self.try_nvt_md,
+            "npt_md": self.try_npt_md
         }
 
         self.n_movements = {move: [] for move in self.movements.keys()}
@@ -850,6 +853,99 @@ class GCMC(BaseSimulator):
         # Apply Metropolis acceptance/rejection rule
         return rnd_number < acc
 
+    def _nvemd_acceptance(self, deltaU: float, deltaK: float) -> bool:
+        """
+        Calculate the acceptance probability for a NVE-MD move of the system.
+
+        Parameters
+        ----------
+        deltaU : float
+            Change in potential energy.
+        deltaK : float
+            Change in kinetic energy.
+        """
+
+        deltaE = deltaU + deltaK
+        exp_value = np.exp(-self.beta * deltaE)
+        acc = min(1, exp_value)
+
+        rnd_number = self.rnd_generator.random()
+
+        if self.debug:
+            self.logger.print_debug_movement(
+                movement="NVE-MD",
+                deltaE=deltaE,
+                prefactor=1,
+                acc=acc,
+                rnd_number=rnd_number,
+                adsorbate_name="System",
+            )
+
+        # Apply Metropolis acceptance/rejection rule
+        return rnd_number < acc
+
+    def _nvtmd_acceptance(self, deltaE: float) -> bool:
+        """
+        Calculate the acceptance probability for a NVT-MD move of the system.
+
+        Parameters
+        ----------
+        deltaE : float
+            Change in total energy.
+        """
+
+        exp_value = np.exp(-self.beta * deltaE)
+        acc = min(1, exp_value)
+
+        rnd_number = self.rnd_generator.random()
+
+        if self.debug:
+            self.logger.print_debug_movement(
+                movement="NVT-MD",
+                deltaE=deltaE,
+                prefactor=1,
+                acc=acc,
+                rnd_number=rnd_number,
+                adsorbate_name="System",
+            )
+
+        # Apply Metropolis acceptance/rejection rule
+        return rnd_number < acc
+
+    def _nptmd_acceptance(self, deltaE: float, v_old: float, v_new: float) -> bool:
+        """
+        Calculate the acceptance probability for a NPT-MD move of the system.
+
+        Parameters
+        ----------
+        deltaE : float
+            Change in total energy.
+        v_old : float
+            Old volume.
+        v_new : float
+            New volume.
+        """
+
+        detaH = deltaE + self.P * (v_new - v_old) - self.n_adsorbates * np.log(v_new / v_old) / self.beta
+
+        exp_value = np.exp(-self.beta * detaH)
+        acc = min(1, exp_value)
+
+        rnd_number = self.rnd_generator.random()
+
+        if self.debug:
+            self.logger.print_debug_movement(
+                movement="NPT-MD",
+                deltaE=deltaE,
+                prefactor=1,
+                acc=acc,
+                rnd_number=rnd_number,
+                adsorbate_name='System',
+            )
+
+        # Apply Metropolis acceptance/rejection rule
+        return rnd_number < acc
+
     def _save_state(self, actual_iteration: int) -> None:
         """
         Save the current state of the simulation to a file if
@@ -1294,6 +1390,59 @@ class GCMC(BaseSimulator):
         self._save_rejected(atoms_trial)
         return False
 
+    def try_nve_md(self, n_teps: int = 500, **kwargs) -> bool:
+        raise NotImplementedError("NVE-MD move is not implemented yet.")
+
+    def try_nvt_md(self, n_teps: int = 100, **kwargs) -> bool:
+        """
+        Try to perform a NVT-MD move of the system using the Nose-Hoover thermostat.
+
+        Parameters
+        ----------
+        n_teps : int
+            Number of time steps to run the NVT-MD simulation.
+
+        Returns
+        -------
+        bool
+            True if the NVT-MD move was accepted, False otherwise.
+        """
+
+        print(f"Attempting NVT-MD move with {n_teps} time steps...")
+
+        temp_trajectory = Trajectory(
+            os.path.join(self.out_folder, f"temp_nvtmd_{self.P:.5f}.traj"), "w"
+        )
+
+        atoms_trial = self.md(
+            nsteps=n_teps,
+            time_step=0.5,
+            ensemble="NVT",
+            thermostat="NoseHoover",
+            calculator=self.model,
+            update_state=False,
+            trajectory_file=temp_trajectory,
+        )
+
+        if self._nvtmd_acceptance(deltaE=atoms_trial.get_potential_energy() - self.current_total_energy): # type: ignore
+            self.current_system = atoms_trial.copy() # type: ignore
+            self.current_total_energy = atoms_trial.get_potential_energy() # type: ignore
+            print('NVT-MD move accepted.')
+
+            print(temp_trajectory)
+
+            # Append the temp_trajectory to the main trajectory file
+            for frame in temp_trajectory:  # type: ignore
+                self.trajectory.write(frame)  # type: ignore
+            return True
+
+        print('NVT-MD move rejected.')
+        self._save_rejected(atoms_trial) # type: ignore
+        return False
+
+    def try_npt_md(self) -> bool:
+        raise NotImplementedError("NPT-MD move is not implemented yet.")
+
     def _pick_random_move(self) -> tuple[int, str]:
         """
         Randomly select a move from the `move_weights` dict.
@@ -1395,7 +1544,7 @@ class GCMC(BaseSimulator):
 
         ads_name = [ads.name for ads in self.adsorbates if ads.tag == ads_tag][0]
 
-        accepted = self.movements[move](ads_tag)
+        accepted = self.movements[move](adsorbate_tag=ads_tag)
         self.n_movements[move].append(1 if accepted else 0)
 
         self.uptake_list = np.append(self.uptake_list, [list(self.n_adsorbates.values())], axis=0)

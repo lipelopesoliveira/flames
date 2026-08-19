@@ -8,7 +8,7 @@ import ase.units
 import numpy as np
 from ase import Atoms, units
 from ase.calculators.calculator import Calculator
-from ase.io.trajectory import Trajectory
+from ase.io.trajectory import Trajectory, TrajectoryWriter, TrajectoryReader
 from ase.md import MDLogger
 from ase.md.langevin import Langevin
 from ase.md.md import MolecularDynamics
@@ -38,7 +38,7 @@ def run_md_simulation(
     movie_interval: int = 1,
     out_folder: str = ".",
     out_file: TextIO = sys.stdout,
-    mc_trajectory=None,
+    mc_trajectory: TrajectoryWriter | TrajectoryReader | None = None,
     set_momenta: bool = True,
     **kwargs,
 ) -> Atoms:
@@ -126,6 +126,7 @@ def run_md_simulation(
     thermostat = thermostat.lower()
 
     assert ensemble in ["NVT", "NPT"], f"Unsupported ensemble: {ensemble}. Must be 'NVT' or 'NPT'."
+    
     assert thermostat in [
         "berendsen",
         "nosehoover",

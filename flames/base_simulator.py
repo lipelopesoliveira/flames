@@ -8,6 +8,7 @@ from ase import units
 from ase.build import make_supercell
 from ase.calculators import calculator
 from ase.io import Trajectory
+from ase.io.trajectory import TrajectoryWriter, TrajectoryReader
 from ase.optimize import LBFGS
 
 from flames.adsorbate import Adsorbate
@@ -570,12 +571,13 @@ Start optimizing adsorbate structure...
         time_step: float = 0.5,
         ensemble: str = "NVT",
         thermostat: str = "NoseHoover",
-        set_momenta: bool = True,
         output_interval: int = 100,
         movie_interval: int = 100,
         calculator: calculator.Calculator | None = None,
+        update_state: bool = True,
+        trajectory_file: TrajectoryReader | TrajectoryWriter | None = None,
         **kwargs,
-    ) -> None:
+    ) -> None | ase.Atoms:
         """
         Run a molecular dynamics simulation using the specified ensemble and thermostat.
 
@@ -590,14 +592,18 @@ Start optimizing adsorbate structure...
             Can be one of "NVT" or "NPT".
         thermostat : str, optional
             The thermostat to use for the MD simulation (default is "NoseHoover").
-        set_momenta : bool, optional
-            Whether to set the atomic momenta to a Maxwell-Boltzmann distribution of the simulation temperature.
         output_interval : int, optional
             The interval for logging output (default is 100 steps).
         movie_interval : int, optional
             The interval for saving trajectory frames (default is 100 steps).
         calculator : ase.calculators.calculator.Calculator or None, optional
             The calculator to use for energy calculations. If None, the default model will be used.
+        update_state : bool, optional
+            If True, updates the current state of the simulation with the final state after MD.
+            If False, returns the final state without updating. This difference is important for using
+            the same method in the GCMC simulations when a MD step is used as a move. Default is True.
+        trajectory_file : str or None, optional
+            If provided, saves the trajectory to the specified file instead of the default trajectory.
         **kwargs : optional
             Additional parameters passed directly to the specific MD thermostat (e.g., taut, tdamp, friction).
 
@@ -653,8 +659,10 @@ Start optimizing adsorbate structure...
                     cell fluctuations while keeping the cell volume fixed (default is False).
         """
 
+        current_state = deepcopy(self.current_system)
+
         new_state = run_md_simulation(
-            atoms=self.current_system,
+            atoms=current_state,
             model=calculator if calculator else self.model,
             temperature=self.T,
             pressure=self.P * 1e-5,
@@ -666,14 +674,17 @@ Start optimizing adsorbate structure...
             out_file=self.out_file,  # type: ignore
             output_interval=output_interval,
             movie_interval=movie_interval,
-            mc_trajectory=self.trajectory,
-            set_momenta=set_momenta,
+            mc_trajectory=self.trajectory if not trajectory_file else trajectory_file,
+            set_momenta=True,
             **kwargs,
         )
 
-        self.set_state(new_state)
+        if not update_state:
+            return new_state
 
+        self.set_state(new_state)
         self.set_framework(new_state[: self.n_atoms_framework].copy())  # type: ignore
+            
 
     def npt(
         self,
@@ -686,7 +697,7 @@ Start optimizing adsorbate structure...
         movie_interval: int = 100,
         calculator: calculator.Calculator | None = None,
         **kwargs,
-    ):
+    ) -> None | ase.Atoms:
         """
         Run a NPT simulation using the Berendsen thermostat and barostat.
 
@@ -787,9 +798,9 @@ Start optimizing adsorbate structure...
                 f"Driver must be one of 'Berendsen', 'NoseHoover' or 'MTKNPT'. Not {driver}."
             )
 
-        self.set_state(new_state)
 
-        self.set_framework(new_state[: self.n_atoms_framework].copy())  # type: ignore
+        return new_state
+
 
     def nvt(
         self,
