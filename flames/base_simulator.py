@@ -568,6 +568,7 @@ Start optimizing adsorbate structure...
     def md(
         self,
         nsteps,
+        atoms: ase.Atoms | None = None,
         time_step: float = 0.5,
         ensemble: str = "NVT",
         thermostat: str = "NoseHoover",
@@ -576,6 +577,7 @@ Start optimizing adsorbate structure...
         calculator: calculator.Calculator | None = None,
         update_state: bool = True,
         trajectory_file: TrajectoryReader | TrajectoryWriter | None = None,
+        set_momenta: bool = True,
         **kwargs,
     ) -> None | ase.Atoms:
         """
@@ -606,6 +608,8 @@ Start optimizing adsorbate structure...
             the same method in the GCMC simulations when a MD step is used as a move. Default is True.
         trajectory_file : str or None, optional
             If provided, saves the trajectory to the specified file instead of the default trajectory.
+        set_momenta : bool, optional
+            Whether to set the atomic momenta to a Maxwell-Boltzmann distribution of the simulation temperature.
         **kwargs : optional
             Additional parameters passed directly to the specific MD thermostat (e.g., taut, tdamp, friction).
 
@@ -661,7 +665,10 @@ Start optimizing adsorbate structure...
                     cell fluctuations while keeping the cell volume fixed (default is False).
         """
 
-        current_state = deepcopy(self.current_system)
+        if atoms is not None:
+             current_state = deepcopy(atoms)
+        else:
+            current_state = deepcopy(self.current_system)
 
         new_state = run_md_simulation(
             atoms=current_state,
@@ -677,7 +684,7 @@ Start optimizing adsorbate structure...
             output_interval=output_interval,
             movie_interval=movie_interval,
             trajectory_file=trajectory_file if trajectory_file is not None else self.trajectory,
-            set_momenta=True,
+            set_momenta=set_momenta,
             **kwargs,
         )
 

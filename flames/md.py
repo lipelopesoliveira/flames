@@ -19,6 +19,7 @@ from ase.md.nose_hoover_chain import (
     NoseHooverChainNVT,
     NoseHooverChainThermostat,
 )
+from ase.md.verlet import VelocityVerlet
 from ase.md.nptberendsen import Inhomogeneous_NPTBerendsen, NPTBerendsen
 from ase.md.nvtberendsen import NVTBerendsen
 from ase.md.velocitydistribution import MaxwellBoltzmannDistribution, Stationary
@@ -70,6 +71,9 @@ def run_md_simulation(
         Simulation time step in femtoseconds. Default is 0.5 fs.
     **kwargs : optional
         Additional parameters passed directly to the specific MD thermostat (e.g., taut, tdamp, friction).
+
+        NVE Velocity Verlet:
+            - No additional parameters.
 
         NVT Berendsen:
             - taut : float, optional
@@ -125,9 +129,10 @@ def run_md_simulation(
     ensemble = ensemble.upper()
     thermostat = thermostat.lower()
 
-    assert ensemble in ["NVT", "NPT"], f"Unsupported ensemble: {ensemble}. Must be 'NVT' or 'NPT'."
+    assert ensemble in ["NVE", "NVT", "NPT"], f"Unsupported ensemble: {ensemble}. Must be 'NVE', 'NVT' or 'NPT'."
 
     assert thermostat in [
+        "velocityverlet",
         "berendsen",
         "nosehoover",
         "langevin",
@@ -138,13 +143,18 @@ def run_md_simulation(
     dyn_params: Dict[str, Any] = {
         "atoms": atoms,
         "timestep": time_step * units.fs,
-        "temperature_K": temperature,
         "loginterval": movie_interval,
         "append_trajectory": True,
     }
 
     # 1. Parameter routing and unit conversions based on Ensemble and Thermostat
-    if ensemble == "NVT":
+    if ensemble == "NVE":
+        if thermostat != "velocityverlet":
+            raise ValueError("For NVE ensemble, only 'velocityverlet' thermostat is supported.")
+        dyn_class = VelocityVerlet
+
+    elif ensemble == "NVT":
+        dyn_params["temperature_K"] = temperature
         if thermostat == "berendsen":
             dyn_class = NVTBerendsen
             dyn_params["taut"] = kwargs.pop("taut", 1.0) * units.fs
@@ -160,6 +170,7 @@ def run_md_simulation(
             raise ValueError(f"Unsupported NVT thermostat: {thermostat}")
 
     elif ensemble == "NPT":
+        dyn_params["temperature_K"] = temperature
         isotropic = kwargs.pop("isotropic", False)
         vol_constraint = kwargs.pop("vol_constraint", False)
 
@@ -299,17 +310,17 @@ def _md_core(
     print(header, file=out_file, flush=True)
 
     print(
-        "    Step   |  Pot. Energy   |  Total Energy  |  Temperature  |  Stress  |   Volume    | Elapsed Time ",
+        "    Step   |  Pot. Energy   |  Kin. Energy   |  Total Energy  |  Temperature  |  Stress  |   Volume    | Elapsed Time ",
         file=out_file,
         flush=True,
     )
     print(
-        "    [-]    |      [eV]      |      [eV]      |      [K]      |   [GPa]  |    [A^3]    |      [s]      ",
+        "    [-]    |      [eV]      |      [eV]      |      [eV]      |      [K]      |   [GPa]  |    [A^3]    |      [s]      ",
         file=out_file,
         flush=True,
     )
     print(
-        " --------- | -------------- | -------------- | ------------- | -------- | ----------- | -------------",
+        " --------- | -------------- | -------------- | -------------- | ------------- | -------- | ----------- | -------------",
         file=out_file,
         flush=True,
     )
@@ -318,6 +329,7 @@ def _md_core(
     def print_md_log():
         step = dyn.get_number_of_steps()
         epot = atoms.get_potential_energy()
+        ekin = atoms.get_kinetic_energy()
         etot = atoms.get_total_energy()
         temp_K = atoms.get_temperature()
         stress = atoms.get_stress(include_ideal_gas=True) / units.GPa
@@ -326,7 +338,7 @@ def _md_core(
         vol = atoms.get_volume()
 
         print(
-            f"  {step:>7}  | {epot:13.6f}  | {etot:13.6f}  |  {temp_K:11.3f}  |  {stress_ave:7.2f} | {vol:11.2f} | {elapsed_time:9.1f}",
+            f"  {step:>7}  | {epot:13.6f}  | {ekin:13.6f}  | {etot:13.6f}  |  {temp_K:11.3f}  |  {stress_ave:7.2f} | {vol:11.2f} | {elapsed_time:9.1f}",
             file=out_file,
             flush=True,
         )

@@ -8,6 +8,7 @@ import pymser
 from ase import units
 from ase.calculators import calculator
 from ase.io import Trajectory, read
+from ase.md.velocitydistribution import MaxwellBoltzmannDistribution
 from tqdm import tqdm
 
 from flames import VERSION
@@ -1407,8 +1408,57 @@ class GCMC(BaseSimulator):
         self._save_rejected(atoms_trial)
         return False
 
-    def try_nve_md(self) -> bool:
-        raise NotImplementedError("NVE-MD move is not implemented yet.")
+    def try_nve_md(self, n_teps: int = 50, **kwargs) -> bool:
+        """
+        Try to perform a NVE-MD move of the system using the Nose-Hoover thermostat.
+
+        Parameters
+        ----------
+        n_teps : int
+            Number of time steps to run the NVE-MD simulation.
+
+        Returns
+        -------
+        bool
+            True if the NVE-MD move was accepted, False otherwise.
+        """
+
+        atoms_trial = self.current_system.copy()  # type: ignore
+        atoms_trial.calc = self.model  # type: ignore
+
+        MaxwellBoltzmannDistribution(atoms_trial, temperature_K=self.T, force_temp=True)
+
+        kinetic_energy = atoms_trial.get_kinetic_energy()  # type: ignore
+        potential_energy = atoms_trial.get_potential_energy()  # type: ignore
+
+        tmp_traj = Trajectory(os.path.join(self.out_folder, f"nvemd_temp.traj"), "w")
+
+        atoms_trial = self.md(
+            nsteps=n_teps,
+            time_step=0.5,
+            ensemble="NVE",
+            thermostat="VelocityVerlet",
+            update_state=False,
+            movie_interval=1,
+            trajectory_file=tmp_traj
+        )
+
+        tmp_traj.close()  # type: ignore
+
+        if self._nvemd_acceptance(
+            deltaU=atoms_trial.get_potential_energy() - potential_energy,  # type: ignore
+            deltaK=atoms_trial.get_kinetic_energy() - kinetic_energy  # type: ignore
+            ):  # type: ignore
+            self.current_system = atoms_trial.copy()  # type: ignore
+            self.current_total_energy = atoms_trial.get_potential_energy()  # type: ignore
+
+            with Trajectory(os.path.join(self.out_folder, f"nvemd_temp.traj"), "r") as accepted_traj:  # type: ignore
+                for frame in accepted_traj[1:]:      # type: ignore
+                    self.trajectory.write(frame)  # type: ignore
+            return True
+
+        self._save_rejected(atoms_trial)  # type: ignore
+        return False
 
     def try_nvt_md(self, n_teps: int = 50, **kwargs) -> bool:
         """
