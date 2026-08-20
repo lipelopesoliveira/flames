@@ -1452,6 +1452,10 @@ class GCMC(BaseSimulator):
             self.current_system = atoms_trial.copy()  # type: ignore
             self.current_total_energy = atoms_trial.get_potential_energy()  # type: ignore
 
+            n_adsorbate_atoms = sum([len(ads.structure) * self.n_adsorbates[ads.name] for ads in self.adsorbates])
+            
+            self.set_framework(self.current_system[:-n_adsorbate_atoms])  # type: ignore
+
             with Trajectory(os.path.join(self.out_folder, f"nvemd_temp.traj"), "r") as accepted_traj:  # type: ignore
                 for frame in accepted_traj[1:]:      # type: ignore
                     self.trajectory.write(frame)  # type: ignore
@@ -1460,7 +1464,7 @@ class GCMC(BaseSimulator):
         self._save_rejected(atoms_trial)  # type: ignore
         return False
 
-    def try_nvt_md(self, n_teps: int = 50, **kwargs) -> bool:
+    def try_nvt_md(self, n_teps: int = 500, **kwargs) -> bool:
         """
         Try to perform a NVT-MD move of the system using the Nose-Hoover thermostat.
 
@@ -1492,6 +1496,10 @@ class GCMC(BaseSimulator):
             self.current_system = atoms_trial.copy()  # type: ignore
             self.current_total_energy = atoms_trial.get_potential_energy()  # type: ignore
 
+            n_adsorbate_atoms = sum([len(ads.structure) * self.n_adsorbates[ads.name] for ads in self.adsorbates])
+            
+            self.set_framework(self.current_system[:-n_adsorbate_atoms])  # type: ignore
+
             with Trajectory(os.path.join(self.out_folder, f"nvtmd_temp.traj"), "r") as accepted_traj:  # type: ignore
                 for frame in accepted_traj[1:]:      # type: ignore
                     self.trajectory.write(frame)  # type: ignore
@@ -1500,7 +1508,7 @@ class GCMC(BaseSimulator):
         self._save_rejected(atoms_trial)  # type: ignore
         return False
 
-    def try_npt_md(self, n_teps: int = 50, **kwargs) -> bool:
+    def try_npt_md(self, n_teps: int = 500, **kwargs) -> bool:
         """
         Try to perform a NPT-MD move of the system using the MTK thermostat.
 
@@ -1535,8 +1543,13 @@ class GCMC(BaseSimulator):
             deltaE=atoms_trial.get_potential_energy() - self.current_total_energy,  # type: ignore
             v_old=self.current_system.get_volume(),
             v_new=atoms_trial.get_volume()):  # type: ignore
+
             self.current_system = atoms_trial.copy()  # type: ignore
             self.current_total_energy = atoms_trial.get_potential_energy()  # type: ignore
+
+            n_adsorbate_atoms = sum([len(ads.structure) * self.n_adsorbates[ads.name] for ads in self.adsorbates])
+
+            self.set_framework(self.current_system[:-n_adsorbate_atoms])  # type: ignore
 
             with Trajectory(os.path.join(self.out_folder, f"nptmd_temp.traj"), "r") as accepted_traj:  # type: ignore
                 for frame in accepted_traj[1:]:  # type: ignore

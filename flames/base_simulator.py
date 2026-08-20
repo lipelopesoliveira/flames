@@ -189,7 +189,7 @@ class BaseSimulator:
 
         self.set_framework(framework_atoms, framework_energy=framework_energy)
 
-        self.current_system = deepcopy(self.framework)
+        self.current_system = self.framework.copy()
         self.current_system.calc = self.model
 
         if framework_energy:
@@ -666,9 +666,9 @@ Start optimizing adsorbate structure...
         """
 
         if atoms is not None:
-             current_state = deepcopy(atoms)
+             current_state = atoms.copy()
         else:
-            current_state = deepcopy(self.current_system)
+            current_state = self.current_system.copy()
 
         new_state = run_md_simulation(
             atoms=current_state,
