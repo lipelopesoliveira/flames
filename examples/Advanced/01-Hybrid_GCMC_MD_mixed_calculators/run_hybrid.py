@@ -36,7 +36,7 @@ framework: ase.Atoms = read_cif("GZU-1.cif")  # type: ignore
 adsorbate = Adsorbate(
     name="CH4",
     structure="ch4.xyz",
-    weights={
+    move_weights={
         "insertion": 0.333,
         "deletion": 0.333,
         "translation": 0,

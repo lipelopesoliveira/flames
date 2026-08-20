@@ -592,6 +592,8 @@ Start optimizing adsorbate structure...
             Can be one of "NVT" or "NPT".
         thermostat : str, optional
             The thermostat to use for the MD simulation (default is "NoseHoover").
+            For NVT, can be one of "Berendsen", "NoseHoover", or "Langevin".
+            For NPT, can be one of "Berendsen", "NoseHoover", or "MTKNPT".
         output_interval : int, optional
             The interval for logging output (default is 100 steps).
         movie_interval : int, optional

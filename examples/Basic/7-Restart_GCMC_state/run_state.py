@@ -19,7 +19,7 @@ framework: ase.Atoms = read_cif("MFI.cif")
 adsorbate = Adsorbate(
     name="CH4",
     structure="ch4.xyz",
-    weights={
+    move_weights={
         "insertion": 0.333,
         "deletion": 0.333,
         "translation": 0,

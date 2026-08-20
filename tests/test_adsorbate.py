@@ -135,8 +135,8 @@ def test_set_structure_raises_error(dummy_water):
 def test_weights_dict_initialization(dummy_water):
     """Test that passing a dict sets up MoveWeights."""
     move_probs = {"translation": 0.4, "rotation": 0.2, "insertion": 0.2, "deletion": 0.2}
-    adsorbate = Adsorbate("H2O", structure=dummy_water, weights=move_probs)
+    adsorbate = Adsorbate("H2O", structure=dummy_water, move_weights=move_probs)
 
-    assert adsorbate.weights is not None
-    assert isinstance(adsorbate.weights, MoveWeights)
-    assert adsorbate.weights == MoveWeights(**move_probs)
+    assert adsorbate.move_weights is not None
+    assert isinstance(adsorbate.move_weights, MoveWeights)
+    assert adsorbate.move_weights == MoveWeights(**move_probs)

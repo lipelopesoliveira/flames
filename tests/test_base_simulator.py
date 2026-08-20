@@ -67,7 +67,7 @@ def test_base_simulator_initialization_single_adsorbates(co2_path, mof_path, lj_
     assert simulator.adsorbates[0].mol_fraction == 1
     assert simulator.adsorbates[0].molar_mass == 44.009
     assert simulator.n_adsorbate_atoms == {"CO2": 3}
-    assert isinstance(simulator.adsorbates[0].weights, MoveWeights)
+    assert isinstance(simulator.adsorbates[0].move_weights, MoveWeights)
     assert simulator.get_framework_mass() == pytest.approx(7.254469967765757e-24)
 
 
@@ -101,5 +101,5 @@ def test_base_simulator_initialization_multiple_adsorbates(
     assert simulator.adsorbates[1].mol_fraction == 0.5
     assert simulator.adsorbates[1].molar_mass == 44.009
     assert simulator.n_adsorbate_atoms == {"CO2": 3, "H2O": 3}
-    assert isinstance(simulator.adsorbates[0].weights, MoveWeights)
+    assert isinstance(simulator.adsorbates[0].move_weights, MoveWeights)
     assert simulator.get_framework_mass() == pytest.approx(7.254469967765757e-24)

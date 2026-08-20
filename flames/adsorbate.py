@@ -17,7 +17,7 @@ class Adsorbate:
     Attributes:
         name (str): The identifier for the adsorbate species.
         structure (list[ase.atoms.Atoms] | None): The atomic configuration(s) of the adsorbate.
-        weights (MoveWeights): The probabilities/weights for different Monte Carlo moves.
+        move_weights (MoveWeights): The probabilities/weights for different Monte Carlo moves.
         eos (BaseEOS | None): The equation of state associated with the adsorbate.
     """
 
@@ -27,7 +27,7 @@ class Adsorbate:
         structure: Atoms | str = Atoms(),
         molar_mass: float | None = None,
         mol_fraction: float = 1.0,
-        weights: MoveWeights | dict[str, float] | None = None,
+        move_weights: MoveWeights | dict[str, float] | None = None,
         eos: BaseEOS | dict[str, float] | None = None,
         tag: int = 0,
         **kwargs: Any,
@@ -40,7 +40,7 @@ class Adsorbate:
             structure (Atoms | str | list[Atoms] | None): The structural representation.
                 If a string is provided, it is treated as a file path and read via ASE.
             mol_fraction (float): The mole fraction of the adsorbate in the gas phase.
-            weights (MoveWeights | dict[str, float] | None): Move probabilities. If a dict
+            move_weights (MoveWeights | dict[str, float] | None): Move probabilities. If a dict
                 is passed, it initializes a MoveWeights object. If None, uses defaults.
             eos (BaseEOS | dict[str, float] | None): Equation of state object or parameters.
             **kwargs (Any): Additional keyword arguments passed to `ase.io.read`.
@@ -59,8 +59,8 @@ class Adsorbate:
         self._molar_mass = molar_mass if molar_mass is not None else self.get_molar_mass()
 
         # Initialize defaults, then route through setters. Empty dict triggers default MoveWeights
-        self._weights: MoveWeights = MoveWeights()
-        self.weights = weights if weights is not None else {}
+        self._move_weights: MoveWeights = MoveWeights()
+        self.move_weights = move_weights if move_weights is not None else {}
 
         # Route through setter to handle EOS initialization
         self._eos = None
@@ -68,11 +68,11 @@ class Adsorbate:
 
     def __repr__(self) -> str:
         """Returns a string representation of the Adsorbate object."""
-        return f"Adsorbate(name={self.name}, mol_fraction={self.mol_fraction}, molar_mass={self.molar_mass}, structure={self.structure}, weights={self.weights}, eos={self.eos})"
+        return f"Adsorbate(name={self.name}, mol_fraction={self.mol_fraction}, molar_mass={self.molar_mass}, structure={self.structure}, move_weights={self.move_weights}, eos={self.eos})"
 
     def __str__(self) -> str:
         """Returns a human-readable string summarizing the Adsorbate."""
-        return f"Adsorbate: {self.name}, Mole Fraction: {self.mol_fraction}, Molar Mass: {self.molar_mass}, Structure: {self.structure}, Weights: {self.weights}, EOS: {self.eos}"
+        return f"Adsorbate: {self.name}, Mole Fraction: {self.mol_fraction}, Molar Mass: {self.molar_mass}, Structure: {self.structure}, Move Weights: {self.move_weights}, EOS: {self.eos}"
 
     @property
     def molar_mass(self) -> float:
@@ -137,12 +137,12 @@ class Adsorbate:
             raise ValueError("Structure must be an ASE Atoms object")
 
     @property
-    def weights(self) -> MoveWeights:
+    def move_weights(self) -> MoveWeights:
         """MoveWeights: The object managing Monte Carlo move probabilities."""
-        return self._weights
+        return self._move_weights
 
-    @weights.setter
-    def weights(self, value: MoveWeights | dict[str, float]) -> None:
+    @move_weights.setter
+    def move_weights(self, value: MoveWeights | dict[str, float]) -> None:
         """
         Sets the move weights for the adsorbate.
 
@@ -154,10 +154,10 @@ class Adsorbate:
             ValueError: If the input is neither a MoveWeights instance nor a dictionary.
         """
         if isinstance(value, MoveWeights):
-            self._weights = value
+            self._move_weights = value
         elif isinstance(value, dict):
             # Assuming MoveWeights is imported and available in scope
-            self._weights = MoveWeights(**value)
+            self._move_weights = MoveWeights(**value)
         else:
             raise ValueError(
                 "Weights must be a MoveWeights object or a dictionary of move probabilities."
@@ -226,7 +226,7 @@ class Adsorbate:
         if generator is None:
             generator = np.random.default_rng()
 
-        return self.weights.pick_random_move(generator=generator)
+        return self.move_weights.pick_random_move(generator=generator)
 
     def pick_structure(self) -> Atoms | list[Atoms]:
         """

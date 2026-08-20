@@ -616,7 +616,7 @@ class GCMC(BaseSimulator):
                 "pressure_Pa": self.P,
                 "fugacity_coefficient": self.fugacity_coeff,
                 "fugacity_Pa": self.fugacity_coeff * self.P,
-                "move_weights": {ads.name: ads.weights.__dict__ for ads in self.adsorbates},
+                "move_weights": {ads.name: ads.move_weights.__dict__ for ads in self.adsorbates},
                 "mol_fractions": self.mol_fractions,
                 "n_steps": len(self.uptake_list),
                 "enlapsed_time_hours": (datetime.datetime.now() - self.start_time).total_seconds()

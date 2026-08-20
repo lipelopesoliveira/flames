@@ -269,7 +269,7 @@ class GCMCLogger(BaseLogger):
 
         for adsorbate in self.sim.adsorbates:
             header += f"\nAdsorbate: {adsorbate.name}\n"
-            for key, value in adsorbate.weights.__dict__.items():
+            for key, value in adsorbate.move_weights.__dict__.items():
                 header += f" {key.capitalize():11}: {value:.3f}\n"
 
         header += """
