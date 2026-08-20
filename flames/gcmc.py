@@ -932,10 +932,12 @@ class GCMC(BaseSimulator):
             New volume.
         """
 
+        total_n_ads = sum(self.n_adsorbates.values())
+
         detaH = (
             deltaE
             + self.P * (v_new - v_old)
-            - self.n_adsorbates * np.log(v_new / v_old) / self.beta
+            - total_n_ads * np.log(v_new / v_old) / self.beta
         )
 
         exp_value = np.exp(-self.beta * detaH)
@@ -1405,10 +1407,10 @@ class GCMC(BaseSimulator):
         self._save_rejected(atoms_trial)
         return False
 
-    def try_nve_md(self, n_teps: int = 500, **kwargs) -> bool:
+    def try_nve_md(self) -> bool:
         raise NotImplementedError("NVE-MD move is not implemented yet.")
 
-    def try_nvt_md(self, n_teps: int = 100, **kwargs) -> bool:
+    def try_nvt_md(self, n_teps: int = 50, **kwargs) -> bool:
         """
         Try to perform a NVT-MD move of the system using the Nose-Hoover thermostat.
 
@@ -1422,41 +1424,77 @@ class GCMC(BaseSimulator):
         bool
             True if the NVT-MD move was accepted, False otherwise.
         """
-
-        print(f"Attempting NVT-MD move with {n_teps} time steps...")
-
-        temp_trajectory = Trajectory(
-            os.path.join(self.out_folder, f"temp_nvtmd_{self.P:.5f}.traj"), "w"
-        )
+        tmp_traj = Trajectory(os.path.join(self.out_folder, f"nvtmd_temp.traj"), "w")
 
         atoms_trial = self.md(
             nsteps=n_teps,
             time_step=0.5,
             ensemble="NVT",
             thermostat="NoseHoover",
-            calculator=self.model,
             update_state=False,
-            trajectory_file=temp_trajectory,
+            movie_interval=1,
+            trajectory_file=tmp_traj
         )
+
+        tmp_traj.close()  # type: ignore
 
         if self._nvtmd_acceptance(deltaE=atoms_trial.get_potential_energy() - self.current_total_energy):  # type: ignore
             self.current_system = atoms_trial.copy()  # type: ignore
             self.current_total_energy = atoms_trial.get_potential_energy()  # type: ignore
-            print("NVT-MD move accepted.")
 
-            print(temp_trajectory)
-
-            # Append the temp_trajectory to the main trajectory file
-            for frame in temp_trajectory:  # type: ignore
-                self.trajectory.write(frame)  # type: ignore
+            with Trajectory(os.path.join(self.out_folder, f"nvtmd_temp.traj"), "r") as accepted_traj:  # type: ignore
+                for frame in accepted_traj[1:]:      # type: ignore
+                    self.trajectory.write(frame)  # type: ignore
             return True
 
-        print("NVT-MD move rejected.")
         self._save_rejected(atoms_trial)  # type: ignore
         return False
 
-    def try_npt_md(self) -> bool:
-        raise NotImplementedError("NPT-MD move is not implemented yet.")
+    def try_npt_md(self, n_teps: int = 50, **kwargs) -> bool:
+        """
+        Try to perform a NPT-MD move of the system using the MTK thermostat.
+
+        Parameters
+        ----------
+        n_teps : int
+            Number of time steps to run the NPT-MD simulation.
+
+        Returns
+        -------
+        bool
+            True if the NPT-MD move was accepted, False otherwise.
+        """
+
+        print(f"Attempting NPT-MD move with {n_teps} time steps...")
+
+        tmp_traj = Trajectory(os.path.join(self.out_folder, f"nptmd_temp.traj"), "w")
+
+        atoms_trial = self.md(
+            nsteps=n_teps,
+            time_step=0.5,
+            ensemble="NPT",
+            thermostat="MTK",
+            update_state=False,
+            movie_interval=1,
+            trajectory_file=tmp_traj
+        )
+
+        tmp_traj.close()  # type: ignore
+
+        if self._nptmd_acceptance(
+            deltaE=atoms_trial.get_potential_energy() - self.current_total_energy,  # type: ignore
+            v_old=self.current_system.get_volume(),
+            v_new=atoms_trial.get_volume()):  # type: ignore
+            self.current_system = atoms_trial.copy()  # type: ignore
+            self.current_total_energy = atoms_trial.get_potential_energy()  # type: ignore
+
+            with Trajectory(os.path.join(self.out_folder, f"nptmd_temp.traj"), "r") as accepted_traj:  # type: ignore
+                for frame in accepted_traj[1:]:  # type: ignore
+                    self.trajectory.write(frame)  # type: ignore
+            return True
+
+        self._save_rejected(atoms_trial)  # type: ignore
+        return False
 
     def _pick_random_move(self) -> tuple[int, str]:
         """

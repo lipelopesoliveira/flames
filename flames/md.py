@@ -38,7 +38,7 @@ def run_md_simulation(
     movie_interval: int = 1,
     out_folder: str = ".",
     out_file: TextIO = sys.stdout,
-    mc_trajectory: TrajectoryWriter | TrajectoryReader | None = None,
+    trajectory_file: TrajectoryWriter | TrajectoryReader | None = None,
     set_momenta: bool = True,
     **kwargs,
 ) -> Atoms:
@@ -221,7 +221,7 @@ def run_md_simulation(
         out_folder=out_folder,
         out_file=out_file,
         set_momenta=set_momenta,
-        mc_trajectory=mc_trajectory,
+        trajectory_file=trajectory_file,
     )
 
 
@@ -238,7 +238,7 @@ def _md_core(
     out_folder: str,
     out_file: TextIO,
     set_momenta: bool,
-    mc_trajectory: Optional[Trajectory],  # type: ignore
+    trajectory_file: Optional[Trajectory] = None,  # type: ignore
 ) -> Atoms:
     """
     Internal engine that runs the ASE molecular dynamics process,
@@ -257,8 +257,7 @@ def _md_core(
 
     # Hook up trajectories
     if "trajectory" not in dyn_params:
-        traj_file = Trajectory(filename=traj_filename, mode="a", atoms=atoms)
-        dyn_params["trajectory"] = mc_trajectory if mc_trajectory else traj_file
+        dyn_params["trajectory"] = trajectory_file if trajectory_file is not None else Trajectory(filename=traj_filename, mode="a")
 
     # Set initial momenta
     if set_momenta:
@@ -284,6 +283,8 @@ def _md_core(
     Method-Specific Parameters:
         Driver: {dyn_class.__name__}
 """
+    header += f"        Trajectory File: {dyn_params['trajectory'].filename}\n"
+
     for key, value in dyn_params.items():
         if key not in [
             "atoms",
@@ -338,6 +339,9 @@ def _md_core(
     )
 
     dyn.run(num_md_steps)
+
+    # Finish the trajectory file
+    #dyn_params["trajectory"].close()
 
     # Footer
     footer = f"""

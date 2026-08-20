@@ -676,7 +676,7 @@ Start optimizing adsorbate structure...
             out_file=self.out_file,  # type: ignore
             output_interval=output_interval,
             movie_interval=movie_interval,
-            mc_trajectory=self.trajectory if not trajectory_file else trajectory_file,
+            trajectory_file=trajectory_file if trajectory_file is not None else self.trajectory,
             set_momenta=True,
             **kwargs,
         )
@@ -751,7 +751,7 @@ Start optimizing adsorbate structure...
                 out_file=self.out_file,  # type: ignore
                 output_interval=output_interval,
                 movie_interval=movie_interval,
-                mc_trajectory=self.trajectory,
+                trajectory_file=self.trajectory,
                 set_momenta=set_momenta,
                 **kwargs,
             )
@@ -768,7 +768,7 @@ Start optimizing adsorbate structure...
                 out_file=self.out_file,  # type: ignore
                 output_interval=output_interval,
                 movie_interval=movie_interval,
-                mc_trajectory=self.trajectory,
+                trajectory_file=self.trajectory,
                 set_momenta=set_momenta,
                 **kwargs,
             )
@@ -789,7 +789,7 @@ Start optimizing adsorbate structure...
                 out_file=self.out_file,  # type: ignore
                 output_interval=output_interval,
                 movie_interval=movie_interval,
-                mc_trajectory=self.trajectory,
+                trajectory_file=self.trajectory,
                 set_momenta=set_momenta,
                 **kwargs,
             )

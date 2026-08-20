@@ -11,6 +11,7 @@
 - Added support for multiple adsorbates in the `GCMC` classes. Users can now specify a list of `Adsorbate` objects when initializing this class, allowing for simulations involving multiple types of adsorbate molecules. The simulation will handle the insertion, deletion, translation, and rotation moves for each adsorbate type based on their defined move weights and mol fractions.
 - Added Nose-Hoover and Langevin termostats to the `BaseSimulator` class for NVT and NPT Molecular Dynamics (MD) simulations.
 - Added a custom `MTKNPT` implementation for molecular dynamics simulations with fixed cell volume but flexible cell shape. This implementation allows for anisotropic volume changes while maintaining a constant cell volume, providing more flexibility in simulating systems with varying cell shapes.
+- Added NPT and MVT Molecular Dynamics (MD) simulations as possible MC movements in the `GCMC` class. This allows the integration of MD simulations into the Markov chain Monte Carlo (MCMC) framework, enabling the exploration of the system's phase space through both Monte Carlo and Molecular Dynamics methods.
 
 ### Enhanced ✨
 
