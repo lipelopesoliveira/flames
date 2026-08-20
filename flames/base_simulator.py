@@ -1,5 +1,4 @@
 import os
-from copy import deepcopy
 from typing import TextIO
 
 import ase
@@ -666,7 +665,7 @@ Start optimizing adsorbate structure...
         """
 
         if atoms is not None:
-             current_state = atoms.copy()
+            current_state = atoms.copy()
         else:
             current_state = self.current_system.copy()
 

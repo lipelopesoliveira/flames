@@ -935,11 +935,7 @@ class GCMC(BaseSimulator):
 
         total_n_ads = sum(self.n_adsorbates.values())
 
-        detaH = (
-            deltaE
-            + self.P * (v_new - v_old)
-            - total_n_ads * np.log(v_new / v_old) / self.beta
-        )
+        detaH = deltaE + self.P * (v_new - v_old) - total_n_ads * np.log(v_new / v_old) / self.beta
 
         exp_value = np.exp(-self.beta * detaH)
         acc = min(1, exp_value)
@@ -1431,7 +1427,7 @@ class GCMC(BaseSimulator):
         kinetic_energy = atoms_trial.get_kinetic_energy()  # type: ignore
         potential_energy = atoms_trial.get_potential_energy()  # type: ignore
 
-        tmp_traj = Trajectory(os.path.join(self.out_folder, f"nvemd_temp.traj"), "w")
+        tmp_traj = Trajectory(os.path.join(self.out_folder, "nvemd_temp.traj"), "w")
 
         atoms_trial = self.md(
             nsteps=n_teps,
@@ -1440,24 +1436,26 @@ class GCMC(BaseSimulator):
             thermostat="VelocityVerlet",
             update_state=False,
             movie_interval=1,
-            trajectory_file=tmp_traj
+            trajectory_file=tmp_traj,
         )
 
         tmp_traj.close()  # type: ignore
 
         if self._nvemd_acceptance(
             deltaU=atoms_trial.get_potential_energy() - potential_energy,  # type: ignore
-            deltaK=atoms_trial.get_kinetic_energy() - kinetic_energy  # type: ignore
-            ):  # type: ignore
+            deltaK=atoms_trial.get_kinetic_energy() - kinetic_energy,  # type: ignore
+        ):  # type: ignore
             self.current_system = atoms_trial.copy()  # type: ignore
             self.current_total_energy = atoms_trial.get_potential_energy()  # type: ignore
 
-            n_adsorbate_atoms = sum([len(ads.structure) * self.n_adsorbates[ads.name] for ads in self.adsorbates])
-            
+            n_adsorbate_atoms = sum(
+                [len(ads.structure) * self.n_adsorbates[ads.name] for ads in self.adsorbates]
+            )
+
             self.set_framework(self.current_system[:-n_adsorbate_atoms])  # type: ignore
 
-            with Trajectory(os.path.join(self.out_folder, f"nvemd_temp.traj"), "r") as accepted_traj:  # type: ignore
-                for frame in accepted_traj[1:]:      # type: ignore
+            with Trajectory(os.path.join(self.out_folder, "nvemd_temp.traj"), "r") as accepted_traj:  # type: ignore
+                for frame in accepted_traj[1:]:  # type: ignore
                     self.trajectory.write(frame)  # type: ignore
             return True
 
@@ -1478,7 +1476,7 @@ class GCMC(BaseSimulator):
         bool
             True if the NVT-MD move was accepted, False otherwise.
         """
-        tmp_traj = Trajectory(os.path.join(self.out_folder, f"nvtmd_temp.traj"), "w")
+        tmp_traj = Trajectory(os.path.join(self.out_folder, "nvtmd_temp.traj"), "w")
 
         atoms_trial = self.md(
             nsteps=n_teps,
@@ -1487,7 +1485,7 @@ class GCMC(BaseSimulator):
             thermostat="NoseHoover",
             update_state=False,
             movie_interval=1,
-            trajectory_file=tmp_traj
+            trajectory_file=tmp_traj,
         )
 
         tmp_traj.close()  # type: ignore
@@ -1496,12 +1494,14 @@ class GCMC(BaseSimulator):
             self.current_system = atoms_trial.copy()  # type: ignore
             self.current_total_energy = atoms_trial.get_potential_energy()  # type: ignore
 
-            n_adsorbate_atoms = sum([len(ads.structure) * self.n_adsorbates[ads.name] for ads in self.adsorbates])
-            
+            n_adsorbate_atoms = sum(
+                [len(ads.structure) * self.n_adsorbates[ads.name] for ads in self.adsorbates]
+            )
+
             self.set_framework(self.current_system[:-n_adsorbate_atoms])  # type: ignore
 
-            with Trajectory(os.path.join(self.out_folder, f"nvtmd_temp.traj"), "r") as accepted_traj:  # type: ignore
-                for frame in accepted_traj[1:]:      # type: ignore
+            with Trajectory(os.path.join(self.out_folder, "nvtmd_temp.traj"), "r") as accepted_traj:  # type: ignore
+                for frame in accepted_traj[1:]:  # type: ignore
                     self.trajectory.write(frame)  # type: ignore
             return True
 
@@ -1525,7 +1525,7 @@ class GCMC(BaseSimulator):
 
         print(f"Attempting NPT-MD move with {n_teps} time steps...")
 
-        tmp_traj = Trajectory(os.path.join(self.out_folder, f"nptmd_temp.traj"), "w")
+        tmp_traj = Trajectory(os.path.join(self.out_folder, "nptmd_temp.traj"), "w")
 
         atoms_trial = self.md(
             nsteps=n_teps,
@@ -1534,7 +1534,7 @@ class GCMC(BaseSimulator):
             thermostat="MTK",
             update_state=False,
             movie_interval=1,
-            trajectory_file=tmp_traj
+            trajectory_file=tmp_traj,
         )
 
         tmp_traj.close()  # type: ignore
@@ -1542,16 +1542,19 @@ class GCMC(BaseSimulator):
         if self._nptmd_acceptance(
             deltaE=atoms_trial.get_potential_energy() - self.current_total_energy,  # type: ignore
             v_old=self.current_system.get_volume(),
-            v_new=atoms_trial.get_volume()):  # type: ignore
+            v_new=atoms_trial.get_volume(),  # type: ignore
+        ):  # type: ignore
 
             self.current_system = atoms_trial.copy()  # type: ignore
             self.current_total_energy = atoms_trial.get_potential_energy()  # type: ignore
 
-            n_adsorbate_atoms = sum([len(ads.structure) * self.n_adsorbates[ads.name] for ads in self.adsorbates])
+            n_adsorbate_atoms = sum(
+                [len(ads.structure) * self.n_adsorbates[ads.name] for ads in self.adsorbates]
+            )
 
             self.set_framework(self.current_system[:-n_adsorbate_atoms])  # type: ignore
 
-            with Trajectory(os.path.join(self.out_folder, f"nptmd_temp.traj"), "r") as accepted_traj:  # type: ignore
+            with Trajectory(os.path.join(self.out_folder, "nptmd_temp.traj"), "r") as accepted_traj:  # type: ignore
                 for frame in accepted_traj[1:]:  # type: ignore
                     self.trajectory.write(frame)  # type: ignore
             return True

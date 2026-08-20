@@ -19,10 +19,10 @@ from ase.md.nose_hoover_chain import (
     NoseHooverChainNVT,
     NoseHooverChainThermostat,
 )
-from ase.md.verlet import VelocityVerlet
 from ase.md.nptberendsen import Inhomogeneous_NPTBerendsen, NPTBerendsen
 from ase.md.nvtberendsen import NVTBerendsen
 from ase.md.velocitydistribution import MaxwellBoltzmannDistribution, Stationary
+from ase.md.verlet import VelocityVerlet
 from scipy.special import exprel
 
 
@@ -129,7 +129,11 @@ def run_md_simulation(
     ensemble = ensemble.upper()
     thermostat = thermostat.lower()
 
-    assert ensemble in ["NVE", "NVT", "NPT"], f"Unsupported ensemble: {ensemble}. Must be 'NVE', 'NVT' or 'NPT'."
+    assert ensemble in [
+        "NVE",
+        "NVT",
+        "NPT",
+    ], f"Unsupported ensemble: {ensemble}. Must be 'NVE', 'NVT' or 'NPT'."
 
     assert thermostat in [
         "velocityverlet",
@@ -268,7 +272,11 @@ def _md_core(
 
     # Hook up trajectories
     if "trajectory" not in dyn_params:
-        dyn_params["trajectory"] = trajectory_file if trajectory_file is not None else Trajectory(filename=traj_filename, mode="a")
+        dyn_params["trajectory"] = (
+            trajectory_file
+            if trajectory_file is not None
+            else Trajectory(filename=traj_filename, mode="a")
+        )
 
     # Set initial momenta
     if set_momenta:
@@ -353,7 +361,7 @@ def _md_core(
     dyn.run(num_md_steps)
 
     # Finish the trajectory file
-    #dyn_params["trajectory"].close()
+    # dyn_params["trajectory"].close()
 
     # Footer
     footer = f"""
