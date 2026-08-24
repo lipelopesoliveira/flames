@@ -3,7 +3,7 @@
 
 # FLAMES - Flexible Lattice Adsorption by Monte Carlo Engine Simulation
 
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit)
 [![Paper](https://img.shields.io/badge/10.26434/chemrxiv.15004623/v1-blue)](https://chemrxiv.org/doi/full/10.26434/chemrxiv.15004623/v1)
 [![This project supports Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python&logoColor=white)](https://python.org/downloads)
 [![Main](https://github.com/lipelopesoliveira/flames/actions/workflows/main.yml/badge.svg)](https://github.com/lipelopesoliveira/flames/actions/workflows/main.yml)
