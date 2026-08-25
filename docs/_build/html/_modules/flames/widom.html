@@ -7,7 +7,7 @@
         <link rel="prefetch" href="../../_static/logo-dark-mode.png" as="image">
 
     <link rel="shortcut icon" href="../../_static/favicon.ico"><!-- Generated with Sphinx 9.1.0 and Furo 2025.09.25 -->
-        <title>flames.widom - FLAMES v0.4.8</title>
+        <title>flames.widom - FLAMES v0.4.9</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=580074bf" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">FLAMES v0.4.8</div></a>
+      <a href="../../index.html"><div class="brand">FLAMES v0.4.9</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -203,14 +203,21 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Tutorials: Basic</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic_widom.html">Widom insertion</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic_gcmc.html">GCMC Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic_restart.html">Restarting Simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic_isotherm.html">GCMC Adsorption Isotherm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/widom.html">Widom insertion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/gcmc.html">GCMC Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/restart.html">Restarting Simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/isotherm.html">GCMC Adsorption Isotherm</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials: Calculators</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/calculators/lennard_jones.html">Lennard-Jones Potential</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/calculators/ewald.html">Lennard-Jones Potential</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/calculators/combining.html">Combining Potentials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/calculators/cp2k.html">Lennard-Jones Potential</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Tutorials: Advanced</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/advanced_hybrid_gcmc_md_mixed_calc.html">Mixed calculators for GCMC/MD simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/advanced/hybrid_gcmc_md_mixed_calc.html">Mixed calculators for GCMC/MD simulations</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Theoretical Background</span></p>
 <ul>
@@ -278,7 +285,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">flames</span><span class="w"> </span><span class="kn">import</span> <span class="n">VERSION</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">flames.base_simulator</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseSimulator</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">flames.logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">WidomLogger</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">flames.operations</span><span class="w"> </span><span class="kn">import</span> <span class="n">check_overlap</span><span class="p">,</span> <span class="n">random_mol_insertion</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flames.operations</span><span class="w"> </span><span class="kn">import</span> <span class="n">check_overlap_vesin</span><span class="p">,</span> <span class="n">random_mol_insertion</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">flames.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="n">random_n_splits</span>
 
 
@@ -430,47 +437,42 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">boltz_fac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">int_energy_list</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">kH</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_kH</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">boltz_fac</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kH</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_kH</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">kH_std_dv</span> <span class="o">=</span> <span class="mf">0.0</span>
 
-        <span class="c1"># Compute the adsorption energy (Qst)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Qst</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_Qst</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">int_energy_list</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">boltz_fac</span><span class="p">)</span>
+        <span class="c1"># Compute the enthalpy of adsorption (ΔH^0)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dH</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_dH</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">Qst_std_dv</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dH_std_dv</span> <span class="o">=</span> <span class="mf">0.0</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">max_overlap_tries</span> <span class="o">=</span> <span class="n">max_overlap_tries</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">MAX_ENERGY_ERROR</span> <span class="o">=</span> <span class="mf">1000.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MAX_ENERGY_ERROR</span> <span class="o">=</span> <span class="mf">1e5</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">save_snapshots</span> <span class="o">=</span> <span class="n">save_snapshots</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_kH</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">boltz_fac</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_kH</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the Henry coefficient (kH) using the Boltzmann factors.</span>
 
-<span class="sd">        kH = β &lt;exp(-β ΔE)&gt; [mol kg-1 Pa-1]</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        boltz_fac : np.ndarray</span>
-<span class="sd">            Array of Boltzmann factors corresponding to the integral energies.</span>
+<span class="sd">        kH = β &lt;exp(-β ΔE)&gt; / ρ [mol kg-1 Pa-1]</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">            float: The Henry coefficient in mol kg-1 Pa-1</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">*</span> <span class="n">boltz_fac</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">J</span> <span class="o">/</span> <span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">mol</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">framework_density</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">boltz_fac</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">J</span> <span class="o">/</span> <span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">mol</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">framework_density</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">)</span>
+        <span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_kH_std</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">boltz_fac</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_kH_std</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the standard deviation of the Henry coefficient (kH) using the Boltzmann factors.</span>
 
-<span class="sd">        kH = β &lt;exp(-β ΔE)&gt; [mol kg-1 Pa-1]</span>
+<span class="sd">        kH = β &lt;exp(-β ΔE)&gt; / ρ [mol kg-1 Pa-1]</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        boltz_fac : np.ndarray</span>
-<span class="sd">            Array of Boltzmann factors corresponding to the integral energies.</span>
 <span class="sd">        n : int, optional</span>
 <span class="sd">            Number of splits for cross-validation to estimate the standard deviation (default is 5).</span>
 
@@ -483,7 +485,7 @@
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">int_energy_list</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">n</span><span class="p">:</span>
             <span class="k">return</span> <span class="mf">0.0</span>
 
-        <span class="n">cv_boltz_fac</span> <span class="o">=</span> <span class="n">random_n_splits</span><span class="p">(</span><span class="n">boltz_fac</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rnd_generator</span><span class="p">)</span>
+        <span class="n">cv_boltz_fac</span> <span class="o">=</span> <span class="n">random_n_splits</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">boltz_fac</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rnd_generator</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">beta</span>
@@ -492,43 +494,35 @@
             <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">framework_density</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">)</span>
         <span class="p">)</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_Qst</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">int_energy_list</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">boltz_fac</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_dH</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Compute the adsorption energy (Qst) using the integral energy list and Boltzmann factors.</span>
+<span class="sd">        Compute the enthalpy of adsorption (ΔH^0) using the integral energy list and Boltzmann factors.</span>
 
-<span class="sd">        Qst = - &lt; ΔE * exp(-β ΔE) &gt; / &lt;exp(-β ΔE)&gt;  + kB.T # [kJ/mol]</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        int_energy_list : np.ndarray</span>
-<span class="sd">            Array of integral energies from the Widom insertions.</span>
-<span class="sd">        boltz_fac : np.ndarray</span>
-<span class="sd">            Array of Boltzmann factors corresponding to the integral energies.</span>
+<span class="sd">        ΔH^0 = &lt; ΔE * exp(-β ΔE) &gt; / &lt;exp(-β ΔE)&gt; - kB.T # [kJ/mol]</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">            float: The Qst energy in kJ/mol</span>
+<span class="sd">            float: The ΔH^0 energy in kJ/mol</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">((</span><span class="n">int_energy_list</span> <span class="o">*</span> <span class="n">boltz_fac</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">/</span> <span class="n">boltz_fac</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">-</span> <span class="n">units</span><span class="o">.</span><span class="n">kB</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span>
-            <span class="n">units</span><span class="o">.</span><span class="n">kJ</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">mol</span>
-        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">int_energy_list</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">boltz_fac</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">boltz_fac</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="o">-</span> <span class="n">units</span><span class="o">.</span><span class="n">kB</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span>
+        <span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">kJ</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">mol</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_Qst_std</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">int_energy_list</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_dH_std</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Compute the standard deviation of the adsorption energy (Qst) using the integral energy list and Boltzmann factors.</span>
+<span class="sd">        Compute the standard deviation of the enthalpy of adsorption (ΔH^0) using the integral energy list and Boltzmann factors.</span>
 
-<span class="sd">        Qst = - &lt; ΔE * exp(-β ΔE) &gt; / &lt;exp(-β ΔE)&gt;  + kB.T # [kJ/mol]</span>
+<span class="sd">        ΔH^0 = &lt; ΔE * exp(-β ΔE) &gt; / &lt;exp(-β ΔE)&gt; - kB.T # [kJ/mol]</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        int_energy_list : np.ndarray</span>
-<span class="sd">            Array of integral energies from the Widom insertions.</span>
 <span class="sd">        n : int, optional</span>
 <span class="sd">            Number of splits for cross-validation to estimate the standard deviation (default is 5).</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">            float: The standard deviation of Qst energy in kJ/mol</span>
+<span class="sd">            float: The standard deviation of ΔH^0 energy in kJ/mol</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">int_energy_list</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">n</span><span class="p">:</span>
@@ -608,12 +602,12 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">boltz_fac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">int_energy_list</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">kH</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_kH</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">boltz_fac</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Qst</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_Qst</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">int_energy_list</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">boltz_fac</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kH</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_kH</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dH</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_dH</span><span class="p">()</span>
 
         <span class="c1"># Calculate standard deviation using cross-validation</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kH_std_dv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_kH_std</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">boltz_fac</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Qst_std_dv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_Qst_std</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">int_energy_list</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kH_std_dv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_kH_std</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dH_std_dv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_dH_std</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Widom.save_results">
@@ -637,8 +631,8 @@
             <span class="s2">&quot;temperature_K&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
             <span class="s2">&quot;henry_coefficient_mol_kg-1_Pa-1&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kH</span><span class="p">,</span>
             <span class="s2">&quot;henry_coefficient_std_mol_kg-1_Pa-1&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kH_std_dv</span><span class="p">,</span>
-            <span class="s2">&quot;enthalpy_of_adsorption_kJ_mol-1&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">Qst</span><span class="p">,</span>
-            <span class="s2">&quot;enthalpy_of_adsorption_std_kJ_mol-1&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">Qst_std_dv</span><span class="p">,</span>
+            <span class="s2">&quot;enthalpy_of_adsorption_kJ_mol-1&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dH</span><span class="p">,</span>
+            <span class="s2">&quot;enthalpy_of_adsorption_std_kJ_mol-1&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dH_std_dv</span><span class="p">,</span>
         <span class="p">}</span>
 
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="n">file_name</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
@@ -666,11 +660,11 @@
         <span class="c1"># Set the base iteration to the length of the uptake list</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">base_iteration</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">int_energy_list</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">Qst</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_Qst</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">int_energy_list</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">boltz_fac</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Qst_std_dv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_Qst_std</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">int_energy_list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dH</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_dH</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dH_std_dv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_dH_std</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">kH</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_kH</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">boltz_fac</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kH_std_dv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_kH_std</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">boltz_fac</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kH</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_kH</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kH_std_dv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_kH_std</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">print_restart_info</span><span class="p">()</span></div>
 
@@ -695,22 +689,18 @@
         <span class="c1"># Ensure atoms_trial is always defined so it can be returned in failure cases</span>
         <span class="n">atoms_trial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
-        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_overlap_tries</span><span class="p">,</span> <span class="mi">1</span><span class="p">)):</span>
-            <span class="n">atoms_trial</span> <span class="o">=</span> <span class="n">random_mol_insertion</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rnd_generator</span><span class="p">)</span>
+        <span class="n">atoms_trial</span> <span class="o">=</span> <span class="n">random_mol_insertion</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rnd_generator</span><span class="p">)</span>
 
-            <span class="n">overlaped</span> <span class="o">=</span> <span class="n">check_overlap</span><span class="p">(</span>
-                <span class="n">atoms</span><span class="o">=</span><span class="n">atoms_trial</span><span class="p">,</span>
-                <span class="n">group1_indices</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_atoms_framework</span><span class="p">),</span>
-                <span class="n">group2_indices</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">n_atoms_framework</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_atoms_framework</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbate_atoms</span>
-                <span class="p">),</span>
-                <span class="n">vdw_radii</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vdw</span><span class="p">,</span>
-            <span class="p">)</span>
+        <span class="n">overlaped</span> <span class="o">=</span> <span class="n">check_overlap_vesin</span><span class="p">(</span>
+            <span class="n">atoms</span><span class="o">=</span><span class="n">atoms_trial</span><span class="p">,</span>
+            <span class="n">group1_indices</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_atoms_framework</span><span class="p">),</span>
+            <span class="n">group2_indices</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">n_atoms_framework</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_atoms_framework</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbate_atoms</span>
+            <span class="p">),</span>
+            <span class="n">vdw_radii</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vdw</span><span class="p">,</span>
+        <span class="p">)</span>
 
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">overlaped</span><span class="p">:</span>
-                <span class="k">break</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># Return MAX_ENERGY_ERROR if no valid insertion found after max tries</span>
+        <span class="k">if</span> <span class="n">overlaped</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">MAX_ENERGY_ERROR</span><span class="p">,</span> <span class="n">atoms_trial</span>
 
         <span class="c1"># Set the same calculator to the trial atoms</span>
@@ -721,9 +711,6 @@
 
         <span class="c1"># Add interaction energy to the info dictionary</span>
         <span class="n">atoms_trial</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;interaction_energy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">deltaE</span>
-
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">deltaE</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_deltaE</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">MAX_ENERGY_ERROR</span><span class="p">,</span> <span class="n">atoms_trial</span>  <span class="c1"># Return MAX_ENERGY_ERROR to indicate error</span>
 
         <span class="k">return</span> <span class="n">deltaE</span><span class="p">,</span> <span class="n">atoms_trial</span></div>
 
@@ -743,17 +730,7 @@
 
         <span class="n">step_time_start</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
 
-        <span class="n">accepted</span> <span class="o">=</span> <span class="kc">False</span>
-
-        <span class="c1"># Try a valid insertion up to max_overlap_tries times until accepted to count as one Widom insertion</span>
-        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_overlap_tries</span><span class="p">):</span>
-            <span class="n">deltaE</span><span class="p">,</span> <span class="n">atoms_trial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">try_insertion</span><span class="p">()</span>
-            <span class="n">accepted</span> <span class="o">=</span> <span class="n">deltaE</span> <span class="o">&lt;</span> <span class="n">units</span><span class="o">.</span><span class="n">kB</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span>
-
-            <span class="k">if</span> <span class="n">accepted</span><span class="p">:</span>
-                <span class="k">break</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">_save_rejected_if_enabled</span><span class="p">(</span><span class="n">atoms_trial</span><span class="p">)</span>
+        <span class="n">deltaE</span><span class="p">,</span> <span class="n">atoms_trial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">try_insertion</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_save_minimum_configuration</span><span class="p">(</span><span class="n">deltaE</span><span class="p">,</span> <span class="n">atoms_trial</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
 
@@ -770,7 +747,7 @@
                 <span class="n">deltaE</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
                 <span class="n">deltaE</span> <span class="o">/</span> <span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">kJ</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">mol</span><span class="p">),</span>  <span class="c1"># type: ignore</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">kH</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">Qst</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dH</span><span class="p">,</span>
                 <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">step_time_start</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">(),</span>
             <span class="p">],</span>
         <span class="p">)</span></div>
@@ -825,7 +802,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=4f911454"></script>
+</div><script src="../../_static/documentation_options.js?v=ebe9904d"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

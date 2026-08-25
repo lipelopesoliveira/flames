@@ -7,7 +7,6 @@ from typing import Optional, TextIO
 
 import ase
 import numpy as np
-import pymser
 from ase import units
 
 from flames import VERSION
@@ -32,19 +31,31 @@ class BaseLogger:
         """
         self.sim = simulation
         self.out_file = output_file
+        self.warnings: list[str] = []
 
-    def _print(self, *args, **kwargs):
+    def _print(self, *args, **kwargs) -> None:
         """Internal print function to direct output to file or console."""
         print(*args, **kwargs, file=self.out_file, flush=True)
 
-    def print_header(self):
+    def _print_warning(self, message: str) -> None:
+        """Internal warning function to direct warnings to file or console."""
+
+        self.warnings.append(message)
+        print(f"WARNING: {message}", file=self.out_file, flush=True)
+
+    def print_header(self) -> None:
         """Prints the header for the simulation output."""
         atomic_numbers = set(
-            list(self.sim.framework.get_atomic_numbers())
-            + list(self.sim.adsorbate.get_atomic_numbers())
+            set(list(self.sim.framework.get_atomic_numbers()))
+            | set().union(
+                *[
+                    set(adsorbate.structure.get_atomic_numbers())
+                    for adsorbate in self.sim.adsorbates
+                ]
+            )
         )
 
-        header = f"""
+        header = rf"""
 ===========================================================================
          _______  __          ___      .___  ___.  _______     _______.
         |   ____||  |        /   \     |   \/   | |   ____|   /       |
@@ -53,9 +64,9 @@ class BaseLogger:
         |  |     |  `----./  _____  \  |  |  |  | |  |____.----)   |   
         |__|     |_______/__/     \__\ |__|  |__| |_______|_______/    
                                                                
-          Flexible Lattice Adsorption by Monte Carlo Engine Simulation
-                        powered by Python + ASE
-                    Author: Felipe Lopes de Oliveira
+        Flexible Lattice Adsorption by Monte Carlo Engine Simulation
+                      powered by Python + ASE
+                  Author: Felipe Lopes de Oliveira
 ===========================================================================
 
 Code version: {VERSION}
@@ -110,51 +121,78 @@ Perpendicular cell:
     {self.sim.perpendicular_cell[2, 0]:12.7f} {self.sim.perpendicular_cell[2, 1]:12.7f} {self.sim.perpendicular_cell[2, 2]:12.7f}
 
 """
-        if np.array_equal(self.sim.get_ideal_supercell(), np.array([1, 1, 1])):
-            header += f"""
-WARNING: Ideal supercell size is {self.sim.get_ideal_supercell()} (x, y, z).
-Consider using automatic_supercell=True to create a supercell that
-fits the cutoff radius of {self.sim.cutoff} Å or manually create a supercell.
+        if not np.array_equal(self.sim._get_ideal_supercell(), np.array([1, 1, 1])):
 
+            warning_msg = f"""\n
+WARNING: Ideal supercell size is {self.sim._get_ideal_supercell()} (x, y, z).
+Consider using automatic_supercell=True to create a supercell that
+fits the cutoff radius of {self.sim.cutoff} Å or manually create a supercell.\n
 """
+            self.warnings.append(warning_msg)
+            header += warning_msg
 
         header += "Atomic positions:\n"
 
         for atom in self.sim.framework:
             header += "  {:2} {:12.7f} {:12.7f} {:12.7f}\n".format(atom.symbol, *atom.position)
 
-        header += f"""
+        for adsorbate in self.sim.adsorbates:
+            header += f"""
 ===========================================================================
-Adsorbate: {self.sim.adsorbate.get_chemical_formula()}
-Adsorbate: {self.sim.n_adsorbate_atoms} atoms, {self.sim.adsorbate_mass} kg
-Adsorbate energy: {self.sim.adsorbate_energy} eV
+Adsorbate: {adsorbate.name} ({adsorbate.tag})
+Adsorbate: {self.sim.n_adsorbate_atoms[adsorbate.name]} atoms, {self.sim.adsorbate_mass[adsorbate.name]} kg
+Adsorbate energy: {self.sim.adsorbate_energy[adsorbate.name]} eV
 
 Atomic positions:
 """
-        for atom in self.sim.adsorbate:
-            header += "  {:2} {:12.7f} {:12.7f} {:12.7f}\n".format(atom.symbol, *atom.position)
+            for atom in adsorbate.structure:
+                header += "  {:2} {:12.7f} {:12.7f} {:12.7f}\n".format(atom.symbol, *atom.position)
 
-        # Only prints if EOS parameters are set in the simulator
-        if _ := getattr(self.sim, "criticalTemperature", None):
+            # Only prints if EOS parameters are set in the simulator
+            if adsorbate.eos:
+                header += f"""
+===========================================================================
+Equation of State Parameters: {type(adsorbate.eos).__name__}
+
+    Critical temparure [K]: {adsorbate.eos.Tc:.6f}
+    Critical pressure [Pa]: {adsorbate.eos.Pc:.6f}
+    Acentric factor [-]:    {adsorbate.eos.omega:.6f}
+
+    {adsorbate.eos.get_stable_phase_properties(self.sim.T, self.sim.P)[2]}
+
+    MolFraction:           {adsorbate.mol_fraction:.8f} [-]
+    Compressibility:       {adsorbate.eos.get_compressibility(self.sim.T, self.sim.P):.6f} [-]
+    Fugacity coeff.:       {adsorbate.eos.get_fugacity_coefficient(self.sim.T, self.sim.P):.10f} [-]
+    Bulk phase pressure:   {self.sim.P * adsorbate.eos.get_fugacity_coefficient(self.sim.T, self.sim.P):.6f} [Pa]
+
+    Density of the bulk fluid phase:      {adsorbate.eos.get_bulk_phase_density(self.sim.T, self.sim.P):.6f} [kg/m^3]
+
+    Amount of excess molecules:        {adsorbate.eos.get_bulk_phase_molar_density(self.sim.T, self.sim.P) * self.sim.V * self.sim.void_fraction:.10f} [-]
+
+"""
+            if adsorbate.eos:
+                partial_pressure = (
+                    self.sim.P
+                    * adsorbate.eos.get_fugacity_coefficient(self.sim.T, self.sim.P)
+                    * adsorbate.mol_fraction
+                )
+            else:
+                partial_pressure = self.sim.P * adsorbate.mol_fraction
             header += f"""
 ===========================================================================
-Equation of State Parameters:
+Conversion factors:
+    Conversion factor molecules/unit cell -> mol/kg:         {self.sim.conv_factors['mol/kg'][adsorbate.name]:.9f}
+    Conversion factor molecules/unit cell -> mg/g:           {self.sim.conv_factors['mg/g'][adsorbate.name]:.9f}
+    Conversion factor molecules/unit cell -> cm^3 STP/gr:    {self.sim.conv_factors['cm^3 STP/gr'][adsorbate.name]:.9f}
+    Conversion factor molecules/unit cell -> cm^3 STP/cm^3:  {self.sim.conv_factors['cm^3 STP/cm^3'][adsorbate.name]:.9f}
+    Conversion factor molecules/unit cell -> %wt:            {self.sim.conv_factors['mg/g'][adsorbate.name] * 1e-1:.9f}
 
-    Critical temparure [K]: {self.sim.criticalTemperature:.6f}
-    Critical pressure [Pa]: {self.sim.criticalPressure:.6f}
-    Acentric factor [-]:    {self.sim.acentricFactor:.6f}
-
-    Vapour=stable, Liquid=metastable
-
-    MolFraction:           1.0000000000 [-]
-    Compressibility:       {self.sim.eos.get_compressibility():.6f} [-]
-    Fugacity coeff.:       {self.sim.fugacity_coeff:.10f} [-]
-    Bulk phase pressure:   {self.sim.P * self.sim.fugacity_coeff:.6f} [Pa]
-
-    Density of the bulk fluid phase:      {self.sim.eos.get_bulk_phase_density():.6f} [kg/m^3]
-
-    Amount of excess molecules:        {self.sim.eos.get_bulk_phase_molar_density() * self.sim.V * self.sim.void_fraction:.10f} [-]
-
+Partial pressure:
+        {partial_pressure:>25.15f} Pascal
+        {partial_pressure / 1e5:>25.15f} bar
+        {partial_pressure / 101325:>25.15f} atm
+        {partial_pressure / (101325 * 760):>25.15f} Torr
+===========================================================================
 """
 
         header += """
@@ -165,22 +203,6 @@ Shortest distances:
         for i, j in list(itertools.combinations(atomic_numbers, 2)):
             header += f"  {ase.Atom(i).symbol:2} - {ase.Atom(j).symbol:2}: {self.sim.vdw[i] + self.sim.vdw[j]:.3f} Å\n"
 
-        header += f"""
-===========================================================================
-Conversion factors:
-    Conversion factor molecules/unit cell -> mol/kg:         {self.sim.conv_factors['mol/kg']:.9f}
-    Conversion factor molecules/unit cell -> mg/g:           {self.sim.conv_factors['mg/g']:.9f}
-    Conversion factor molecules/unit cell -> cm^3 STP/gr:    {self.sim.conv_factors['cm^3 STP/gr']:.9f}
-    Conversion factor molecules/unit cell -> cm^3 STP/cm^3:  {self.sim.conv_factors['cm^3 STP/cm^3']:.9f}
-    Conversion factor molecules/unit cell -> %wt:            {self.sim.conv_factors['mg/g'] * 1e-1:.9f}
-
-Partial pressure:
-        {self.sim.P * self.sim.fugacity_coeff:>25.15f} Pascal
-        {self.sim.P * self.sim.fugacity_coeff / 1e5:>25.15f} bar
-        {self.sim.P * self.sim.fugacity_coeff / 101325:>25.15f} atm
-        {self.sim.P * self.sim.fugacity_coeff / (101325 * 760):>25.15f} Torr
-===========================================================================
-"""
         self._print(header)
 
     def print_restart_info(self) -> None:
@@ -190,11 +212,11 @@ Partial pressure:
             (
                 self.sim.current_total_energy
                 - self.sim.framework_energy
-                - self.sim.n_adsorbates * self.sim.adsorbate_energy
+                - sum(self.sim.n_adsorbates.values()) * self.sim.adsorbate_energy
             )
             / (units.kJ / units.mol)
-            / self.sim.n_adsorbates
-            if self.sim.n_adsorbates > 0
+            / sum(self.sim.n_adsorbates.values())
+            if sum(self.sim.n_adsorbates.values()) > 0
             else 0
         )
         self._print(f"Restarting simulation from step {self.sim.base_iteration}...")
@@ -208,7 +230,9 @@ Current average binding energy: {avg_binding_energy:.3f} kJ/mol
 ===========================================================================
 """)
 
-    def print_debug_movement(self, movement, deltaE, prefactor, acc, rnd_number) -> None:
+    def print_debug_movement(
+        self, movement, deltaE, prefactor, acc, rnd_number, adsorbate_name
+    ) -> None:
         """
         Print debug information about the current state of the simulation.
         This method is called to provide detailed information about the current state of the system.
@@ -216,6 +240,7 @@ Current average binding energy: {avg_binding_energy:.3f} kJ/mol
         self._print(f"""
 =======================================================================================================
 Movement type: {movement}
+Adsorbate: {adsorbate_name}
 Interaction energy: {deltaE} eV, {(deltaE / (units.kJ / units.mol))} kJ/mol
 Exponential factor:     {-self.sim.beta * deltaE:.3E}
 Exponential:            {np.exp(-self.sim.beta * deltaE):.3E}
@@ -233,27 +258,19 @@ class GCMCLogger(BaseLogger):
     Separates the presentation logic from the simulation logic.
     """
 
-    def __init__(self, simulation, output_file: Optional[TextIO] = None):
-        """
-        Initializes the logger.
-
-        Parameters
-        ----------
-        simulation : GCMC
-            The GCMC simulation instance to log.
-        output_file : TextIO | None, optional
-            A file path or stream to write the output to. If None, prints to stdout.
-        """
-        self.sim = simulation
-        self.out_file = output_file
+    def _get_move_pct(self, move_name: str) -> float:
+        moves = self.sim.n_movements[move_name]
+        return np.average(moves) * 100 if len(moves) > 0 else 0.0
 
     def print_run_header(self) -> None:
         """Prints the header for the main GCMC loop."""
 
         header = "Movement statistics:\n"
 
-        for key, value in self.sim.move_weights.items():
-            header += f"  {key.capitalize():11}: {value:.3f}\n"
+        for adsorbate in self.sim.adsorbates:
+            header += f"\nAdsorbate: {adsorbate.name}\n"
+            for key, value in adsorbate.move_weights.__dict__.items():
+                header += f" {key.capitalize():11}: {value:.3f}\n"
 
         header += """
 ===========================================================================
@@ -262,47 +279,28 @@ class GCMCLogger(BaseLogger):
 Starting GCMC simulation
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
- Iteration |  Number of  |  Uptake  |    Tot En.   |Av. Ads. En.|  Pacc  |  Pdel  |  Ptra  |  Prot  |  Prin  |  Time
-     -     |  Molecules  | [mmol/g] |     [eV]     |  [kJ/mol]  |    %   |    %   |   %    |   %    |   %    |   [s]
----------- | ----------- | -------- | ------------ | ---------- | ------ | ------ | ------ | ------ | ------ | -------"""
+ Iteration |  Number of  |  Uptake  |    Tot En.   |Av. Ads. En.|  Pacc  |  Pdel  |  Ptra  |  Prot  |  Prin  |  Pswap  | Time
+     -     |  Molecules  | [mmol/g] |     [eV]     |  [kJ/mol]  |    %   |    %   |   %    |   %    |   %    |    %    |  [s]
+---------- | ----------- | -------- | ------------ | ---------- | ------ | ------ | ------ | ------ | ------ | ------- | -----"""
         self._print(header)
 
-    def print_step_info(self, step, average_ads_energy, step_time) -> None:
+    def print_step_info(self, step, average_ads_energy, step_time, adsorbate_name) -> None:
 
-        line_str = "{:^11}|{:^13}|{:>9.2f} |{:>13.4f} |{:>11.4f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:9.2f}"
+        line_str = "{:^11}|{:^13}|{:>9.2f} |{:>13.4f} |{:>11.4f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:9.2f}"
 
         self._print(
             line_str.format(
                 step,
-                self.sim.n_adsorbates,
-                self.sim.n_adsorbates * self.sim.conv_factors["mol/kg"],
+                sum(self.sim.uptake_list[-1]),
+                sum(self.sim.uptake_list[-1]) * self.sim.conv_factors["mol/kg"][adsorbate_name],
                 self.sim.current_total_energy,
                 average_ads_energy,
-                (
-                    np.average(self.sim.mov_dict["insertion"]) * 100
-                    if len(self.sim.mov_dict["insertion"]) > 0
-                    else 0
-                ),
-                (
-                    np.average(self.sim.mov_dict["deletion"]) * 100
-                    if len(self.sim.mov_dict["deletion"]) > 0
-                    else 0
-                ),
-                (
-                    np.average(self.sim.mov_dict["translation"]) * 100
-                    if len(self.sim.mov_dict["translation"]) > 0
-                    else 0
-                ),
-                (
-                    np.average(self.sim.mov_dict["rotation"]) * 100
-                    if len(self.sim.mov_dict["rotation"]) > 0
-                    else 0
-                ),
-                (
-                    np.average(self.sim.mov_dict["reinsertion"]) * 100
-                    if len(self.sim.mov_dict["reinsertion"]) > 0
-                    else 0
-                ),
+                self._get_move_pct("insertion"),
+                self._get_move_pct("deletion"),
+                self._get_move_pct("translation"),
+                self._get_move_pct("rotation"),
+                self._get_move_pct("reinsertion"),
+                self._get_move_pct("identity_swap"),
                 step_time,
             )
         )
@@ -315,7 +313,7 @@ Start optimizing {target} structure...
 ===========================================================================
 """)
 
-    def print_load_state_info(self, n_atoms, average_ads_energy):
+    def print_load_state_info(self, n_atoms, average_ads_energy) -> None:
         """Prints information about the loading state."""
         self._print(f"""
 ===========================================================================
@@ -338,12 +336,15 @@ Current steps are: {self.sim.base_iteration}
         line_str = "{:^11}|{:^13}|{:>9.2f} |{:>13.4f} |{:>11.4f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:9.2f}"
         self._print(line_str.format(*iteration_data.values()))
 
-    def print_debug_movement(self, movement, deltaE, prefactor, acc, rnd_number) -> None:
+    def print_debug_movement(
+        self, movement, deltaE, prefactor, acc, rnd_number, adsorbate_name
+    ) -> None:
         """Prints detailed debug information for a single MC move."""
         self._print(f"""
 =======================================================================================================
 Movement type: {movement}
 Current number of adsorbates: {self.sim.n_adsorbates}
+Adsorbate: {adsorbate_name}
 Interaction energy: {deltaE} eV, {(deltaE / (units.kJ / units.mol))} kJ/mol
 Exponential factor:     {-self.sim.beta * deltaE:.3E}
 Exponential:            {np.exp(-self.sim.beta * deltaE):.3E}
@@ -357,28 +358,16 @@ Accepted: {rnd_number < acc}
     def print_summary(self) -> None:
         """Prints the final summary of the simulation results."""
 
-        eq_results = pymser.equilibrate(
-            self.sim.uptake_list,
-            LLM=True,
-            batch_size=int(len(self.sim.uptake_list) / 50),
-            ADF_test=False,
-            uncertainty="uSD",
-            print_results=False,
-        )
+        self.sim.equilibrate()
+        eq_results = self.sim.equilibrated_results
 
-        avg_uptake = eq_results["average"]
-        std_uptake = eq_results["uncertainty"]
-
-        avg_uptake_excess = avg_uptake - self.sim.excess_nmol
-
-        enthalpy, enthalpy_sd = pymser.calc_equilibrated_enthalpy(
-            energy=np.array(self.sim.total_ads_list) / units.kB,  # Convert to K
-            number_of_molecules=self.sim.uptake_list,
-            temperature=self.sim.T,
-            eq_index=eq_results["t0"],
-            uncertainty="SD",
-            ac_time=int(eq_results["ac_time"]),
-        )
+        self._print("\nMovement statistics:\n")
+        for move, stats in self.sim.n_movements.items():
+            total_attempts = len(stats)
+            acceptance_rate = np.mean(stats) * 100 if total_attempts > 0 else 0.0
+            self._print(
+                f"Move: {move.capitalize():14} | Total attempts: {total_attempts:6} | Total Accepted  {np.sum(stats):6} ({acceptance_rate:6.2f}%)"
+            )
 
         self._print(f"""
 ===========================================================================
@@ -396,28 +385,48 @@ Finishing GCMC simulation
     Number of uncorrelated samples:      {eq_results['uncorr_samples']:.1f}
     Autocorrelation time:                {eq_results['ac_time']:.1f}
     ------------------------------------------------------------------------------
-    
-    Average properties of the system:
+    """)
+
+        for ads in self.sim.adsorbates:
+
+            avg_uptake = eq_results[f"average_{ads.name}"]
+            std_uptake = eq_results[f"uncertainty_{ads.name}"]
+
+            enthalpy = eq_results[f"enthalpy_{ads.name}_kJ_per_mol"]
+            enthalpy_sd = eq_results[f"enthalpy_{ads.name}_sd_kJ_per_mol"]
+
+            avg_uptake_excess = avg_uptake - self.sim.excess_nmol[ads.name]
+
+            cf = self.sim.conv_factors
+
+            self._print(f"""
+    Average properties of the system: {ads.name}
     ------------------------------------------------------------------------------
     Average loading absolute [molecules/unit cell]       {avg_uptake:12.5f} +/- {std_uptake:12.5f} [-]
-    Average loading absolute [mol/kg framework]          {avg_uptake * self.sim.conv_factors["mol/kg"]:12.5f} +/- {std_uptake * self.sim.conv_factors["mol/kg"]:12.5f} [-]
-    Average loading absolute [mg/g framework]            {avg_uptake * self.sim.conv_factors["mg/g"]:12.5f} +/- {std_uptake * self.sim.conv_factors["mg/g"]:12.5f} [-]
-    Average loading absolute [cm^3 (STP)/gr framework]   {avg_uptake * self.sim.conv_factors["cm^3 STP/gr"]:12.5f} +/- {std_uptake * self.sim.conv_factors["cm^3 STP/gr"]:12.5f} [-]
-    Average loading absolute [cm^3 (STP)/cm^3 framework] {avg_uptake * self.sim.conv_factors["cm^3 STP/cm^3"]:12.5f} +/- {std_uptake * self.sim.conv_factors["cm^3 STP/cm^3"]:12.5f} [-]
-    Average loading absolute [%wt framework]             {avg_uptake * self.sim.conv_factors["mg/g"] * 1e-1:12.5f} +/- {std_uptake * self.sim.conv_factors["mg/g"] * 1e-1:12.5f} [-]
+    Average loading absolute [mol/kg framework]          {avg_uptake * cf["mol/kg"][ads.name]:12.5f} +/- {std_uptake * cf["mol/kg"][ads.name]:12.5f} [-]
+    Average loading absolute [mg/g framework]            {avg_uptake * cf["mg/g"][ads.name]:12.5f} +/- {std_uptake * cf["mg/g"][ads.name]:12.5f} [-]
+    Average loading absolute [cm^3 (STP)/gr framework]   {avg_uptake * cf["cm^3 STP/gr"][ads.name]:12.5f} +/- {std_uptake * cf["cm^3 STP/gr"][ads.name]:12.5f} [-]
+    Average loading absolute [cm^3 (STP)/cm^3 framework] {avg_uptake * cf["cm^3 STP/cm^3"][ads.name]:12.5f} +/- {std_uptake * cf["cm^3 STP/cm^3"][ads.name]:12.5f} [-]
+    Average loading absolute [%wt framework]             {avg_uptake * cf["mg/g"][ads.name] * 1e-1:12.5f} +/- {std_uptake * cf["mg/g"][ads.name] * 1e-1:12.5f} [-]
 
     Average excess absolute [molecules/unit cell]        {avg_uptake_excess:12.5f} +/- {std_uptake:12.5f} [-]
-    Average loading absolute [mol/kg framework]          {avg_uptake_excess * self.sim.conv_factors["mol/kg"]:12.5f} +/- {std_uptake * self.sim.conv_factors["mol/kg"]:12.5f} [-]
-    Average loading absolute [mg/g framework]            {avg_uptake_excess * self.sim.conv_factors["mg/g"]:12.5f} +/- {std_uptake * self.sim.conv_factors["mg/g"]:12.5f} [-]
-    Average loading absolute [cm^3 (STP)/gr framework]   {avg_uptake_excess * self.sim.conv_factors["cm^3 STP/gr"]:12.5f} +/- {std_uptake * self.sim.conv_factors["cm^3 STP/gr"]:12.5f} [-]
-    Average loading absolute [cm^3 (STP)/cm^3 framework] {avg_uptake_excess * self.sim.conv_factors["cm^3 STP/cm^3"]:12.5f} +/- {std_uptake * self.sim.conv_factors["cm^3 STP/cm^3"]:12.5f} [-]
-    Average loading absolute [%wt framework]             {avg_uptake_excess * self.sim.conv_factors["mg/g"] * 1e-1:12.5f} +/- {std_uptake * self.sim.conv_factors["mg/g"] * 1e-1:12.5f} [-]
+    Average loading absolute [mol/kg framework]          {avg_uptake_excess * cf["mol/kg"][ads.name]:12.5f} +/- {std_uptake * cf["mol/kg"][ads.name]:12.5f} [-]
+    Average loading absolute [mg/g framework]            {avg_uptake_excess * cf["mg/g"][ads.name]:12.5f} +/- {std_uptake * cf["mg/g"][ads.name]:12.5f} [-]
+    Average loading absolute [cm^3 (STP)/gr framework]   {avg_uptake_excess * cf["cm^3 STP/gr"][ads.name]:12.5f} +/- {std_uptake * cf["cm^3 STP/gr"][ads.name]:12.5f} [-]
+    Average loading absolute [cm^3 (STP)/cm^3 framework] {avg_uptake_excess * cf["cm^3 STP/cm^3"][ads.name]:12.5f} +/- {std_uptake * cf["cm^3 STP/cm^3"][ads.name]:12.5f} [-]
+    Average loading absolute [%wt framework]             {avg_uptake_excess * cf["mg/g"][ads.name] * 1e-1:12.5f} +/- {std_uptake * cf["mg/g"][ads.name] * 1e-1:12.5f} [-]
 
 
     Enthalpy of adsorption: [kJ/mol]                     {enthalpy:12.5f} +/- {enthalpy_sd:12.5f} [kJ/mol]
+""")
+        warning_text = "\n".join([f"WARNING: {warning}" for warning in self.warnings])
 
+        self._print(f"""
 ===========================================================================
 GCMC simulation finished successfully!
+
+{len(self.warnings)} Warnings during the simulation.
+{warning_text}
 ===========================================================================
 
 Simulation finished at {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
@@ -432,7 +441,7 @@ class TMMCLogger(BaseLogger):
     Separates the presentation logic from the simulation logic.
     """
 
-    def print_run_header(self):
+    def print_run_header(self) -> None:
         """Prints the header for the main TMMC loop."""
         header = """
 ===========================================================================
@@ -446,7 +455,7 @@ Iteration  |  Number of  |    Tot En.   | Del. Energy  | Ins. Energy  |  Time
 ---------- | ----------- | ------------ | ------------ | ------------ | -------"""
         self._print(header)
 
-    def print_step_info(self, step, del_energy, ins_energy, step_time):
+    def print_step_info(self, step, del_energy, ins_energy, step_time) -> None:
         """Prints info on one TMMC step."""
         line_str = "{:^11}|{:^13}|{:>13.4f} |{:>13.4f} |{:>13.4f} |{:7.2f}"
         self._print(
@@ -487,8 +496,7 @@ Restart file requested.
 Loaded state with {len(state)} total atoms.
 Current total energy: {self.sim.current_total_energy:.3f} eV
 Current number of adsorbates: {self.sim.n_adsorbates}
-===========================================================================
-""")
+===========================================================================""")
 
 
 class WidomLogger(BaseLogger):
@@ -497,25 +505,11 @@ class WidomLogger(BaseLogger):
     Separates the presentation logic from the simulation logic.
     """
 
-    def __init__(self, simulation, output_file: Optional[TextIO] = None):
-        """
-        Initializes the logger.
-
-        Parameters
-        ----------
-        simulation : Widom
-            The Widom simulation instance to log.
-        output_file : TextIO | None, optional
-            A file path or stream to write the output to. If None, prints to stdout.
-        """
-        self.sim = simulation
-        self.out_file = output_file
-
-    def _print(self, *args, **kwargs):
+    def _print(self, *args, **kwargs) -> None:
         """Internal print function to direct output to file or console."""
         print(*args, **kwargs, file=self.out_file, flush=True)
 
-    def print_run_header(self):
+    def print_run_header(self) -> None:
         """Prints the header for the main Widom loop."""
         header = """
 ===========================================================================
@@ -524,20 +518,22 @@ class WidomLogger(BaseLogger):
 Starting Widom simulation
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-Iteration  |  dE (eV)  |  dE (kJ/mol)  | kH [mol kg-1 Pa-1]  |  dH (kJ/mol) | Time (s)
----------------------------------------------------------------------------------------"""
+Iteration  |     dE (eV)    |  dE (kJ/mol)  | kH [mol kg-1 Pa-1]  |  dH (kJ/mol) | Time (s)
+-------------------------------------------------------------------------------------------"""
         self._print(header)
 
-    def print_iteration_info(self, iteration_data: list):
+    def print_iteration_info(self, iteration_data: list) -> None:
         """Prints a single log line for a Widom iteration."""
-        line_str = "{:^10} | {:^9.6f} | {:>13.2f} | {:>19.3e} | {:12.2f} | {:8.2f}"
+        line_str = "{:^10} | {:>14.6e} | {:>13.2f} | {:>19.3e} | {:12.2f} | {:8.2f}"
         self._print(line_str.format(*iteration_data))
 
-    def print_summary(self):
+    def print_summary(self) -> None:
         """
         Print the footer for the simulation output.
         This method is called at the end of the simulation to display the final results and elapsed time.
         """
+
+        warning_text = "\n".join([f"WARNING: {warning}" for warning in self.warnings])
 
         self._print(f"""
 ===========================================================================
@@ -549,13 +545,22 @@ Finishing Widom simulation
     Average properties of the system:
     ------------------------------------------------------------------------------
     Henry coefficient: [mol/kg/Pa]      {self.sim.kH:12.5e} +/- {self.sim.kH_std_dv:12.5e} [-]
-    Enthalpy of adsorption: [kJ/mol]    {self.sim.Qst:12.5f} +/- {self.sim.Qst_std_dv:12.5f} [-]
+    Enthalpy of adsorption: [kJ/mol]    {self.sim.dH:12.5f} +/- {self.sim.dH_std_dv:12.5f} [-]
 
 ===========================================================================
 Simulation finished successfully!
+
+{len(self.warnings)} Warnings during the simulation.
+{warning_text}
 ===========================================================================
 
 Simulation finished at {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 Simulation duration: {datetime.datetime.now() - self.sim.start_time}
 ===========================================================================
 """)
+
+        if len(self.warnings) > 0:
+            print("\n".join(["=" * 75] * 3))
+            print(f"{len(self.warnings)} Warnings during the simulation:")
+            for warning in self.warnings:
+                self._print(f"WARNING: {warning}")

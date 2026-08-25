@@ -14,9 +14,10 @@ dependencies:
   - pymatgen
   - tqdm
   - simplejson
-  - gemmi
+  - numba
   - pip:
     - pymser
+    - vesin
     - cuequivariance-torch
-    - mace-torch
+    - mace-torch==0.3.12
     - torch-dftd

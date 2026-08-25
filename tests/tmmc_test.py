@@ -46,7 +46,7 @@ def test_tmmc_run(tmpdir):
         output_folder=tmpdir,
         random_seed=10,
     )
-    tmmc.set_adsorbate(adsorbate, n_adsorbates=5, adsorbate_energy=adsorbate.info["total_energy"])
+    tmmc.set_adsorbates(adsorbate, n_adsorbates=5, adsorbate_energy=adsorbate.info["total_energy"])
 
     assert abs(tmmc.adsorbate_energy - adsorbate.info["total_energy"]) < 1e-12
     assert tmmc.n_adsorbate_atoms == 3
@@ -84,7 +84,7 @@ def test_tmmc_run(tmpdir):
         output_folder=tmpdir,
         random_seed=10,
     )
-    tmmc.set_adsorbate(adsorbate, n_adsorbates=5, adsorbate_energy=adsorbate.info["total_energy"])
+    tmmc.set_adsorbates(adsorbate, n_adsorbates=5, adsorbate_energy=adsorbate.info["total_energy"])
     tmmc.restart()
     assert tmmc.base_iteration == 5
     np.testing.assert_allclose(tmmc.total_ins_energy_list, ins_energy_list, rtol=1e-2)

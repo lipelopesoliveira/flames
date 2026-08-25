@@ -22,10 +22,10 @@ overview
 :hidden:
 :caption: Tutorials: Basic
 
-tutorials/basic_widom
-tutorials/basic_gcmc
-tutorials/basic_restart
-tutorials/basic_isotherm
+tutorials/basic/widom
+tutorials/basic/gcmc
+tutorials/basic/restart
+tutorials/basic/isotherm
 ```
 
 ```{toctree}
@@ -38,9 +38,21 @@ tutorials/basic_isotherm
 ```{toctree}
 :maxdepth: 2
 :hidden:
+:caption: Tutorials: Calculators
+
+tutorials/calculators/lennard_jones
+tutorials/calculators/ewald
+tutorials/calculators/combining
+tutorials/calculators/cp2k
+
+```
+
+```{toctree}
+:maxdepth: 2
+:hidden:
 :caption: Tutorials: Advanced
 
-tutorials/advanced_hybrid_gcmc_md_mixed_calc
+tutorials/advanced/hybrid_gcmc_md_mixed_calc
 ```
 
 ```{toctree}
@@ -93,4 +105,4 @@ The tutorials section contains step-by-step guides on how to use FLAMES for diff
 
 ### Basic
 
-- [Widom Insertion Method](tutorials/basic_widom): A tutorial on how to perform Widom insertion simulations using FLAMES.
+- [Widom Insertion Method](tutorials/basic/widom): A tutorial on how to perform Widom insertion simulations using FLAMES.

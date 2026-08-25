@@ -8,6 +8,7 @@ from ase.data import vdw_radii
 from ase.io import read
 from deepmd.calculator import DP  # type: ignore
 
+from flames.adsorbate import Adsorbate
 from flames.gcmc import GCMC
 
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -16,7 +17,6 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 FrameworkPath = "cubic_structure_F.cif"
-AdsorbatePath = "co2_label.xyz"
 
 # ORIGINAL MAP MLP_order_Al_C_O_H_Oco2_Cco2
 model = DP(
@@ -28,7 +28,11 @@ model = DP(
 framework: ase.Atoms = read(FrameworkPath)  # type: ignore
 
 # Load the adsorbate structure
-adsorbate: ase.Atoms = read(AdsorbatePath)  # type: ignore
+adsorbate = Adsorbate(
+    name="CO2",
+    structure="co2_labels.xyz",
+    eos={"criticalTemperature": 304.1282, "criticalPressure": 7377300.0, "acentricFactor": 0.22394},
+)
 
 adsorbate.set_masses([12.011, 15.999, 15.999])  # type: ignore
 
@@ -51,7 +55,7 @@ print(
 gcmc = GCMC(
     model=model,
     framework_atoms=framework,
-    adsorbate_atoms=adsorbate,
+    adsorbates=adsorbate,
     temperature=Temperature,
     pressure=Pressure,
     fugacity_coeff=1,
@@ -60,9 +64,6 @@ gcmc = GCMC(
     vdw_factor=0.6,
     debug=False,
     output_to_file=True,
-    criticalTemperature=304.1282,
-    criticalPressure=7377300.0,
-    acentricFactor=0.22394,
 )
 
 gcmc.logger.print_header()

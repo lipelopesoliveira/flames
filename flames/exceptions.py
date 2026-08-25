@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Created by Felipe Lopes de Oliveira
 
 """
@@ -16,7 +15,18 @@ class MoveKeyError(Exception):
     """
 
     def __init__(self, moves: list):
-        valid_keys = {"insertion", "deletion", "translation", "rotation"}
+        valid_keys = {
+            "insertion",
+            "deletion",
+            "translation",
+            "rotation",
+            "reinsertion",
+            "position_swap",
+            "nve_md",
+            "nvt_md",
+            "npt_md",
+        }
+
         self.message = (
             "Error: move_weights must contain exactly the keys:" + ", ".join(valid_keys) + ".\n"
         )

@@ -1,0 +1,760 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html"><link rel="next" title="Lennard-Jones Potential" href="ewald.html"><link rel="prev" title="GCMC Adsorption Isotherm" href="../basic/isotherm.html">
+        <link rel="prefetch" href="../../_static/logo-light-mode.png" as="image">
+        <link rel="prefetch" href="../../_static/logo-dark-mode.png" as="image">
+
+    <link rel="shortcut icon" href="../../_static/favicon.ico"><!-- Generated with Sphinx 9.1.0 and Furo 2025.09.25 -->
+        <title>Lennard-Jones Potential - FLAMES v0.4.9</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=580074bf" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../index.html"><div class="brand">FLAMES v0.4.9</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="../../_static/logo-light-mode.png" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="../../_static/logo-dark-mode.png" alt="Dark Logo"/>
+  </div>
+  
+  
+</a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing FLAMES</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../overview.html">Overview</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials: Basic</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../basic/widom.html">Widom insertion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic/gcmc.html">GCMC Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic/restart.html">Restarting Simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic/isotherm.html">GCMC Adsorption Isotherm</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials: Calculators</span></p>
+<ul class="current">
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Lennard-Jones Potential</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ewald.html">Lennard-Jones Potential</a></li>
+<li class="toctree-l1"><a class="reference internal" href="combining.html">Combining Potentials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cp2k.html">Lennard-Jones Potential</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials: Advanced</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/hybrid_gcmc_md_mixed_calc.html">Mixed calculators for GCMC/MD simulations</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Theoretical Background</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../theoretical_background/widom.html">Widom test particle insertion method</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../theoretical_background/gcmc.html">Grand-Canonical Monte Carlo (GCMC) Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../theoretical_background/tmmc.html">Transition Matrix Monte Carlo (TMMC) Simulation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Simulator Description</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../input_description/base_simulator.html">BaseSimulator Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../input_description/gcmc.html">GCMC Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../input_description/widom.html">Widom Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../input_description/tmmc.html">TMMC Class</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../CHANGELOG.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../CONTRIBUTING.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://raw.githubusercontent.com/lipelopesoliveira/flames/main/LICENSE">License</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/lipelopesoliveira/flames">GitHub Repository</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../../_sources/tutorials/calculators/lennard_jones.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="lennard-jones-potential">
+<h1>Lennard-Jones Potential<a class="headerlink" href="#lennard-jones-potential" title="Link to this heading">¶</a></h1>
+<section id="brief-introduction-about-the-lennard-jones-potential">
+<h2>Brief introduction about the Lennard-Jones potential<a class="headerlink" href="#brief-introduction-about-the-lennard-jones-potential" title="Link to this heading">¶</a></h2>
+<p>The Lennard-Jones (LJ) potential is given by</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[E_{disp}(r) = 4 \varepsilon \left[ \left( \frac{\sigma}{r}\right)^{12} - \left( \frac{\sigma}{r}\right)^6\right]\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(\varepsilon\)</span> is the well-depth and <span class="math notranslate nohighlight">\(\sigma\)</span> is the distance at witch inter-particle potential is zero, <span class="math notranslate nohighlight">\(E_{disp}=0\)</span>.
+Note that <span class="math notranslate nohighlight">\(\sigma\)</span> is related to the position of the minima of the potential, <span class="math notranslate nohighlight">\(R_{min}\)</span> by <span class="math notranslate nohighlight">\(R_{min} = 2^{1/6}\sigma\)</span>.</p>
+<p>The Lorentz-Berthelot rule is used to calculated the combined parameter of two interacting atoms <span class="math notranslate nohighlight">\(i\)</span> and <span class="math notranslate nohighlight">\(j\)</span>:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\varepsilon_{ij} = \sqrt{\varepsilon_i \cdot \varepsilon_j}, \qquad \sigma_{ij} = \frac{\sigma_i \cdot \sigma_j}{2}\]</div>
+</div>
+<p>The potentials can be shifted to zero at the cutoff distance by setting <code class="docutils literal notranslate"><span class="pre">shifted=True</span></code> when creating the calculator. Tail correction is not yet available in the current version (v0.5).</p>
+<p>The file containing the parameters for the Lennard-Jones potential is a simple json file.
+Below is an example of a json file containing the parameters for the Lennard-Jones potential for TraPPE-Zeo force field <a class="footnote-reference brackets" href="#id4" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="nt">&quot;O&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;sigma&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">3.30</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;epsilon&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">53.0000</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="nt">&quot;Si&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;sigma&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">2.30</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;epsilon&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">22.0000</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="nt">&quot;C_ch4&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;sigma&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">3.72</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;epsilon&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">158.50000</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="nt">&quot;H_ch4&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;sigma&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">3.72</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;epsilon&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>where the keys are the atom types and the values are the parameters for the Lennard-Jones potential. The units are in Angstroms for <span class="math notranslate nohighlight">\(\sigma\)</span> and Kelvin for <span class="math notranslate nohighlight">\(\varepsilon\)</span>.</p>
+<p>The same atom types should be assign on the file containing the adsorbate or framework structure. For the adsorbate, it is possible to use a <code class="docutils literal notranslate"><span class="pre">.extxyz</span></code> file format, with the tag <code class="docutils literal notranslate"><span class="pre">labels</span></code> to assign the atom types.
+For example, the CH <sub>4</sub> molecule can be defined as:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>5
+Properties=species:S:1:labels:S:1:pos:R:3 pbc=&quot;F F F&quot;
+C C_ch4        0.00000000       0.00000000    0.00000000
+H H_ch4        0.00000000      -0.00000000    1.06937095
+H H_ch4       -0.00000000      -1.00821260   -0.35645698
+H H_ch4       -0.87313773       0.50410630   -0.35645698
+H H_ch4        0.87313773       0.50410630   -0.35645698
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">ase</span></code> will automatically read the <code class="docutils literal notranslate"><span class="pre">labels</span></code> tag and assign the atom types to the atoms in the structure, and the calculator will use the parameters from the json file to calculate the Lennard-Jones potential.</p>
+<p>For the framework, it is possible to use a <code class="docutils literal notranslate"><span class="pre">.cif</span></code> file format, with the tag <code class="docutils literal notranslate"><span class="pre">_atom_site_label</span></code> to assign the atom types. For example, the Mg-MOF-74 framework can be defined as:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>data_VESTA_phase_1
+
+_chemical_name_common                  &#39;MFI&#39;
+_cell_length_a                         20.021999
+_cell_length_b                         19.899000
+_cell_length_c                         13.383000
+_cell_angle_alpha                      90.000000
+_cell_angle_beta                       90.000000
+_cell_angle_gamma                      90.000000
+_cell_volume                           5332.025146
+_space_group_name_H-M_alt              &#39;P 1&#39;
+_space_group_IT_number                 1
+
+loop_
+_space_group_symop_operation_xyz
+&#39;x, y, z&#39;
+
+loop_
+_atom_site_label
+_atom_site_occupancy
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_type_symbol
+Si         1.0     0.422380     0.056500     0.664020    Si
+Si         1.0     0.577620     0.943500     0.335980    Si
+Si         1.0     0.077620     0.943500     0.164020    Si
+Si         1.0     0.922380     0.056500     0.835980    Si
+Si         1.0     0.577620     0.556500     0.335980    Si
+Si         1.0     0.422380     0.443500     0.664020    Si
+Si         1.0     0.922380     0.443500     0.835980    Si
+Si         1.0     0.077620     0.556500     0.164020    Si
+Si         1.0     0.307160     0.027720     0.810700    Si
+Si         1.0     0.692840     0.972280     0.189300    Si
+Si         1.0     0.192840     0.972280     0.310700    Si
+Si         1.0     0.807160     0.027720     0.689300    Si
+Si         1.0     0.692840     0.527720     0.189300    Si
+Si         1.0     0.307160     0.472280     0.810700    Si
+Si         1.0     0.807160     0.472280     0.689300    Si
+Si         1.0     0.192840     0.527720     0.310700    Si
+Si         1.0     0.279110     0.061270     0.031200    Si
+Si         1.0     0.720890     0.938730     0.968800    Si
+Si         1.0     0.220890     0.938730     0.531200    Si
+Si         1.0     0.779110     0.061270     0.468800    Si
+Si         1.0     0.720890     0.561270     0.968800    Si
+Si         1.0     0.279110     0.438730     0.031200    Si
+Si         1.0     0.779110     0.438730     0.468800    Si
+Si         1.0     0.220890     0.561270     0.531200    Si
+Si         1.0     0.122150     0.062980     0.026700    Si
+Si         1.0     0.877850     0.937020     0.973300    Si
+Si         1.0     0.377850     0.937020     0.526700    Si
+Si         1.0     0.622150     0.062980     0.473300    Si
+Si         1.0     0.877850     0.562980     0.973300    Si
+Si         1.0     0.122150     0.437020     0.026700    Si
+Si         1.0     0.622150     0.437020     0.473300    Si
+Si         1.0     0.377850     0.562980     0.526700    Si
+Si         1.0     0.071280     0.027220     0.814490    Si
+Si         1.0     0.928720     0.972780     0.185510    Si
+Si         1.0     0.428720     0.972780     0.314490    Si
+Si         1.0     0.571280     0.027220     0.685510    Si
+Si         1.0     0.928720     0.527220     0.185510    Si
+Si         1.0     0.071280     0.472780     0.814490    Si
+Si         1.0     0.571280     0.472780     0.685510    Si
+Si         1.0     0.428720     0.527220     0.314490    Si
+Si         1.0     0.186410     0.058960     0.671820    Si
+Si         1.0     0.813590     0.941040     0.328180    Si
+Si         1.0     0.313590     0.941040     0.171820    Si
+Si         1.0     0.686410     0.058960     0.828180    Si
+Si         1.0     0.813590     0.558960     0.328180    Si
+Si         1.0     0.186410     0.441040     0.671820    Si
+Si         1.0     0.686410     0.441040     0.828180    Si
+Si         1.0     0.313590     0.558960     0.171820    Si
+Si         1.0     0.422650     0.827500     0.672820    Si
+Si         1.0     0.577350     0.172500     0.327180    Si
+Si         1.0     0.077350     0.172500     0.172820    Si
+Si         1.0     0.922650     0.827500     0.827180    Si
+Si         1.0     0.577350     0.327500     0.327180    Si
+Si         1.0     0.422650     0.672500     0.672820    Si
+Si         1.0     0.922650     0.672500     0.827180    Si
+Si         1.0     0.077350     0.327500     0.172820    Si
+Si         1.0     0.307780     0.869840     0.814520    Si
+Si         1.0     0.692220     0.130160     0.185480    Si
+Si         1.0     0.192220     0.130160     0.314520    Si
+Si         1.0     0.807780     0.869840     0.685480    Si
+Si         1.0     0.692220     0.369840     0.185480    Si
+Si         1.0     0.307780     0.630160     0.814520    Si
+Si         1.0     0.807780     0.630160     0.685480    Si
+Si         1.0     0.192220     0.369840     0.314520    Si
+Si         1.0     0.275540     0.827210     0.031090    Si
+Si         1.0     0.724460     0.172790     0.968910    Si
+Si         1.0     0.224460     0.172790     0.531090    Si
+Si         1.0     0.775540     0.827210     0.468910    Si
+Si         1.0     0.724460     0.327210     0.968910    Si
+Si         1.0     0.275540     0.672790     0.031090    Si
+Si         1.0     0.775540     0.672790     0.468910    Si
+Si         1.0     0.224460     0.327210     0.531090    Si
+Si         1.0     0.120580     0.826900     0.029790    Si
+Si         1.0     0.879420     0.173100     0.970210    Si
+Si         1.0     0.379420     0.173100     0.529790    Si
+Si         1.0     0.620580     0.826900     0.470210    Si
+Si         1.0     0.879420     0.326900     0.970210    Si
+Si         1.0     0.120580     0.673100     0.029790    Si
+Si         1.0     0.620580     0.673100     0.470210    Si
+Si         1.0     0.379420     0.326900     0.529790    Si
+Si         1.0     0.070440     0.869630     0.818000    Si
+Si         1.0     0.929560     0.130370     0.182000    Si
+Si         1.0     0.429560     0.130370     0.318000    Si
+Si         1.0     0.570440     0.869630     0.682000    Si
+Si         1.0     0.929560     0.369630     0.182000    Si
+Si         1.0     0.070440     0.630370     0.818000    Si
+Si         1.0     0.570440     0.630370     0.682000    Si
+Si         1.0     0.429560     0.369630     0.318000    Si
+Si         1.0     0.187060     0.826730     0.680670    Si
+Si         1.0     0.812940     0.173270     0.319330    Si
+Si         1.0     0.312940     0.173270     0.180670    Si
+Si         1.0     0.687060     0.826730     0.819330    Si
+Si         1.0     0.812940     0.326730     0.319330    Si
+Si         1.0     0.187060     0.673270     0.680670    Si
+Si         1.0     0.687060     0.673270     0.819330    Si
+Si         1.0     0.312940     0.326730     0.180670    Si
+O          1.0     0.372600     0.053400     0.755800    O
+O          1.0     0.627400     0.946600     0.244200    O
+O          1.0     0.127400     0.946600     0.255800    O
+O          1.0     0.872600     0.053400     0.744200    O
+O          1.0     0.627400     0.553400     0.244200    O
+O          1.0     0.372600     0.446600     0.755800    O
+O          1.0     0.872600     0.446600     0.744200    O
+O          1.0     0.127400     0.553400     0.255800    O
+O          1.0     0.308400     0.058700     0.921100    O
+O          1.0     0.691600     0.941300     0.078900    O
+O          1.0     0.191600     0.941300     0.421100    O
+O          1.0     0.808400     0.058700     0.578900    O
+O          1.0     0.691600     0.558700     0.078900    O
+O          1.0     0.308400     0.441300     0.921100    O
+O          1.0     0.808400     0.441300     0.578900    O
+O          1.0     0.191600     0.558700     0.421100    O
+O          1.0     0.200700     0.059200     0.028900    O
+O          1.0     0.799300     0.940800     0.971100    O
+O          1.0     0.299300     0.940800     0.528900    O
+O          1.0     0.700700     0.059200     0.471100    O
+O          1.0     0.799300     0.559200     0.971100    O
+O          1.0     0.200700     0.440800     0.028900    O
+O          1.0     0.700700     0.440800     0.471100    O
+O          1.0     0.299300     0.559200     0.528900    O
+O          1.0     0.096900     0.061100     0.914400    O
+O          1.0     0.903100     0.938900     0.085600    O
+O          1.0     0.403100     0.938900     0.414400    O
+O          1.0     0.596900     0.061100     0.585600    O
+O          1.0     0.903100     0.561100     0.085600    O
+O          1.0     0.096900     0.438900     0.914400    O
+O          1.0     0.596900     0.438900     0.585600    O
+O          1.0     0.403100     0.561100     0.414400    O
+O          1.0     0.114900     0.054100     0.723700    O
+O          1.0     0.885100     0.945900     0.276300    O
+O          1.0     0.385100     0.945900     0.223700    O
+O          1.0     0.614900     0.054100     0.776300    O
+O          1.0     0.885100     0.554100     0.276300    O
+O          1.0     0.114900     0.445900     0.723700    O
+O          1.0     0.614900     0.445900     0.776300    O
+O          1.0     0.385100     0.554100     0.223700    O
+O          1.0     0.243500     0.055300     0.754000    O
+O          1.0     0.756500     0.944700     0.246000    O
+O          1.0     0.256500     0.944700     0.254000    O
+O          1.0     0.743500     0.055300     0.746000    O
+O          1.0     0.756500     0.555300     0.246000    O
+O          1.0     0.243500     0.444700     0.754000    O
+O          1.0     0.743500     0.444700     0.746000    O
+O          1.0     0.256500     0.555300     0.254000    O
+O          1.0     0.374200     0.843900     0.762800    O
+O          1.0     0.625800     0.156100     0.237200    O
+O          1.0     0.125800     0.156100     0.262800    O
+O          1.0     0.874200     0.843900     0.737200    O
+O          1.0     0.625800     0.343900     0.237200    O
+O          1.0     0.374200     0.656100     0.762800    O
+O          1.0     0.874200     0.656100     0.737200    O
+O          1.0     0.125800     0.343900     0.262800    O
+O          1.0     0.308500     0.844800     0.927200    O
+O          1.0     0.691500     0.155200     0.072800    O
+O          1.0     0.191500     0.155200     0.427200    O
+O          1.0     0.808500     0.844800     0.572800    O
+O          1.0     0.691500     0.344800     0.072800    O
+O          1.0     0.308500     0.655200     0.927200    O
+O          1.0     0.808500     0.655200     0.572800    O
+O          1.0     0.191500     0.344800     0.427200    O
+O          1.0     0.198000     0.844600     0.028800    O
+O          1.0     0.802000     0.155400     0.971200    O
+O          1.0     0.302000     0.155400     0.528800    O
+O          1.0     0.698000     0.844600     0.471200    O
+O          1.0     0.802000     0.344600     0.971200    O
+O          1.0     0.198000     0.655400     0.028800    O
+O          1.0     0.698000     0.655400     0.471200    O
+O          1.0     0.302000     0.344600     0.528800    O
+O          1.0     0.091000     0.838600     0.922300    O
+O          1.0     0.909000     0.161400     0.077700    O
+O          1.0     0.409000     0.161400     0.422300    O
+O          1.0     0.591000     0.838600     0.577700    O
+O          1.0     0.909000     0.338600     0.077700    O
+O          1.0     0.091000     0.661400     0.922300    O
+O          1.0     0.591000     0.661400     0.577700    O
+O          1.0     0.409000     0.338600     0.422300    O
+O          1.0     0.116900     0.842200     0.730600    O
+O          1.0     0.883100     0.157800     0.269400    O
+O          1.0     0.383100     0.157800     0.230600    O
+O          1.0     0.616900     0.842200     0.769400    O
+O          1.0     0.883100     0.342200     0.269400    O
+O          1.0     0.116900     0.657800     0.730600    O
+O          1.0     0.616900     0.657800     0.769400    O
+O          1.0     0.383100     0.342200     0.230600    O
+O          1.0     0.244800     0.840600     0.757800    O
+O          1.0     0.755200     0.159400     0.242200    O
+O          1.0     0.255200     0.159400     0.257800    O
+O          1.0     0.744800     0.840600     0.742200    O
+O          1.0     0.755200     0.340600     0.242200    O
+O          1.0     0.244800     0.659400     0.757800    O
+O          1.0     0.744800     0.659400     0.742200    O
+O          1.0     0.255200     0.340600     0.257800    O
+O          1.0     0.304700     0.949000     0.813400    O
+O          1.0     0.695300     0.051000     0.186600    O
+O          1.0     0.195300     0.051000     0.313400    O
+O          1.0     0.804700     0.949000     0.686600    O
+O          1.0     0.695300     0.449000     0.186600    O
+O          1.0     0.304700     0.551000     0.813400    O
+O          1.0     0.804700     0.551000     0.686600    O
+O          1.0     0.195300     0.449000     0.313400    O
+O          1.0     0.076800     0.948100     0.823100    O
+O          1.0     0.923200     0.051900     0.176900    O
+O          1.0     0.423200     0.051900     0.323100    O
+O          1.0     0.576800     0.948100     0.676900    O
+O          1.0     0.923200     0.448100     0.176900    O
+O          1.0     0.076800     0.551900     0.823100    O
+O          1.0     0.576800     0.551900     0.676900    O
+O          1.0     0.423200     0.448100     0.323100    O
+O          1.0     0.416100     0.127600     0.610400    O
+O          1.0     0.583900     0.872400     0.389600    O
+O          1.0     0.083900     0.872400     0.110400    O
+O          1.0     0.916100     0.127600     0.889600    O
+O          1.0     0.583900     0.627600     0.389600    O
+O          1.0     0.416100     0.372400     0.610400    O
+O          1.0     0.916100     0.372400     0.889600    O
+O          1.0     0.083900     0.627600     0.110400    O
+O          1.0     0.408600     0.998300     0.586400    O
+O          1.0     0.591400     0.001700     0.413600    O
+O          1.0     0.091400     0.001700     0.086400    O
+O          1.0     0.908600     0.998300     0.913600    O
+O          1.0     0.591400     0.498300     0.413600    O
+O          1.0     0.408600     0.501700     0.586400    O
+O          1.0     0.908600     0.501700     0.913600    O
+O          1.0     0.091400     0.498300     0.086400    O
+O          1.0     0.402000     0.868600     0.576100    O
+O          1.0     0.598000     0.131400     0.423900    O
+O          1.0     0.098000     0.131400     0.076100    O
+O          1.0     0.902000     0.868600     0.923900    O
+O          1.0     0.598000     0.368600     0.423900    O
+O          1.0     0.402000     0.631400     0.576100    O
+O          1.0     0.902000     0.631400     0.923900    O
+O          1.0     0.098000     0.368600     0.076100    O
+O          1.0     0.188600     0.129800     0.616400    O
+O          1.0     0.811400     0.870200     0.383600    O
+O          1.0     0.311400     0.870200     0.116400    O
+O          1.0     0.688600     0.129800     0.883600    O
+O          1.0     0.811400     0.629800     0.383600    O
+O          1.0     0.188600     0.370200     0.616400    O
+O          1.0     0.688600     0.370200     0.883600    O
+O          1.0     0.311400     0.629800     0.116400    O
+O          1.0     0.194000     0.000700     0.591800    O
+O          1.0     0.806000     0.999300     0.408200    O
+O          1.0     0.306000     0.999300     0.091800    O
+O          1.0     0.694000     0.000700     0.908200    O
+O          1.0     0.806000     0.500700     0.408200    O
+O          1.0     0.194000     0.499300     0.591800    O
+O          1.0     0.694000     0.499300     0.908200    O
+O          1.0     0.306000     0.500700     0.091800    O
+O          1.0     0.195100     0.870900     0.581000    O
+O          1.0     0.804900     0.129100     0.419000    O
+O          1.0     0.304900     0.129100     0.081000    O
+O          1.0     0.695100     0.870900     0.919000    O
+O          1.0     0.804900     0.370900     0.419000    O
+O          1.0     0.195100     0.629100     0.581000    O
+O          1.0     0.695100     0.629100     0.919000    O
+O          1.0     0.304900     0.370900     0.081000    O
+O          1.0     0.996300     0.050200     0.792000    O
+O          1.0     0.003700     0.949800     0.208000    O
+O          1.0     0.503700     0.949800     0.292000    O
+O          1.0     0.496300     0.050200     0.708000    O
+O          1.0     0.003700     0.550200     0.208000    O
+O          1.0     0.996300     0.449800     0.792000    O
+O          1.0     0.496300     0.449800     0.708000    O
+O          1.0     0.503700     0.550200     0.292000    O
+O          1.0     0.996000     0.847200     0.792200    O
+O          1.0     0.004000     0.152800     0.207800    O
+O          1.0     0.504000     0.152800     0.292200    O
+O          1.0     0.496000     0.847200     0.707800    O
+O          1.0     0.004000     0.347200     0.207800    O
+O          1.0     0.996000     0.652800     0.792200    O
+O          1.0     0.496000     0.652800     0.707800    O
+O          1.0     0.504000     0.347200     0.292200    O
+O          1.0     0.419200     0.750000     0.646000    O
+O          1.0     0.580800     0.250000     0.354000    O
+O          1.0     0.080800     0.250000     0.146000    O
+O          1.0     0.919200     0.750000     0.854000    O
+O          1.0     0.188400     0.750000     0.646200    O
+O          1.0     0.811600     0.250000     0.353800    O
+O          1.0     0.311600     0.250000     0.146200    O
+O          1.0     0.688400     0.750000     0.853800    O
+O          1.0     0.288300     0.750000     0.057900    O
+O          1.0     0.711700     0.250000     0.942100    O
+O          1.0     0.211700     0.250000     0.557900    O
+O          1.0     0.788300     0.750000     0.442100    O
+O          1.0     0.108500     0.750000     0.061100    O
+O          1.0     0.891500     0.250000     0.938900    O
+O          1.0     0.391500     0.250000     0.561100    O
+O          1.0     0.608500     0.750000     0.438900    O
+</pre></div>
+</div>
+<p>in this case, since there is no specific atom types defined for the framework, the atom types will be assigned based on the element symbol. For example, all Mg atoms will be assigned the atom type <code class="docutils literal notranslate"><span class="pre">Mg</span></code>, and all O atoms will be assigned the atom type <code class="docutils literal notranslate"><span class="pre">O</span></code>.</p>
+</section>
+<section id="running-simulations-with-the-lennard-jones-potential">
+<h2>Running simulations with the Lennard-Jones potential<a class="headerlink" href="#running-simulations-with-the-lennard-jones-potential" title="Link to this heading">¶</a></h2>
+<p>In this example we will evaluate the Mg-MOF-74, a material well-known for having adsorption of CO <sub>2</sub> on Open-Metal sites, which is very hard to model with classical force fields and usually require electronic structure methods, such DFT, to describe the interaction properly.</p>
+<p>On the <code class="docutils literal notranslate"><span class="pre">flames/examples/Basic/3-Rigid_GCMC</span></code> folder you will find the <code class="docutils literal notranslate"><span class="pre">cif</span></code> file for the Mg-MOF-74 <a class="footnote-reference brackets" href="#id4" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>. The simulation will be executed with the machine learning potential MACE <a class="footnote-reference brackets" href="#id5" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>, using the <code class="docutils literal notranslate"><span class="pre">medium-0b2</span></code> pre-trained foundation model with <code class="docutils literal notranslate"><span class="pre">D3(0)</span></code> dispersion correction.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This model is used here just as an example, you should look carefully into the mace documentation to undestand how the potential work and which one is the best for your specific case.</p>
+</div>
+<p>The script below will run the simulation at 298 K (25°C) and 1 bar.</p>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">¶</a></h2>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id4" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id1">1</a>,<a role="doc-backlink" href="#id2">2</a>)</span>
+<p>Bai, P., Tsapatsis, M. and Siepmann, J.I., 2013. TraPPE-zeo: Transferable potentials for phase equilibria force field for all-silica zeolites. The Journal of Physical Chemistry C, 117(46), pp.24375-24387.</p>
+</aside>
+<aside class="footnote brackets" id="id5" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">2</a><span class="fn-bracket">]</span></span>
+<p>Batatia, I., Benner, P., Chiang, Y., Elena, A.M., Kovács, D.P., Riebesell, J., Advincula, X.R., Asta, M., Avaylon, M., Baldwin, W.J. and Berger, F., 2025. A foundation model for atomistic materials chemistry. The Journal of Chemical Physics, 163(18). <a class="reference external" href="https://pubs.aip.org/aip/jcp/article/163/18/184110/3372267/A-foundation-model-for-atomistic-materials">https://pubs.aip.org/aip/jcp/article/163/18/184110/3372267/A-foundation-model-for-atomistic-materials</a></p>
+</aside>
+</aside>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="ewald.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Lennard-Jones Potential</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="../basic/isotherm.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">GCMC Adsorption Isotherm</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2026, Felipe Lopes de Oliveira
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link " href="https://github.com/lipelopesoliveira/flames" aria-label="GitHub">
+                <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+                </svg>
+            </a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Lennard-Jones Potential</a><ul>
+<li><a class="reference internal" href="#brief-introduction-about-the-lennard-jones-potential">Brief introduction about the Lennard-Jones potential</a></li>
+<li><a class="reference internal" href="#running-simulations-with-the-lennard-jones-potential">Running simulations with the Lennard-Jones potential</a></li>
+<li><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../../_static/documentation_options.js?v=ebe9904d"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    </body>
+</html>

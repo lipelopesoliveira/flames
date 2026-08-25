@@ -1,5 +1,48 @@
 # Changelog
 
+## v[0.4.9] - 2026-07-23
+
+### New Features 🎉
+
+- Add `MoveWeights` class for managing and normalizing movement weights in simulations. This class allows users to define weights for different types of moves (insertion, deletion, translation, rotation, reinsertion, and identity change) and ensures that they are normalized to sum to 1. It also provides a method to select a move based on the defined weights using a random generator.
+- Now it is possible to save only the adsorbate positions in the `Widom` simulations by setting the `save_only_adsorbate` parameter to `True` when initializing the `Widom` class. This feature allows users to save only the positions of the adsorbate molecules during the Widom insertion process, which can be useful for analyzing the behavior of the adsorbates without saving the entire system state. When set to `False`, the full system state will be saved, including both the framework and adsorbate molecules. The default value for this parameter is set to `False`, meaning that the full system state will be saved unless specified otherwise by the user.
+- Add a new `Adsorbate` class to manage adsorbate molecules in the simulations. This class allows users to define adsorbate molecules, their structures, and associated properties such as name, equation of state (EOS), and move weights. The `Adsorbate` class provides methods for retrieving random configurations of the adsorbate molecules, facilitating their use in GCMC and Widom simulations. It also supports reading adsorbate structures from files and allows for flexible management of multiple adsorbate configurations.
+- Added a warning method in `Logger` to print warnings to the output file. It also prints all warnings of the simulation at the end of the simulation. This feature helps users identify potential issues or concerns during the simulation process, allowing for better monitoring and debugging of the simulations.
+- Added support for multiple adsorbates in the `GCMC` classes. Users can now specify a list of `Adsorbate` objects when initializing this class, allowing for simulations involving multiple types of adsorbate molecules. The simulation will handle the insertion, deletion, translation, and rotation moves for each adsorbate type based on their defined move weights and mol fractions.
+- Added Nose-Hoover and Langevin termostats to the `BaseSimulator` class for NVT and NPT Molecular Dynamics (MD) simulations.
+- Added a custom `MTKNPT` implementation for molecular dynamics simulations with fixed cell volume but flexible cell shape. This implementation allows for anisotropic volume changes while maintaining a constant cell volume, providing more flexibility in simulating systems with varying cell shapes.
+- Added NVE molecular dynamics using the Velocity Verlet integrator to the `BaseSimulator` class. This allows for energy-conserving simulations in the microcanonical ensemble, where the total energy of the system remains constant over time.
+- Added NVE, NPT and MVT Molecular Dynamics (MD) simulations as possible MC movements in the `GCMC` class. This allows the integration of MD simulations into the Markov chain Monte Carlo (MCMC) framework, enabling the exploration of the system's phase space through both Monte Carlo and Molecular Dynamics methods.
+
+### Enhanced ✨
+
+- Use the `vesin` library to check for atom overlaps during the insertion of adsorbates in the GCMC and Widom simulations. The `vesin` library provides a more efficient method for calculating distances, prividing around 10x speedup in the overlap checking process. From the practical point of view, this change should provide only a minor speedup in the overall simulation time, as this process took only 30 ms on average for 2000 atoms, and now takes only 3 ms. However, this change improves the overall efficiency of the code and reduces the computational overhead associated with overlap checking.
+- Improve the `BaseEOS` and `PengRobinsonEOS` classes for better reuse.
+- Added new tests for the `PengRobinsonEOS` to compare the results with `RASPA2` and ensure the accuracy of the calculations. The tests include comparisons of fugacity coefficients and bulk phase densities for different gases at various temperatures and pressures, providing a comprehensive validation of the EOS implementation.
+- Added warnings for energy differences that exceed the maximum allowed threshold during GCMC simulations. If the energy difference between the trial and current state exceeds the specified `max_deltaE`, a warning message is printed to inform the user of the potential issue. This helps users identify and address situations where large energy changes may indicate problems with the simulation or model.
+- Improve the `identity_swap` movements to swap two different adsorbates in the system.
+
+### Fixed 🐛
+
+- Now the default value for `shifted` parameter in the `CustomLennardJones` and `CustomGNP` calculators is set to `False`. This change ensures that the Lennard-Jones and GNP potentials are not shifted by default, which may be more appropriate for certain simulations. Users can still set this parameter to `True` if they wish to apply a shift to the potential.
+- Fixed the incorrect warning message for ideal supercell size in logger.
+
+### Documentation 📖
+
+- New examples for using the `CustomLennardJones` and `CustomEwald` calculators in GCMC and Widom simulations have been added to the documentation. These examples demonstrate how to set up and run simulations using these calculators, providing users with practical guidance on their usage.
+- Improved the online documentation for the code with additional explanations and examples for the new features and enhancements introduced in this release.
+
+### Modified 🛠
+
+- Moved the `CustomLennardJones` and `CustomEwald` calculators to the `flames.calculators.lennard_jones` and `flames.calculators.ewald` modules, respectively. This change improves the organization of the codebase and makes it easier for users to locate and use these calculators in their simulations.
+️- Moved the `LLM` parameter in the `GCMC` class to the `save_results` method. This change allows users to specify whether to use the Left-most Local Minima (LLM) method for equilibration analysis when saving the results of a GCMC simulation, providing greater flexibility in how the results are analyzed and reported. The default value for this parameter is set to `False`, meaning that the LLM method will not be used by default unless specified otherwise.
+️- Now the enthalpy of adsorption calculation in the `utilities.enthalpy_of_adsorption` function includes the average adsorbate energy in the calculation. This change ensures that the enthalpy of adsorption can be calculated accuratly for flexible molecules.
+- Add a warning message when the Berendsen termostat/barostat is used in combination with GCMC simulations. The warning informs users that the Berendsen method may not be suitable for GCMC simulations and suggests using the MTKNPT or Nose-Hoover methods instead. This helps users make informed decisions about the choice of thermostat/barostat for their simulations.
+
+### Removed 🗑️
+
+- Removed the `max_overlap_tries` parameter from the `GCMC` and `Widom` classes. This parameter was previously used to limit the number of attempts for placing an adsorbate without van der Waals overlap. However, it may cause problems in the simulation leading to potential issues with sampling.
+
 ## v[0.4.8] - 2026-07-22
 
 ### New Features 🎉
@@ -17,7 +60,6 @@
 - Add an example on how to use a different calculator for the MD simulation in the `GCMC` class.
 
 ### Removed 🗑️
-
 
 ## v[0.4.7] - 2026-07-22
 

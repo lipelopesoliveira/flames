@@ -3,10 +3,11 @@ import json
 import ase
 from ase.calculators import mixing
 from ase.data import vdw_radii
-from ase.io import read
 from numba import get_num_threads, set_num_threads
 
-from flames.calculators import CustomLennardJones, EwaldSum
+from flames.adsorbate import Adsorbate
+from flames.calculators.ewald import CustomEwald
+from flames.calculators.lennard_jones import CustomLennardJones
 from flames.utilities import read_cif
 from flames.widom import Widom
 
@@ -25,7 +26,7 @@ with open("/home/felipe/PRs/flames/flames/data/TraPPE_lj_params.json", "r") as f
 FrameworkPath = "MgMOF-74_DDEC.cif"
 AdsorbatePath = "co2_labels.xyz"
 
-ewald = EwaldSum(R_cutoff=5.5, G_cutoff_N=5, alpha=5 / 15)
+ewald = CustomEwald(cutoff=12.0, precision=1e-6)
 lj = CustomLennardJones({**uff_lj_params, **trappe_lj_params}, vdw_cutoff=12.5)
 
 calc = mixing.SumCalculator([lj, ewald])
@@ -34,7 +35,10 @@ calc = mixing.SumCalculator([lj, ewald])
 framework: ase.Atoms = read_cif(FrameworkPath)  # type: ignore
 
 # Load the adsorbate structure
-adsorbate: ase.Atoms = read(AdsorbatePath)  # type: ignore
+adsorbate = Adsorbate(
+    name="CO2",
+    structure="co2_labels.xyz",
+)
 
 Temperature = 298.0
 

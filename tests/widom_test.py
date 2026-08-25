@@ -46,7 +46,7 @@ def test_widom_run(tmpdir):
         random_seed=10,
         automatic_supercell=False,
     )
-    widom.set_adsorbate(adsorbate, n_adsorbates=0, adsorbate_energy=adsorbate.info["total_energy"])
+    widom.set_adsorbates(adsorbate, n_adsorbates=0, adsorbate_energy=adsorbate.info["total_energy"])
     assert abs(widom.adsorbate_energy - adsorbate.info["total_energy"]) < 1e-12
     assert widom.n_adsorbate_atoms == 3
     assert widom.n_adsorbates == 0
@@ -78,7 +78,7 @@ def test_widom_run(tmpdir):
         random_seed=10,
         automatic_supercell=False,
     )
-    widom.set_adsorbate(adsorbate, n_adsorbates=0, adsorbate_energy=adsorbate.info["total_energy"])
+    widom.set_adsorbates(adsorbate, n_adsorbates=0, adsorbate_energy=adsorbate.info["total_energy"])
     widom.restart()
     assert widom.base_iteration == 6
     assert widom.n_adsorbates == 0

@@ -10,9 +10,10 @@ from ase.io import write
 from tqdm import tqdm
 
 from flames import VERSION
+from flames.adsorbate import Adsorbate
 from flames.base_simulator import BaseSimulator
 from flames.logger import WidomLogger
-from flames.operations import check_overlap, random_mol_insertion
+from flames.operations import check_overlap_vesin, random_mol_insertion
 from flames.utilities import random_n_splits
 
 
@@ -30,7 +31,7 @@ class Widom(BaseSimulator):
 
     :param adsorbate_atoms:
         The adsorbate molecule to be inserted into the framework.
-    :type adsorbate_atoms: ase.Atoms
+    :type adsorbate_atoms: Adsorbate
 
     :param temperature:
         Temperature of the ideal reservoir in Kelvin.
@@ -56,10 +57,6 @@ class Widom(BaseSimulator):
         Factor to scale the Van der Waals radii. Default is ``0.6``.
     :type vdw_factor: float, optional
 
-    :param max_overlap_tries:
-        Maximum number of tries to insert/move a molecule without overlap. Default is ``100``.
-    :type max_overlap_tries: int, optional
-
     :param max_deltaE:
         Maximum energy difference (in eV) to consider for acceptance criteria.
         This is used to avoid overflow due to problematic calculations. Default is ``1.555`` eV (approx. 150 kJ/mol).
@@ -80,6 +77,10 @@ class Widom(BaseSimulator):
     :param output_to_file:
         If ``True``, writes the output to a file named ``Widom_Output.out`` in the ``results`` directory. Default is ``True``.
     :type output_to_file: bool, optional
+
+    :param save_only_adsorbate:
+        If ``True``, saves only the adsorbate atoms in the trajectory file. Default is ``False``.
+    :type save_only_adsorbate: bool, optional
 
     :param output_folder:
         Folder to save the output files. If ``None``, a folder named ``results_<T>_<P>`` will be created.
@@ -105,19 +106,19 @@ class Widom(BaseSimulator):
     def __init__(
         self,
         framework_atoms: ase.Atoms,
-        adsorbate_atoms: ase.Atoms,
+        adsorbate_atoms: Adsorbate,
         temperature: float,
         model: calculator.Calculator,
         vdw_radii: np.ndarray,
         framework_energy: float | None = None,
         adsorbate_energy: float | None = None,
         vdw_factor: float = 0.6,
-        max_overlap_tries: int = 1000,
         max_deltaE: float = 1.555,
         device: str = "cpu",
         save_snapshots: bool = True,
         save_rejected: bool = False,
         output_to_file: bool = True,
+        save_only_adsorbate: bool = False,
         output_folder: str | None = None,
         debug: bool = False,
         random_seed: int | None = None,
@@ -131,7 +132,7 @@ class Widom(BaseSimulator):
         super().__init__(
             model=model,
             framework_atoms=framework_atoms,
-            adsorbate_atoms=adsorbate_atoms,
+            adsorbates=adsorbate_atoms,
             temperature=temperature,
             pressure=0.0,
             device=device,
@@ -162,47 +163,53 @@ class Widom(BaseSimulator):
 
         self.boltz_fac = np.exp(-self.beta * self.int_energy_list)
 
-        self.kH = self._compute_kH(self.boltz_fac)
+        self.kH = self._compute_kH()
 
         self.kH_std_dv = 0.0
 
-        # Compute the adsorption energy (Qst)
-        self.Qst = self._compute_Qst(self.int_energy_list, self.boltz_fac)
+        # Compute the enthalpy of adsorption (ΔH^0)
+        self.dH = self._compute_dH()
 
-        self.Qst_std_dv = 0.0
+        self.dH_std_dv = 0.0
 
-        self.max_overlap_tries = max_overlap_tries
-        self.MAX_ENERGY_ERROR = 1000.0
+        self.MAX_ENERGY_ERROR = 1e5
         self.save_snapshots = save_snapshots
+        self.save_only_adsorbate = save_only_adsorbate
 
-    def _compute_kH(self, boltz_fac: np.ndarray) -> float:
+    def __post_init__(self) -> None:
+        """
+        Post-initialization to set up the Widom simulation.
+        """
+
+        # Check if there is only on adsorbate molecule
+        if len(self.adsorbates) != 1:
+            raise ValueError(
+                "Widom insertion method currently supports only one adsorbate molecule."
+            )
+
+    def _compute_kH(self) -> float:
         """
         Compute the Henry coefficient (kH) using the Boltzmann factors.
 
-        kH = β <exp(-β ΔE)> [mol kg-1 Pa-1]
-
-        Parameters
-        ----------
-        boltz_fac : np.ndarray
-            Array of Boltzmann factors corresponding to the integral energies.
+        kH = β <exp(-β ΔE)> / ρ [mol kg-1 Pa-1]
 
         Returns
         -------
             float: The Henry coefficient in mol kg-1 Pa-1
         """
 
-        return self.beta * boltz_fac.mean() * units.J / (units.mol * self.framework_density * 1e3)
+        return (
+            self.beta * self.boltz_fac.mean() * units.J / (units.mol * self.framework_density * 1e3)
+        )
 
-    def _compute_kH_std(self, boltz_fac: np.ndarray, n: int = 5) -> float:
+    def _compute_kH_std(self, n: int = 5) -> float:
         """
         Compute the standard deviation of the Henry coefficient (kH) using the Boltzmann factors.
 
-        kH = β <exp(-β ΔE)> [mol kg-1 Pa-1]
+        kH = β <exp(-β ΔE)> / ρ [mol kg-1 Pa-1]
 
         Parameters
         ----------
-        boltz_fac : np.ndarray
-            Array of Boltzmann factors corresponding to the integral energies.
         n : int, optional
             Number of splits for cross-validation to estimate the standard deviation (default is 5).
 
@@ -215,7 +222,7 @@ class Widom(BaseSimulator):
         if len(self.int_energy_list) <= n:
             return 0.0
 
-        cv_boltz_fac = random_n_splits(boltz_fac, n, self.rnd_generator)
+        cv_boltz_fac = random_n_splits(self.boltz_fac, n, self.rnd_generator)
 
         return (
             self.beta
@@ -224,43 +231,35 @@ class Widom(BaseSimulator):
             / (self.framework_density * 1e3)
         ).std()
 
-    def _compute_Qst(self, int_energy_list: np.ndarray, boltz_fac: np.ndarray) -> float:
+    def _compute_dH(self) -> float:
         """
-        Compute the adsorption energy (Qst) using the integral energy list and Boltzmann factors.
+        Compute the enthalpy of adsorption (ΔH^0) using the integral energy list and Boltzmann factors.
 
-        Qst = - < ΔE * exp(-β ΔE) > / <exp(-β ΔE)>  + kB.T # [kJ/mol]
-
-        Parameters
-        ----------
-        int_energy_list : np.ndarray
-            Array of integral energies from the Widom insertions.
-        boltz_fac : np.ndarray
-            Array of Boltzmann factors corresponding to the integral energies.
+        ΔH^0 = < ΔE * exp(-β ΔE) > / <exp(-β ΔE)> - kB.T # [kJ/mol]
 
         Returns
         -------
-            float: The Qst energy in kJ/mol
+            float: The ΔH^0 energy in kJ/mol
         """
-        return ((int_energy_list * boltz_fac).mean() / boltz_fac.mean() - units.kB * self.T) / (
-            units.kJ / units.mol
-        )
+        return (
+            (self.int_energy_list * self.boltz_fac).mean() / self.boltz_fac.mean()
+            - units.kB * self.T
+        ) / (units.kJ / units.mol)
 
-    def _compute_Qst_std(self, int_energy_list: np.ndarray, n: int = 5) -> float:
+    def _compute_dH_std(self, n: int = 5) -> float:
         """
-        Compute the standard deviation of the adsorption energy (Qst) using the integral energy list and Boltzmann factors.
+        Compute the standard deviation of the enthalpy of adsorption (ΔH^0) using the integral energy list and Boltzmann factors.
 
-        Qst = - < ΔE * exp(-β ΔE) > / <exp(-β ΔE)>  + kB.T # [kJ/mol]
+        ΔH^0 = < ΔE * exp(-β ΔE) > / <exp(-β ΔE)> - kB.T # [kJ/mol]
 
         Parameters
         ----------
-        int_energy_list : np.ndarray
-            Array of integral energies from the Widom insertions.
         n : int, optional
             Number of splits for cross-validation to estimate the standard deviation (default is 5).
 
         Returns
         -------
-            float: The standard deviation of Qst energy in kJ/mol
+            float: The standard deviation of ΔH^0 energy in kJ/mol
         """
 
         if len(self.int_energy_list) <= n:
@@ -338,12 +337,12 @@ class Widom(BaseSimulator):
 
         self.boltz_fac = np.exp(-self.beta * self.int_energy_list)
 
-        self.kH = self._compute_kH(self.boltz_fac)
-        self.Qst = self._compute_Qst(self.int_energy_list, self.boltz_fac)
+        self.kH = self._compute_kH()
+        self.dH = self._compute_dH()
 
         # Calculate standard deviation using cross-validation
-        self.kH_std_dv = self._compute_kH_std(self.boltz_fac, 5)
-        self.Qst_std_dv = self._compute_Qst_std(self.int_energy_list, 5)
+        self.kH_std_dv = self._compute_kH_std(5)
+        self.dH_std_dv = self._compute_dH_std(5)
 
     def save_results(self, file_name: str = "Widom_Results.json") -> None:
         """
@@ -364,8 +363,8 @@ class Widom(BaseSimulator):
             "temperature_K": self.T,
             "henry_coefficient_mol_kg-1_Pa-1": self.kH,
             "henry_coefficient_std_mol_kg-1_Pa-1": self.kH_std_dv,
-            "enthalpy_of_adsorption_kJ_mol-1": self.Qst,
-            "enthalpy_of_adsorption_std_kJ_mol-1": self.Qst_std_dv,
+            "enthalpy_of_adsorption_kJ_mol-1": self.dH,
+            "enthalpy_of_adsorption_std_kJ_mol-1": self.dH_std_dv,
         }
 
         with open(os.path.join(self.out_folder, file_name), "w") as f:
@@ -390,11 +389,11 @@ class Widom(BaseSimulator):
         # Set the base iteration to the length of the uptake list
         self.base_iteration = len(self.int_energy_list)
 
-        self.Qst = self._compute_Qst(self.int_energy_list, self.boltz_fac)
-        self.Qst_std_dv = self._compute_Qst_std(self.int_energy_list)
+        self.dH = self._compute_dH()
+        self.dH_std_dv = self._compute_dH_std(5)
 
-        self.kH = self._compute_kH(self.boltz_fac)
-        self.kH_std_dv = self._compute_kH_std(self.boltz_fac)
+        self.kH = self._compute_kH()
+        self.kH_std_dv = self._compute_kH_std(5)
 
         self.logger.print_restart_info()
 
@@ -416,35 +415,37 @@ class Widom(BaseSimulator):
         # Ensure atoms_trial is always defined so it can be returned in failure cases
         atoms_trial = self.framework.copy()
 
-        for _ in range(max(self.max_overlap_tries, 1)):
-            atoms_trial = random_mol_insertion(self.framework, self.adsorbate, self.rnd_generator)
+        atoms_trial = random_mol_insertion(
+            self.framework, self.adsorbates[0].structure, self.rnd_generator
+        )
 
-            overlaped = check_overlap(
-                atoms=atoms_trial,
-                group1_indices=np.arange(self.n_atoms_framework),
-                group2_indices=np.arange(
-                    self.n_atoms_framework, self.n_atoms_framework + self.n_adsorbate_atoms
-                ),
-                vdw_radii=self.vdw,
-            )
+        overlaped = check_overlap_vesin(
+            atoms=atoms_trial,
+            group1_indices=np.arange(self.n_atoms_framework),
+            group2_indices=np.arange(
+                self.n_atoms_framework,
+                self.n_atoms_framework + list(self.n_adsorbate_atoms.values())[0],
+            ),
+            vdw_radii=self.vdw,
+        )
 
-            if not overlaped:
-                break
-        else:
-            # Return MAX_ENERGY_ERROR if no valid insertion found after max tries
+        if overlaped:
+            # Add interaction energy to the info dictionary
+            atoms_trial.info["interaction_energy"] = self.MAX_ENERGY_ERROR
             return self.MAX_ENERGY_ERROR, atoms_trial
 
         # Set the same calculator to the trial atoms
         atoms_trial.calc = self.model
 
         # Calculate the interaction energy of the trial configuration
-        deltaE = atoms_trial.get_potential_energy() - self.framework_energy - self.adsorbate_energy
+        deltaE = (
+            atoms_trial.get_potential_energy()
+            - self.framework_energy
+            - self.adsorbate_energy[self.adsorbates[0].name]
+        )
 
         # Add interaction energy to the info dictionary
         atoms_trial.info["interaction_energy"] = deltaE
-
-        if np.abs(deltaE) > np.abs(self.max_deltaE):
-            return self.MAX_ENERGY_ERROR, atoms_trial  # Return MAX_ENERGY_ERROR to indicate error
 
         return deltaE, atoms_trial
 
@@ -461,22 +462,15 @@ class Widom(BaseSimulator):
 
         step_time_start = datetime.datetime.now()
 
-        accepted = False
-
-        # Try a valid insertion up to max_overlap_tries times until accepted to count as one Widom insertion
-        for _ in range(self.max_overlap_tries):
-            deltaE, atoms_trial = self.try_insertion()
-            accepted = deltaE < units.kB * self.T
-
-            if accepted:
-                break
-
-            self._save_rejected_if_enabled(atoms_trial)
+        deltaE, atoms_trial = self.try_insertion()
 
         self._save_minimum_configuration(deltaE, atoms_trial)  # type: ignore
 
         if self.save_snapshots:
-            self.trajectory.write(atoms_trial)  # type: ignore
+            if self.save_only_adsorbate:
+                self.trajectory.write(atoms_trial[self.n_atoms_framework :])  # type: ignore
+            else:
+                self.trajectory.write(atoms_trial)  # type: ignore
 
         # Append int_energy_list
         self.update_statistics(deltaE)  # type: ignore
@@ -488,7 +482,7 @@ class Widom(BaseSimulator):
                 deltaE,  # type: ignore
                 deltaE / (units.kJ / units.mol),  # type: ignore
                 self.kH,
-                self.Qst,
+                self.dH,
                 (datetime.datetime.now() - step_time_start).total_seconds(),
             ],
         )
