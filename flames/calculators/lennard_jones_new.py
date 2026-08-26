@@ -12,7 +12,7 @@ set_num_threads(NUM_THREADS_TO_USE)
 def compute_lj_numba(
     i_idx, j_idx, distances, atom_types, A_table, B_table, shift_table
 ) -> tuple[float, np.ndarray]:
-    
+
     total_energy = 0.0
     energies = np.zeros(len(atom_types))
 
@@ -33,7 +33,7 @@ def compute_lj_numba(
         # Fast 1/r^6 math (replaces division, powers, and branches)
         inv_r2 = 1.0 / (r * r)
         inv_r6 = inv_r2 * inv_r2 * inv_r2
-        
+
         u = inv_r6 * (A * inv_r6 - B) - shift
 
         # Distribute the energy
@@ -70,7 +70,7 @@ class CustomLennardJones(Calculator):
         # 2. Build Type Lookup Tables (A, B, and static shifts)
         self.unique_labels = list(self.lj_params.keys())
         self.label_to_type = {label: i for i, label in enumerate(self.unique_labels)}
-        
+
         num_types = len(self.unique_labels)
         self.A_table = np.zeros((num_types, num_types), dtype=np.float64)
         self.B_table = np.zeros((num_types, num_types), dtype=np.float64)
@@ -78,23 +78,25 @@ class CustomLennardJones(Calculator):
 
         for i, l1 in enumerate(self.unique_labels):
             for j, l2 in enumerate(self.unique_labels):
-                
+
                 # Lorentz-Berthelot mixing calculated exactly ONCE per type pair
                 sig = (self.lj_params[l1]["sigma"] + self.lj_params[l2]["sigma"]) / 2.0
-                eps = np.sqrt(self.lj_params[l1]["epsilon"] * self.lj_params[l2]["epsilon"]) * units.kB
-                
+                eps = (
+                    np.sqrt(self.lj_params[l1]["epsilon"] * self.lj_params[l2]["epsilon"])
+                    * units.kB
+                )
+
                 # Map to A and B coefficients
-                A = 4.0 * eps * (sig ** 12)
-                B = 4.0 * eps * (sig ** 6)
-                
+                A = 4.0 * eps * (sig**12)
+                B = 4.0 * eps * (sig**6)
+
                 self.A_table[i, j] = A
                 self.B_table[i, j] = B
-                
+
                 if self.shifted:
                     inv_rc2 = 1.0 / (self.vdw_cutoff * self.vdw_cutoff)
                     inv_rc6 = inv_rc2 * inv_rc2 * inv_rc2
                     self.shift_table[i, j] = inv_rc6 * (A * inv_rc6 - B)
-
 
     def calculate(
         self,
@@ -119,9 +121,7 @@ class CustomLennardJones(Calculator):
         else:
             labels = self.atoms.get_chemical_symbols()  # type: ignore
 
-        atom_types = np.array(
-            [self.label_to_type[lbl] for lbl in labels], dtype=np.int32
-        )
+        atom_types = np.array([self.label_to_type[lbl] for lbl in labels], dtype=np.int32)
 
         # Vesin Neighbor List uses the cached C++ object
         i, j, d = self.neighbor_calculator.compute(

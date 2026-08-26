@@ -1,16 +1,18 @@
 import math
+
 import numpy as np
 from ase import units
 from ase.calculators.calculator import Calculator, all_changes
 from numba import njit, prange
 from vesin import NeighborList
 
+
 # --- 1. Numba Real Space Kernel ---
 @njit(fastmath=True, parallel=False, cache=True)
 def _compute_ewald_real_numba(distances, q_i, q_j, alpha):
     """
     Evaluates real space using the exact distances found by Vesin.
-    Sequential loop is faster here because memory is contiguous and 
+    Sequential loop is faster here because memory is contiguous and
     avoids thread-spinning overhead for small arrays.
     """
     u_real = 0.0
@@ -19,7 +21,7 @@ def _compute_ewald_real_numba(distances, q_i, q_j, alpha):
         # Prevent division by zero mathematically
         if r > 1e-8:
             u_real += (q_i[k] * q_j[k]) * math.erfc(alpha * r) / r
-            
+
     # Divide by 2 because Vesin full_list=True double-counts pairs
     return u_real / 2.0
 
@@ -28,7 +30,7 @@ def _compute_ewald_real_numba(distances, q_i, q_j, alpha):
 @njit(fastmath=True, parallel=True, cache=True)
 def _compute_ewald_recip_numba(positions, charges, recip_cell, nx, ny, nz, alpha, volume):
     """
-    Your original k-space implementation, kept in Numba to avoid 
+    Your original k-space implementation, kept in Numba to avoid
     JAX dispatch overhead.
     """
     u_recip = 0.0
@@ -90,7 +92,7 @@ class CustomEwald(Calculator):
         self.grid_limits = (1, 1, 1)
         self.recip_cell = None
         self.volume = None
-        
+
         # Initialize Vesin once, update cell/positions during compute
         self.neighbor_calculator = NeighborList(cutoff=self.cutoff, full_list=True)
 
@@ -98,7 +100,7 @@ class CustomEwald(Calculator):
         self.volume = np.abs(np.linalg.det(cell))
         self.alpha = np.sqrt(-np.log(self.precision)) / self.cutoff
         k_max = 2.0 * self.alpha * np.sqrt(-np.log(self.precision))
-        
+
         self.recip_cell = 2.0 * np.pi * np.linalg.inv(cell).T
         recip_lengths = np.linalg.norm(self.recip_cell, axis=1)
 
@@ -131,10 +133,10 @@ class CustomEwald(Calculator):
             periodic=True,
             quantities="ijd",
         )
-        
+
         q_i = charges[i_idx]
         q_j = charges[j_idx]
-        
+
         u_real = _compute_ewald_real_numba(distances, q_i, q_j, self.alpha)
 
         # 2. Reciprocal Space: Parallel Numba
