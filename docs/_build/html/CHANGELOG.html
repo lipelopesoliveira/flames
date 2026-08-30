@@ -7,10 +7,10 @@
         <link rel="prefetch" href="_static/logo-light-mode.png" as="image">
         <link rel="prefetch" href="_static/logo-dark-mode.png" as="image">
 
-    <link rel="shortcut icon" href="_static/favicon.ico"><!-- Generated with Sphinx 9.1.0 and Furo 2025.09.25 -->
+    <link rel="shortcut icon" href="_static/favicon.ico"><!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
         <title>Changelog - FLAMES v0.4.9</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=580074bf" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
@@ -219,6 +219,7 @@
 <p class="caption" role="heading"><span class="caption-text">Tutorials: Advanced</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="tutorials/advanced/hybrid_gcmc_md_mixed_calc.html">Mixed calculators for GCMC/MD simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/advanced/hybrid_tmmc_md.html">Hybrid TMMC/MD Simulation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Theoretical Background</span></p>
 <ul>
@@ -285,6 +286,14 @@
 <h3>New Features 🎉<a class="headerlink" href="#new-features" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p>Add <code class="docutils literal notranslate"><span class="pre">MoveWeights</span></code> class for managing and normalizing movement weights in simulations. This class allows users to define weights for different types of moves (insertion, deletion, translation, rotation, reinsertion, and identity change) and ensures that they are normalized to sum to 1. It also provides a method to select a move based on the defined weights using a random generator.</p></li>
+<li><p>Now it is possible to save only the adsorbate positions in the <code class="docutils literal notranslate"><span class="pre">Widom</span></code> simulations by setting the <code class="docutils literal notranslate"><span class="pre">save_only_adsorbate</span></code> parameter to <code class="docutils literal notranslate"><span class="pre">True</span></code> when initializing the <code class="docutils literal notranslate"><span class="pre">Widom</span></code> class. This feature allows users to save only the positions of the adsorbate molecules during the Widom insertion process, which can be useful for analyzing the behavior of the adsorbates without saving the entire system state. When set to <code class="docutils literal notranslate"><span class="pre">False</span></code>, the full system state will be saved, including both the framework and adsorbate molecules. The default value for this parameter is set to <code class="docutils literal notranslate"><span class="pre">False</span></code>, meaning that the full system state will be saved unless specified otherwise by the user.</p></li>
+<li><p>Add a new <code class="docutils literal notranslate"><span class="pre">Adsorbate</span></code> class to manage adsorbate molecules in the simulations. This class allows users to define adsorbate molecules, their structures, and associated properties such as name, equation of state (EOS), and move weights. The <code class="docutils literal notranslate"><span class="pre">Adsorbate</span></code> class provides methods for retrieving random configurations of the adsorbate molecules, facilitating their use in GCMC and Widom simulations. It also supports reading adsorbate structures from files and allows for flexible management of multiple adsorbate configurations.</p></li>
+<li><p>Added a warning method in <code class="docutils literal notranslate"><span class="pre">Logger</span></code> to print warnings to the output file. It also prints all warnings of the simulation at the end of the simulation. This feature helps users identify potential issues or concerns during the simulation process, allowing for better monitoring and debugging of the simulations.</p></li>
+<li><p>Added support for multiple adsorbates in the <code class="docutils literal notranslate"><span class="pre">GCMC</span></code> classes. Users can now specify a list of <code class="docutils literal notranslate"><span class="pre">Adsorbate</span></code> objects when initializing this class, allowing for simulations involving multiple types of adsorbate molecules. The simulation will handle the insertion, deletion, translation, and rotation moves for each adsorbate type based on their defined move weights and mol fractions.</p></li>
+<li><p>Added Nose-Hoover and Langevin termostats to the <code class="docutils literal notranslate"><span class="pre">BaseSimulator</span></code> class for NVT and NPT Molecular Dynamics (MD) simulations.</p></li>
+<li><p>Added a custom <code class="docutils literal notranslate"><span class="pre">MTKNPT</span></code> implementation for molecular dynamics simulations with fixed cell volume but flexible cell shape. This implementation allows for anisotropic volume changes while maintaining a constant cell volume, providing more flexibility in simulating systems with varying cell shapes.</p></li>
+<li><p>Added NVE molecular dynamics using the Velocity Verlet integrator to the <code class="docutils literal notranslate"><span class="pre">BaseSimulator</span></code> class. This allows for energy-conserving simulations in the microcanonical ensemble, where the total energy of the system remains constant over time.</p></li>
+<li><p>Added NVE, NPT and MVT Molecular Dynamics (MD) simulations as possible MC movements in the <code class="docutils literal notranslate"><span class="pre">GCMC</span></code> class. This allows the integration of MD simulations into the Markov chain Monte Carlo (MCMC) framework, enabling the exploration of the system’s phase space through both Monte Carlo and Molecular Dynamics methods.</p></li>
 </ul>
 </section>
 <section id="enhanced">
@@ -292,12 +301,16 @@
 <ul class="simple">
 <li><p>Use the <code class="docutils literal notranslate"><span class="pre">vesin</span></code> library to check for atom overlaps during the insertion of adsorbates in the GCMC and Widom simulations. The <code class="docutils literal notranslate"><span class="pre">vesin</span></code> library provides a more efficient method for calculating distances, prividing around 10x speedup in the overlap checking process. From the practical point of view, this change should provide only a minor speedup in the overall simulation time, as this process took only 30 ms on average for 2000 atoms, and now takes only 3 ms. However, this change improves the overall efficiency of the code and reduces the computational overhead associated with overlap checking.</p></li>
 <li><p>Improve the <code class="docutils literal notranslate"><span class="pre">BaseEOS</span></code> and <code class="docutils literal notranslate"><span class="pre">PengRobinsonEOS</span></code> classes for better reuse.</p></li>
+<li><p>Added new tests for the <code class="docutils literal notranslate"><span class="pre">PengRobinsonEOS</span></code> to compare the results with <code class="docutils literal notranslate"><span class="pre">RASPA2</span></code> and ensure the accuracy of the calculations. The tests include comparisons of fugacity coefficients and bulk phase densities for different gases at various temperatures and pressures, providing a comprehensive validation of the EOS implementation.</p></li>
+<li><p>Added warnings for energy differences that exceed the maximum allowed threshold during GCMC simulations. If the energy difference between the trial and current state exceeds the specified <code class="docutils literal notranslate"><span class="pre">max_deltaE</span></code>, a warning message is printed to inform the user of the potential issue. This helps users identify and address situations where large energy changes may indicate problems with the simulation or model.</p></li>
+<li><p>Improve the <code class="docutils literal notranslate"><span class="pre">identity_swap</span></code> movements to swap two different adsorbates in the system.</p></li>
 </ul>
 </section>
 <section id="fixed">
 <h3>Fixed 🐛<a class="headerlink" href="#fixed" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p>Now the default value for <code class="docutils literal notranslate"><span class="pre">shifted</span></code> parameter in the <code class="docutils literal notranslate"><span class="pre">CustomLennardJones</span></code> and <code class="docutils literal notranslate"><span class="pre">CustomGNP</span></code> calculators is set to <code class="docutils literal notranslate"><span class="pre">False</span></code>. This change ensures that the Lennard-Jones and GNP potentials are not shifted by default, which may be more appropriate for certain simulations. Users can still set this parameter to <code class="docutils literal notranslate"><span class="pre">True</span></code> if they wish to apply a shift to the potential.</p></li>
+<li><p>Fixed the incorrect warning message for ideal supercell size in logger.</p></li>
 </ul>
 </section>
 <section id="documentation">
@@ -309,10 +322,18 @@
 </section>
 <section id="modified">
 <h3>Modified 🛠<a class="headerlink" href="#modified" title="Link to this heading">¶</a></h3>
-<p>️- Moved the <code class="docutils literal notranslate"><span class="pre">CustomLennardJones</span></code> and <code class="docutils literal notranslate"><span class="pre">CustomEwald</span></code> calculators to the <code class="docutils literal notranslate"><span class="pre">flames.calculators.lennard_jones</span></code> and <code class="docutils literal notranslate"><span class="pre">flames.calculators.ewald</span></code> modules, respectively. This change improves the organization of the codebase and makes it easier for users to locate and use these calculators in their simulations.</p>
+<ul class="simple">
+<li><p>Moved the <code class="docutils literal notranslate"><span class="pre">CustomLennardJones</span></code> and <code class="docutils literal notranslate"><span class="pre">CustomEwald</span></code> calculators to the <code class="docutils literal notranslate"><span class="pre">flames.calculators.lennard_jones</span></code> and <code class="docutils literal notranslate"><span class="pre">flames.calculators.ewald</span></code> modules, respectively. This change improves the organization of the codebase and makes it easier for users to locate and use these calculators in their simulations.
+️- Moved the <code class="docutils literal notranslate"><span class="pre">LLM</span></code> parameter in the <code class="docutils literal notranslate"><span class="pre">GCMC</span></code> class to the <code class="docutils literal notranslate"><span class="pre">save_results</span></code> method. This change allows users to specify whether to use the Left-most Local Minima (LLM) method for equilibration analysis when saving the results of a GCMC simulation, providing greater flexibility in how the results are analyzed and reported. The default value for this parameter is set to <code class="docutils literal notranslate"><span class="pre">False</span></code>, meaning that the LLM method will not be used by default unless specified otherwise.
+️- Now the enthalpy of adsorption calculation in the <code class="docutils literal notranslate"><span class="pre">utilities.enthalpy_of_adsorption</span></code> function includes the average adsorbate energy in the calculation. This change ensures that the enthalpy of adsorption can be calculated accuratly for flexible molecules.</p></li>
+<li><p>Add a warning message when the Berendsen termostat/barostat is used in combination with GCMC simulations. The warning informs users that the Berendsen method may not be suitable for GCMC simulations and suggests using the MTKNPT or Nose-Hoover methods instead. This helps users make informed decisions about the choice of thermostat/barostat for their simulations.</p></li>
+</ul>
 </section>
 <section id="removed">
 <h3>Removed 🗑️<a class="headerlink" href="#removed" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Removed the <code class="docutils literal notranslate"><span class="pre">max_overlap_tries</span></code> parameter from the <code class="docutils literal notranslate"><span class="pre">GCMC</span></code> and <code class="docutils literal notranslate"><span class="pre">Widom</span></code> classes. This parameter was previously used to limit the number of attempts for placing an adsorbate without van der Waals overlap. However, it may cause problems in the simulation leading to potential issues with sampling.</p></li>
+</ul>
 </section>
 </section>
 <section id="v-0-4-8-2026-07-22">
@@ -1005,8 +1026,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=ebe9904d"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>

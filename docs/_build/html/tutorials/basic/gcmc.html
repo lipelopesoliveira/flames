@@ -7,10 +7,10 @@
         <link rel="prefetch" href="../../_static/logo-light-mode.png" as="image">
         <link rel="prefetch" href="../../_static/logo-dark-mode.png" as="image">
 
-    <link rel="shortcut icon" href="../../_static/favicon.ico"><!-- Generated with Sphinx 9.1.0 and Furo 2025.09.25 -->
+    <link rel="shortcut icon" href="../../_static/favicon.ico"><!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
         <title>GCMC Simulation - FLAMES v0.4.9</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=580074bf" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css" />
@@ -219,6 +219,7 @@
 <p class="caption" role="heading"><span class="caption-text">Tutorials: Advanced</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/hybrid_gcmc_md_mixed_calc.html">Mixed calculators for GCMC/MD simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/hybrid_tmmc_md.html">Hybrid TMMC/MD Simulation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Theoretical Background</span></p>
 <ul>
@@ -309,24 +310,24 @@ During these simulations, the porous material is typically modeled as a rigid ho
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">flames.gcmc</span><span class="w"> </span><span class="kn">import</span> <span class="n">GCMC</span>
 
-<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">UserWarning</span><span class="p">)</span>
-<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">RuntimeWarning</span><span class="p">)</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">UserWarning</span><span class="p">)</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">RuntimeWarning</span><span class="p">)</span>
 
-<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;KMP_DUPLICATE_LIB_OK&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;TRUE&quot;</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"KMP_DUPLICATE_LIB_OK"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"TRUE"</span>
 
-<span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span>
+<span class="n">device</span> <span class="o">=</span> <span class="s2">"cuda"</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">"cpu"</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">mace_mp</span><span class="p">(</span>
-    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;medium-0b2&quot;</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">"medium-0b2"</span><span class="p">,</span>
     <span class="n">dispersion</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">damping</span><span class="o">=</span><span class="s2">&quot;zero&quot;</span><span class="p">,</span>  <span class="c1"># choices: [&quot;zero&quot;, &quot;bj&quot;, &quot;zerom&quot;, &quot;bjm&quot;]</span>
-    <span class="n">dispersion_xc</span><span class="o">=</span><span class="s2">&quot;pbe&quot;</span><span class="p">,</span>
-    <span class="n">default_dtype</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span><span class="p">,</span>
+    <span class="n">damping</span><span class="o">=</span><span class="s2">"zero"</span><span class="p">,</span>  <span class="c1"># choices: ["zero", "bj", "zerom", "bjm"]</span>
+    <span class="n">dispersion_xc</span><span class="o">=</span><span class="s2">"pbe"</span><span class="p">,</span>
+    <span class="n">default_dtype</span><span class="o">=</span><span class="s2">"float32"</span><span class="p">,</span>
     <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">FrameworkPath</span> <span class="o">=</span> <span class="s2">&quot;mg-mof-74.cif&quot;</span>
-<span class="n">AdsorbatePath</span> <span class="o">=</span> <span class="s2">&quot;co2.xyz&quot;</span>
+<span class="n">FrameworkPath</span> <span class="o">=</span> <span class="s2">"mg-mof-74.cif"</span>
+<span class="n">AdsorbatePath</span> <span class="o">=</span> <span class="s2">"co2.xyz"</span>
 
 <span class="c1"># Load the framework structure</span>
 <span class="n">framework</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="n">FrameworkPath</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
@@ -610,88 +611,88 @@ Simulation duration: 6:32:28.669883
 </div>
 <p>Also, a json file with the main results is saved with the name <code class="docutils literal notranslate"><span class="pre">results_[TEMPERATURE]_[PRESSURE].json</span></code>, that can be easily read and processed for further analysis.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;simulation&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;code_version&quot;</span><span class="p">:</span> <span class="s2">&quot;0.4.5A&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;random_seed&quot;</span><span class="p">:</span> <span class="mi">42</span><span class="p">,</span>
-        <span class="s2">&quot;temperature_K&quot;</span><span class="p">:</span> <span class="mf">298.0</span><span class="p">,</span>
-        <span class="s2">&quot;pressure_Pa&quot;</span><span class="p">:</span> <span class="mi">100000</span><span class="p">,</span>
-        <span class="s2">&quot;fugacity_coefficient&quot;</span><span class="p">:</span> <span class="mf">0.9945357224994603</span><span class="p">,</span>
-        <span class="s2">&quot;fugacity_Pa&quot;</span><span class="p">:</span> <span class="mf">99453.57224994604</span><span class="p">,</span>
-        <span class="s2">&quot;move_weights&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;insertion&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>
-            <span class="s2">&quot;deletion&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>
-            <span class="s2">&quot;translation&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>
-            <span class="s2">&quot;rotation&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>
-            <span class="s2">&quot;reinsertion&quot;</span><span class="p">:</span> <span class="mf">0.2</span>
+    <span class="s2">"simulation"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"code_version"</span><span class="p">:</span> <span class="s2">"0.4.5A"</span><span class="p">,</span>
+        <span class="s2">"random_seed"</span><span class="p">:</span> <span class="mi">42</span><span class="p">,</span>
+        <span class="s2">"temperature_K"</span><span class="p">:</span> <span class="mf">298.0</span><span class="p">,</span>
+        <span class="s2">"pressure_Pa"</span><span class="p">:</span> <span class="mi">100000</span><span class="p">,</span>
+        <span class="s2">"fugacity_coefficient"</span><span class="p">:</span> <span class="mf">0.9945357224994603</span><span class="p">,</span>
+        <span class="s2">"fugacity_Pa"</span><span class="p">:</span> <span class="mf">99453.57224994604</span><span class="p">,</span>
+        <span class="s2">"move_weights"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"insertion"</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>
+            <span class="s2">"deletion"</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>
+            <span class="s2">"translation"</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>
+            <span class="s2">"rotation"</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>
+            <span class="s2">"reinsertion"</span><span class="p">:</span> <span class="mf">0.2</span>
         <span class="p">},</span>
-        <span class="s2">&quot;n_steps&quot;</span><span class="p">:</span> <span class="mi">179503</span><span class="p">,</span>
-        <span class="s2">&quot;enlapsed_time_hours&quot;</span><span class="p">:</span> <span class="mf">0.004653468055555556</span>
+        <span class="s2">"n_steps"</span><span class="p">:</span> <span class="mi">179503</span><span class="p">,</span>
+        <span class="s2">"enlapsed_time_hours"</span><span class="p">:</span> <span class="mf">0.004653468055555556</span>
     <span class="p">},</span>
-    <span class="s2">&quot;equilibration&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;LLM&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
-        <span class="s2">&quot;t0&quot;</span><span class="p">:</span> <span class="mi">53850</span><span class="p">,</span>
-        <span class="s2">&quot;average&quot;</span><span class="p">:</span> <span class="mf">33.3205494496749</span><span class="p">,</span>
-        <span class="s2">&quot;uncertainty&quot;</span><span class="p">:</span> <span class="mf">0.9215130805969238</span><span class="p">,</span>
-        <span class="s2">&quot;equilibrated&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
-        <span class="s2">&quot;ac_time&quot;</span><span class="p">:</span> <span class="mi">3155</span><span class="p">,</span>
-        <span class="s2">&quot;uncorr_samples&quot;</span><span class="p">:</span> <span class="mi">39</span>
+    <span class="s2">"equilibration"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"LLM"</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+        <span class="s2">"t0"</span><span class="p">:</span> <span class="mi">53850</span><span class="p">,</span>
+        <span class="s2">"average"</span><span class="p">:</span> <span class="mf">33.3205494496749</span><span class="p">,</span>
+        <span class="s2">"uncertainty"</span><span class="p">:</span> <span class="mf">0.9215130805969238</span><span class="p">,</span>
+        <span class="s2">"equilibrated"</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+        <span class="s2">"ac_time"</span><span class="p">:</span> <span class="mi">3155</span><span class="p">,</span>
+        <span class="s2">"uncorr_samples"</span><span class="p">:</span> <span class="mi">39</span>
     <span class="p">},</span>
-    <span class="s2">&quot;enthalpy&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;kJ_mol&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">21.25548795467983</span><span class="p">,</span>
-            <span class="s2">&quot;sd&quot;</span><span class="p">:</span> <span class="mf">3.054310813299496</span>
+    <span class="s2">"enthalpy"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"kJ_mol"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"mean"</span><span class="p">:</span> <span class="o">-</span><span class="mf">21.25548795467983</span><span class="p">,</span>
+            <span class="s2">"sd"</span><span class="p">:</span> <span class="mf">3.054310813299496</span>
         <span class="p">}</span>
     <span class="p">},</span>
-    <span class="s2">&quot;absolute_uptake&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;nmol&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="mf">33.3205494496749</span><span class="p">,</span>
-            <span class="s2">&quot;sd&quot;</span><span class="p">:</span> <span class="mf">0.9215130805969238</span>
+    <span class="s2">"absolute_uptake"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"nmol"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"mean"</span><span class="p">:</span> <span class="mf">33.3205494496749</span><span class="p">,</span>
+            <span class="s2">"sd"</span><span class="p">:</span> <span class="mf">0.9215130805969238</span>
         <span class="p">},</span>
-        <span class="s2">&quot;mol/kg&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="mf">7.627031810114402</span><span class="p">,</span>
-            <span class="s2">&quot;sd&quot;</span><span class="p">:</span> <span class="mf">0.21093318373289396</span>
+        <span class="s2">"mol/kg"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"mean"</span><span class="p">:</span> <span class="mf">7.627031810114402</span><span class="p">,</span>
+            <span class="s2">"sd"</span><span class="p">:</span> <span class="mf">0.21093318373289396</span>
         <span class="p">},</span>
-        <span class="s2">&quot;mg/g&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="mf">335.6580428449786</span><span class="p">,</span>
-            <span class="s2">&quot;sd&quot;</span><span class="p">:</span> <span class="mf">9.282958480512942</span>
+        <span class="s2">"mg/g"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"mean"</span><span class="p">:</span> <span class="mf">335.6580428449786</span><span class="p">,</span>
+            <span class="s2">"sd"</span><span class="p">:</span> <span class="mf">9.282958480512942</span>
         <span class="p">},</span>
-        <span class="s2">&quot;cm^3 STP/gr&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="mf">170.95200203068663</span><span class="p">,</span>
-            <span class="s2">&quot;sd&quot;</span><span class="p">:</span> <span class="mf">4.727848388677955</span>
+        <span class="s2">"cm^3 STP/gr"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"mean"</span><span class="p">:</span> <span class="mf">170.95200203068663</span><span class="p">,</span>
+            <span class="s2">"sd"</span><span class="p">:</span> <span class="mf">4.727848388677955</span>
         <span class="p">},</span>
-        <span class="s2">&quot;cm^3 STP/cm^3&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="mf">150.469568974888</span><span class="p">,</span>
-            <span class="s2">&quot;sd&quot;</span><span class="p">:</span> <span class="mf">4.1613862415913205</span>
+        <span class="s2">"cm^3 STP/cm^3"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"mean"</span><span class="p">:</span> <span class="mf">150.469568974888</span><span class="p">,</span>
+            <span class="s2">"sd"</span><span class="p">:</span> <span class="mf">4.1613862415913205</span>
         <span class="p">},</span>
-        <span class="s2">&quot;% wt&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="mf">33.565804284497865</span><span class="p">,</span>
-            <span class="s2">&quot;sd&quot;</span><span class="p">:</span> <span class="mf">0.9282958480512944</span>
+        <span class="s2">"% wt"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"mean"</span><span class="p">:</span> <span class="mf">33.565804284497865</span><span class="p">,</span>
+            <span class="s2">"sd"</span><span class="p">:</span> <span class="mf">0.9282958480512944</span>
         <span class="p">}</span>
     <span class="p">},</span>
-    <span class="s2">&quot;excess_uptake&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;nmol&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="mf">33.3205494496749</span><span class="p">,</span>
-            <span class="s2">&quot;sd&quot;</span><span class="p">:</span> <span class="mf">0.9215130805969238</span>
+    <span class="s2">"excess_uptake"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"nmol"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"mean"</span><span class="p">:</span> <span class="mf">33.3205494496749</span><span class="p">,</span>
+            <span class="s2">"sd"</span><span class="p">:</span> <span class="mf">0.9215130805969238</span>
         <span class="p">},</span>
-        <span class="s2">&quot;mol/kg&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="mf">7.627031810114402</span><span class="p">,</span>
-            <span class="s2">&quot;sd&quot;</span><span class="p">:</span> <span class="mf">0.21093318373289396</span>
+        <span class="s2">"mol/kg"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"mean"</span><span class="p">:</span> <span class="mf">7.627031810114402</span><span class="p">,</span>
+            <span class="s2">"sd"</span><span class="p">:</span> <span class="mf">0.21093318373289396</span>
         <span class="p">},</span>
-        <span class="s2">&quot;mg/g&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="mf">335.6580428449786</span><span class="p">,</span>
-            <span class="s2">&quot;sd&quot;</span><span class="p">:</span> <span class="mf">9.282958480512942</span>
+        <span class="s2">"mg/g"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"mean"</span><span class="p">:</span> <span class="mf">335.6580428449786</span><span class="p">,</span>
+            <span class="s2">"sd"</span><span class="p">:</span> <span class="mf">9.282958480512942</span>
         <span class="p">},</span>
-        <span class="s2">&quot;cm^3 STP/gr&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="mf">170.95200203068663</span><span class="p">,</span>
-            <span class="s2">&quot;sd&quot;</span><span class="p">:</span> <span class="mf">4.727848388677955</span>
+        <span class="s2">"cm^3 STP/gr"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"mean"</span><span class="p">:</span> <span class="mf">170.95200203068663</span><span class="p">,</span>
+            <span class="s2">"sd"</span><span class="p">:</span> <span class="mf">4.727848388677955</span>
         <span class="p">},</span>
-        <span class="s2">&quot;cm^3 STP/cm^3&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="mf">150.469568974888</span><span class="p">,</span>
-            <span class="s2">&quot;sd&quot;</span><span class="p">:</span> <span class="mf">4.1613862415913205</span>
+        <span class="s2">"cm^3 STP/cm^3"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"mean"</span><span class="p">:</span> <span class="mf">150.469568974888</span><span class="p">,</span>
+            <span class="s2">"sd"</span><span class="p">:</span> <span class="mf">4.1613862415913205</span>
         <span class="p">},</span>
-        <span class="s2">&quot;% wt&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="mf">33.565804284497865</span><span class="p">,</span>
-            <span class="s2">&quot;sd&quot;</span><span class="p">:</span> <span class="mf">0.9282958480512944</span>
+        <span class="s2">"% wt"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"mean"</span><span class="p">:</span> <span class="mf">33.565804284497865</span><span class="p">,</span>
+            <span class="s2">"sd"</span><span class="p">:</span> <span class="mf">0.9282958480512944</span>
         <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -844,8 +845,8 @@ Simulation duration: 6:32:28.669883
     </aside>
   </div>
 </div><script src="../../_static/documentation_options.js?v=ebe9904d"></script>
-    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>

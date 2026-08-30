@@ -6,10 +6,10 @@
         <link rel="prefetch" href="../../_static/logo-light-mode.png" as="image">
         <link rel="prefetch" href="../../_static/logo-dark-mode.png" as="image">
 
-    <link rel="shortcut icon" href="../../_static/favicon.ico"><!-- Generated with Sphinx 9.1.0 and Furo 2025.09.25 -->
+    <link rel="shortcut icon" href="../../_static/favicon.ico"><!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
         <title>flames.widom - FLAMES v0.4.9</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=580074bf" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css" />
@@ -218,6 +218,7 @@
 <p class="caption" role="heading"><span class="caption-text">Tutorials: Advanced</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorials/advanced/hybrid_gcmc_md_mixed_calc.html">Mixed calculators for GCMC/MD simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/advanced/hybrid_tmmc_md.html">Hybrid TMMC/MD Simulation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Theoretical Background</span></p>
 <ul>
@@ -283,6 +284,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">flames</span><span class="w"> </span><span class="kn">import</span> <span class="n">VERSION</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flames.adsorbate</span><span class="w"> </span><span class="kn">import</span> <span class="n">Adsorbate</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">flames.base_simulator</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseSimulator</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">flames.logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">WidomLogger</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">flames.operations</span><span class="w"> </span><span class="kn">import</span> <span class="n">check_overlap_vesin</span><span class="p">,</span> <span class="n">random_mol_insertion</span>
@@ -292,7 +294,7 @@
 <div class="viewcode-block" id="Widom">
 <a class="viewcode-back" href="../../input_description/widom.html#flames.widom.Widom">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Widom</span><span class="p">(</span><span class="n">BaseSimulator</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Base class for Widom insertion method using ASE.</span>
 
 <span class="sd">    This class performs the Widom insertion method to calculate the enthalpy of adsorption and Henry coefficient of an adsorbate in a framework.</span>
@@ -305,7 +307,7 @@
 
 <span class="sd">    :param adsorbate_atoms:</span>
 <span class="sd">        The adsorbate molecule to be inserted into the framework.</span>
-<span class="sd">    :type adsorbate_atoms: ase.Atoms</span>
+<span class="sd">    :type adsorbate_atoms: Adsorbate</span>
 
 <span class="sd">    :param temperature:</span>
 <span class="sd">        Temperature of the ideal reservoir in Kelvin.</span>
@@ -331,17 +333,13 @@
 <span class="sd">        Factor to scale the Van der Waals radii. Default is ``0.6``.</span>
 <span class="sd">    :type vdw_factor: float, optional</span>
 
-<span class="sd">    :param max_overlap_tries:</span>
-<span class="sd">        Maximum number of tries to insert/move a molecule without overlap. Default is ``100``.</span>
-<span class="sd">    :type max_overlap_tries: int, optional</span>
-
 <span class="sd">    :param max_deltaE:</span>
 <span class="sd">        Maximum energy difference (in eV) to consider for acceptance criteria.</span>
 <span class="sd">        This is used to avoid overflow due to problematic calculations. Default is ``1.555`` eV (approx. 150 kJ/mol).</span>
 <span class="sd">    :type max_deltaE: float, optional</span>
 
 <span class="sd">    :param device:</span>
-<span class="sd">        Device to run the calculations on, either ``&#39;cpu&#39;`` or ``&#39;cuda&#39;``. Default is ``&#39;cpu&#39;``.</span>
+<span class="sd">        Device to run the calculations on, either ``'cpu'`` or ``'cuda'``. Default is ``'cpu'``.</span>
 <span class="sd">    :type device: str, optional</span>
 
 <span class="sd">    :param save_snapshots:</span>
@@ -355,6 +353,10 @@
 <span class="sd">    :param output_to_file:</span>
 <span class="sd">        If ``True``, writes the output to a file named ``Widom_Output.out`` in the ``results`` directory. Default is ``True``.</span>
 <span class="sd">    :type output_to_file: bool, optional</span>
+
+<span class="sd">    :param save_only_adsorbate:</span>
+<span class="sd">        If ``True``, saves only the adsorbate atoms in the trajectory file. Default is ``False``.</span>
+<span class="sd">    :type save_only_adsorbate: bool, optional</span>
 
 <span class="sd">    :param output_folder:</span>
 <span class="sd">        Folder to save the output files. If ``None``, a folder named ``results_&lt;T&gt;_&lt;P&gt;`` will be created.</span>
@@ -375,38 +377,38 @@
 <span class="sd">    :param automatic_supercell:</span>
 <span class="sd">        Whether to automatically create a supercell based on the cutoff radius. Default is ``True``.</span>
 <span class="sd">    :type automatic_supercell: bool, optional</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">framework_atoms</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">,</span>
-        <span class="n">adsorbate_atoms</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">,</span>
+        <span class="n">adsorbate_atoms</span><span class="p">:</span> <span class="n">Adsorbate</span><span class="p">,</span>
         <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">model</span><span class="p">:</span> <span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span><span class="p">,</span>
         <span class="n">vdw_radii</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">framework_energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">adsorbate_energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">vdw_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.6</span><span class="p">,</span>
-        <span class="n">max_overlap_tries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
         <span class="n">max_deltaE</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.555</span><span class="p">,</span>
-        <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+        <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"cpu"</span><span class="p">,</span>
         <span class="n">save_snapshots</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">save_rejected</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">output_to_file</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">save_only_adsorbate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">output_folder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">random_seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">cutoff_radius</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">6.0</span><span class="p">,</span>
         <span class="n">automatic_supercell</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize the Widom insertion simulation.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
             <span class="n">framework_atoms</span><span class="o">=</span><span class="n">framework_atoms</span><span class="p">,</span>
-            <span class="n">adsorbate_atoms</span><span class="o">=</span><span class="n">adsorbate_atoms</span><span class="p">,</span>
+            <span class="n">adsorbates</span><span class="o">=</span><span class="n">adsorbate_atoms</span><span class="p">,</span>
             <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">,</span>
             <span class="n">pressure</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
             <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
@@ -446,12 +448,23 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">dH_std_dv</span> <span class="o">=</span> <span class="mf">0.0</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">max_overlap_tries</span> <span class="o">=</span> <span class="n">max_overlap_tries</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">MAX_ENERGY_ERROR</span> <span class="o">=</span> <span class="mf">1e5</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">save_snapshots</span> <span class="o">=</span> <span class="n">save_snapshots</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_only_adsorbate</span> <span class="o">=</span> <span class="n">save_only_adsorbate</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Post-initialization to set up the Widom simulation.</span>
+<span class="sd">        """</span>
+
+        <span class="c1"># Check if there is only on adsorbate molecule</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"Widom insertion method currently supports only one adsorbate molecule."</span>
+            <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_compute_kH</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute the Henry coefficient (kH) using the Boltzmann factors.</span>
 
 <span class="sd">        kH = β &lt;exp(-β ΔE)&gt; / ρ [mol kg-1 Pa-1]</span>
@@ -459,14 +472,14 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">            float: The Henry coefficient in mol kg-1 Pa-1</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">return</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">boltz_fac</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">J</span> <span class="o">/</span> <span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">mol</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">framework_density</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">)</span>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_compute_kH_std</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute the standard deviation of the Henry coefficient (kH) using the Boltzmann factors.</span>
 
 <span class="sd">        kH = β &lt;exp(-β ΔE)&gt; / ρ [mol kg-1 Pa-1]</span>
@@ -479,7 +492,7 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">            float: The standard deviation of the Henry coefficient in mol kg-1 Pa-1</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># Calculate standard deviation using cross-validation</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">int_energy_list</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">n</span><span class="p">:</span>
@@ -495,7 +508,7 @@
         <span class="p">)</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_compute_dH</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute the enthalpy of adsorption (ΔH^0) using the integral energy list and Boltzmann factors.</span>
 
 <span class="sd">        ΔH^0 = &lt; ΔE * exp(-β ΔE) &gt; / &lt;exp(-β ΔE)&gt; - kB.T # [kJ/mol]</span>
@@ -503,14 +516,14 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">            float: The ΔH^0 energy in kJ/mol</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">int_energy_list</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">boltz_fac</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">boltz_fac</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
             <span class="o">-</span> <span class="n">units</span><span class="o">.</span><span class="n">kB</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span>
         <span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">kJ</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">mol</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_compute_dH_std</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute the standard deviation of the enthalpy of adsorption (ΔH^0) using the integral energy list and Boltzmann factors.</span>
 
 <span class="sd">        ΔH^0 = &lt; ΔE * exp(-β ΔE) &gt; / &lt;exp(-β ΔE)&gt; - kB.T # [kJ/mol]</span>
@@ -523,7 +536,7 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">            float: The standard deviation of ΔH^0 energy in kJ/mol</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">int_energy_list</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">n</span><span class="p">:</span>
             <span class="k">return</span> <span class="mf">0.0</span>
@@ -540,31 +553,31 @@
         <span class="p">)</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_save_rejected_if_enabled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms_trial</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Helper to conditionally write the rejected configuration to the trajectory.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        atoms_trial : ase.Atoms</span>
 <span class="sd">            The trial configuration that was rejected.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_rejected</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">rejected_trajectory</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">atoms_trial</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_save_state</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Save the current state of the simulation if the iteration matches the save frequency.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;int_energy_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">P</span><span class="si">:</span><span class="s2">.5f</span><span class="si">}</span><span class="s2">.npy&quot;</span><span class="p">),</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"int_energy_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">P</span><span class="si">:</span><span class="s2">.5f</span><span class="si">}</span><span class="s2">.npy"</span><span class="p">),</span>
             <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">int_energy_list</span><span class="p">),</span>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_save_minimum_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deltaE</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">atoms_trial</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Save the minimum energy configuration found during the simulation if the latest insertion has a lower energy.</span>
 
 <span class="sd">        Parameters</span>
@@ -573,30 +586,30 @@
 <span class="sd">            The change in energy associated with the latest insertion.</span>
 <span class="sd">        atoms_trial : ase.Atoms</span>
 <span class="sd">            The trial configuration of the latest insertion.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">if</span> <span class="n">deltaE</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimum_energy</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">minimum_configuration</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">minimum_energy</span> <span class="o">=</span> <span class="n">deltaE</span>
-            <span class="n">tmp_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;minimum_configuration_</span><span class="si">{</span><span class="n">deltaE</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">kJ</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">units</span><span class="o">.</span><span class="n">mol</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">.cif&quot;</span>
+            <span class="n">tmp_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"minimum_configuration_</span><span class="si">{</span><span class="n">deltaE</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">kJ</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">units</span><span class="o">.</span><span class="n">mol</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">.cif"</span>
 
             <span class="n">write</span><span class="p">(</span>
-                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="s2">&quot;Movies&quot;</span><span class="p">,</span> <span class="n">tmp_name</span><span class="p">)),</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="s2">"Movies"</span><span class="p">,</span> <span class="n">tmp_name</span><span class="p">)),</span>
                 <span class="n">atoms_trial</span><span class="p">,</span>
-                <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;cif&quot;</span><span class="p">,</span>
+                <span class="nb">format</span><span class="o">=</span><span class="s2">"cif"</span><span class="p">,</span>
             <span class="p">)</span>
 
 <div class="viewcode-block" id="Widom.update_statistics">
 <a class="viewcode-back" href="../../input_description/widom.html#flames.widom.Widom.update_statistics">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">update_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deltaE</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Update the statistics of the Widom insertion method after a new insertion.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        deltaE : float</span>
 <span class="sd">            The change in energy associated with the latest insertion.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">int_energy_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">int_energy_list</span><span class="p">,</span> <span class="n">deltaE</span><span class="p">)</span>
 
@@ -612,47 +625,47 @@
 
 <div class="viewcode-block" id="Widom.save_results">
 <a class="viewcode-back" href="../../input_description/widom.html#flames.widom.Widom.save_results">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Widom_Results.json&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"Widom_Results.json"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Save a json file with the main results of the simulation.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        file_name : str, optional</span>
-<span class="sd">            Name of the output json file (default is &#39;Widom_Results.json&#39;).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">            Name of the output json file (default is 'Widom_Results.json').</span>
+<span class="sd">        """</span>
 
         <span class="n">results</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;code_version&quot;</span><span class="p">:</span> <span class="n">VERSION</span><span class="p">,</span>
-            <span class="s2">&quot;random_seed&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_seed</span><span class="p">,</span>
-            <span class="s2">&quot;enlapsed_time_hours&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+            <span class="s2">"code_version"</span><span class="p">:</span> <span class="n">VERSION</span><span class="p">,</span>
+            <span class="s2">"random_seed"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_seed</span><span class="p">,</span>
+            <span class="s2">"enlapsed_time_hours"</span><span class="p">:</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
             <span class="o">/</span> <span class="mi">3600</span><span class="p">,</span>
-            <span class="s2">&quot;total_insertions&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">int_energy_list</span><span class="p">),</span>
-            <span class="s2">&quot;temperature_K&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
-            <span class="s2">&quot;henry_coefficient_mol_kg-1_Pa-1&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kH</span><span class="p">,</span>
-            <span class="s2">&quot;henry_coefficient_std_mol_kg-1_Pa-1&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kH_std_dv</span><span class="p">,</span>
-            <span class="s2">&quot;enthalpy_of_adsorption_kJ_mol-1&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dH</span><span class="p">,</span>
-            <span class="s2">&quot;enthalpy_of_adsorption_std_kJ_mol-1&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dH_std_dv</span><span class="p">,</span>
+            <span class="s2">"total_insertions"</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">int_energy_list</span><span class="p">),</span>
+            <span class="s2">"temperature_K"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+            <span class="s2">"henry_coefficient_mol_kg-1_Pa-1"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kH</span><span class="p">,</span>
+            <span class="s2">"henry_coefficient_std_mol_kg-1_Pa-1"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kH_std_dv</span><span class="p">,</span>
+            <span class="s2">"enthalpy_of_adsorption_kJ_mol-1"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dH</span><span class="p">,</span>
+            <span class="s2">"enthalpy_of_adsorption_std_kJ_mol-1"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dH_std_dv</span><span class="p">,</span>
         <span class="p">}</span>
 
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="n">file_name</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="n">file_name</span><span class="p">),</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Widom.restart">
 <a class="viewcode-back" href="../../input_description/widom.html#flames.widom.Widom.restart">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">restart</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Restart the simulation from the last state.</span>
 
 <span class="sd">        This method loads the last saved state from the trajectory file and restores the simulation to that state.</span>
 <span class="sd">        It also loads the uptake, total energy, and total adsorbates lists from the saved files if they exist.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Restarting simulation...&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Restarting simulation..."</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">int_energy_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;int_energy_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">P</span><span class="si">:</span><span class="s2">.5f</span><span class="si">}</span><span class="s2">.npy&quot;</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"int_energy_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">P</span><span class="si">:</span><span class="s2">.5f</span><span class="si">}</span><span class="s2">.npy"</span><span class="p">)</span>
         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">boltz_fac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">int_energy_list</span><span class="p">)</span>
@@ -672,7 +685,7 @@
 <div class="viewcode-block" id="Widom.try_insertion">
 <a class="viewcode-back" href="../../input_description/widom.html#flames.widom.Widom.try_insertion">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">try_insertion</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Try to insert a new adsorbate molecule into the framework.</span>
 <span class="sd">        This method randomly places the adsorbate in the framework and checks for van der Waals overlap.</span>
 <span class="sd">        If there is no overlap, it calculates the new potential energy and decides whether to accept the insertion</span>
@@ -684,33 +697,42 @@
 <span class="sd">            The change in energy associated with the insertion. If the insertion fails, returns a large value (1000.0).</span>
 <span class="sd">        atoms_trial : ase.Atoms</span>
 <span class="sd">            The trial configuration after the insertion attempt.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># Ensure atoms_trial is always defined so it can be returned in failure cases</span>
         <span class="n">atoms_trial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
-        <span class="n">atoms_trial</span> <span class="o">=</span> <span class="n">random_mol_insertion</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rnd_generator</span><span class="p">)</span>
+        <span class="n">atoms_trial</span> <span class="o">=</span> <span class="n">random_mol_insertion</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">structure</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rnd_generator</span>
+        <span class="p">)</span>
 
         <span class="n">overlaped</span> <span class="o">=</span> <span class="n">check_overlap_vesin</span><span class="p">(</span>
             <span class="n">atoms</span><span class="o">=</span><span class="n">atoms_trial</span><span class="p">,</span>
             <span class="n">group1_indices</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_atoms_framework</span><span class="p">),</span>
             <span class="n">group2_indices</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">n_atoms_framework</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_atoms_framework</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbate_atoms</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">n_atoms_framework</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">n_atoms_framework</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbate_atoms</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">],</span>
             <span class="p">),</span>
             <span class="n">vdw_radii</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vdw</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">overlaped</span><span class="p">:</span>
+            <span class="c1"># Add interaction energy to the info dictionary</span>
+            <span class="n">atoms_trial</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">"interaction_energy"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">MAX_ENERGY_ERROR</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">MAX_ENERGY_ERROR</span><span class="p">,</span> <span class="n">atoms_trial</span>
 
         <span class="c1"># Set the same calculator to the trial atoms</span>
         <span class="n">atoms_trial</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
 
         <span class="c1"># Calculate the interaction energy of the trial configuration</span>
-        <span class="n">deltaE</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">framework_energy</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_energy</span>
+        <span class="n">deltaE</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">atoms_trial</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>
+            <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">framework_energy</span>
+            <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_energy</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+        <span class="p">)</span>
 
         <span class="c1"># Add interaction energy to the info dictionary</span>
-        <span class="n">atoms_trial</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;interaction_energy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">deltaE</span>
+        <span class="n">atoms_trial</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">"interaction_energy"</span><span class="p">]</span> <span class="o">=</span> <span class="n">deltaE</span>
 
         <span class="k">return</span> <span class="n">deltaE</span><span class="p">,</span> <span class="n">atoms_trial</span></div>
 
@@ -718,14 +740,14 @@
 <div class="viewcode-block" id="Widom.step">
 <a class="viewcode-back" href="../../input_description/widom.html#flames.widom.Widom.step">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iteration</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run a single iteration of the Widom insertion method.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        iteration : int</span>
 <span class="sd">            The current iteration number.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">actual_iteration</span> <span class="o">=</span> <span class="n">iteration</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_iteration</span>
 
         <span class="n">step_time_start</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
@@ -735,7 +757,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_save_minimum_configuration</span><span class="p">(</span><span class="n">deltaE</span><span class="p">,</span> <span class="n">atoms_trial</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_snapshots</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">atoms_trial</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_only_adsorbate</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">atoms_trial</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">n_atoms_framework</span> <span class="p">:])</span>  <span class="c1"># type: ignore</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">atoms_trial</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
 
         <span class="c1"># Append int_energy_list</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_statistics</span><span class="p">(</span><span class="n">deltaE</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
@@ -759,7 +784,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">print_run_header</span><span class="p">()</span>
 
-        <span class="k">for</span> <span class="n">iteration</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">N</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">disable</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Widom Step&quot;</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">iteration</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">N</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">disable</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="s2">"Widom Step"</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">iteration</span><span class="p">)</span></div>
 </div>
 
@@ -803,8 +828,8 @@
     </aside>
   </div>
 </div><script src="../../_static/documentation_options.js?v=ebe9904d"></script>
-    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>

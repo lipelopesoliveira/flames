@@ -53,6 +53,7 @@ tutorials/calculators/cp2k
 :caption: Tutorials: Advanced
 
 tutorials/advanced/hybrid_gcmc_md_mixed_calc
+tutorials/advanced/hybrid_tmmc_md
 ```
 
 ```{toctree}

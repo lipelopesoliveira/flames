@@ -7,10 +7,10 @@
         <link rel="prefetch" href="../../_static/logo-light-mode.png" as="image">
         <link rel="prefetch" href="../../_static/logo-dark-mode.png" as="image">
 
-    <link rel="shortcut icon" href="../../_static/favicon.ico"><!-- Generated with Sphinx 9.1.0 and Furo 2025.09.25 -->
+    <link rel="shortcut icon" href="../../_static/favicon.ico"><!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
         <title>Widom insertion - FLAMES v0.4.9</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=580074bf" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css" />
@@ -219,6 +219,7 @@
 <p class="caption" role="heading"><span class="caption-text">Tutorials: Advanced</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/hybrid_gcmc_md_mixed_calc.html">Mixed calculators for GCMC/MD simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/hybrid_tmmc_md.html">Hybrid TMMC/MD Simulation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Theoretical Background</span></p>
 <ul>
@@ -307,24 +308,24 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">flames.widom</span><span class="w"> </span><span class="kn">import</span> <span class="n">Widom</span>
 
-<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">UserWarning</span><span class="p">)</span>
-<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">RuntimeWarning</span><span class="p">)</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">UserWarning</span><span class="p">)</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">RuntimeWarning</span><span class="p">)</span>
 
-<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;KMP_DUPLICATE_LIB_OK&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;TRUE&quot;</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"KMP_DUPLICATE_LIB_OK"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"TRUE"</span>
 
-<span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span>
+<span class="n">device</span> <span class="o">=</span> <span class="s2">"cuda"</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">"cpu"</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">mace_mp</span><span class="p">(</span>
-    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;medium-0b2&quot;</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">"medium-0b2"</span><span class="p">,</span>
     <span class="n">dispersion</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">damping</span><span class="o">=</span><span class="s2">&quot;zero&quot;</span><span class="p">,</span>  <span class="c1"># choices: [&quot;zero&quot;, &quot;bj&quot;, &quot;zerom&quot;, &quot;bjm&quot;]</span>
-    <span class="n">dispersion_xc</span><span class="o">=</span><span class="s2">&quot;pbe&quot;</span><span class="p">,</span>
-    <span class="n">default_dtype</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span><span class="p">,</span>
+    <span class="n">damping</span><span class="o">=</span><span class="s2">"zero"</span><span class="p">,</span>  <span class="c1"># choices: ["zero", "bj", "zerom", "bjm"]</span>
+    <span class="n">dispersion_xc</span><span class="o">=</span><span class="s2">"pbe"</span><span class="p">,</span>
+    <span class="n">default_dtype</span><span class="o">=</span><span class="s2">"float32"</span><span class="p">,</span>
     <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">FrameworkPath</span> <span class="o">=</span> <span class="s2">&quot;mg-mof-74.cif&quot;</span>
-<span class="n">AdsorbatePath</span> <span class="o">=</span> <span class="s2">&quot;co2.xyz&quot;</span>
+<span class="n">FrameworkPath</span> <span class="o">=</span> <span class="s2">"mg-mof-74.cif"</span>
+<span class="n">AdsorbatePath</span> <span class="o">=</span> <span class="s2">"co2.xyz"</span>
 
 <span class="c1"># Load the framework structure</span>
 <span class="n">framework</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="n">FrameworkPath</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
@@ -376,10 +377,10 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">flames.widom</span><span class="w"> </span><span class="kn">import</span> <span class="n">Widom</span>
 
-<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">UserWarning</span><span class="p">)</span>
-<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">RuntimeWarning</span><span class="p">)</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">UserWarning</span><span class="p">)</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">RuntimeWarning</span><span class="p">)</span>
 
-<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;KMP_DUPLICATE_LIB_OK&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;TRUE&quot;</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"KMP_DUPLICATE_LIB_OK"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"TRUE"</span>
 </pre></div>
 </div>
 <p>This first part only import the libraries and make the code to ignore a few non-important warnings from mace.
@@ -389,14 +390,14 @@ The <code class="docutils literal notranslate"><span class="pre">os.environ[&quo
 <hr class="docutils" />
 <section id="defining-the-calculator">
 <h3>Defining the calculator<a class="headerlink" href="#defining-the-calculator" title="Link to this heading">¶</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">device</span> <span class="o">=</span> <span class="s2">"cuda"</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">"cpu"</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">mace_mp</span><span class="p">(</span>
-    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;medium-0b2&quot;</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">"medium-0b2"</span><span class="p">,</span>
     <span class="n">dispersion</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">damping</span><span class="o">=</span><span class="s2">&quot;zero&quot;</span><span class="p">,</span>  <span class="c1"># choices: [&quot;zero&quot;, &quot;bj&quot;, &quot;zerom&quot;, &quot;bjm&quot;]</span>
-    <span class="n">dispersion_xc</span><span class="o">=</span><span class="s2">&quot;pbe&quot;</span><span class="p">,</span>
-    <span class="n">default_dtype</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span><span class="p">,</span>
+    <span class="n">damping</span><span class="o">=</span><span class="s2">"zero"</span><span class="p">,</span>  <span class="c1"># choices: ["zero", "bj", "zerom", "bjm"]</span>
+    <span class="n">dispersion_xc</span><span class="o">=</span><span class="s2">"pbe"</span><span class="p">,</span>
+    <span class="n">default_dtype</span><span class="o">=</span><span class="s2">"float32"</span><span class="p">,</span>
     <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
@@ -408,8 +409,8 @@ If you are running on GPU (which is extremelly recommended) you need to define t
 </section>
 <section id="reading-the-structure">
 <h3>Reading the structure<a class="headerlink" href="#reading-the-structure" title="Link to this heading">¶</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">FrameworkPath</span> <span class="o">=</span> <span class="s2">&quot;mg-mof-74.cif&quot;</span>
-<span class="n">AdsorbatePath</span> <span class="o">=</span> <span class="s2">&quot;co2.xyz&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">FrameworkPath</span> <span class="o">=</span> <span class="s2">"mg-mof-74.cif"</span>
+<span class="n">AdsorbatePath</span> <span class="o">=</span> <span class="s2">"co2.xyz"</span>
 
 <span class="c1"># Load the framework structure</span>
 <span class="n">framework</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="n">FrameworkPath</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
@@ -424,7 +425,7 @@ Here, just make sure that the framework file is in a file format that is compati
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ase.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">read</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ase.visualize</span><span class="w"> </span><span class="kn">import</span> <span class="n">view</span>
 
-<span class="n">FrameworkPath</span> <span class="o">=</span> <span class="s2">&quot;mg-mof-74.cif&quot;</span>
+<span class="n">FrameworkPath</span> <span class="o">=</span> <span class="s2">"mg-mof-74.cif"</span>
 
 <span class="c1"># Load the framework structure</span>
 <span class="n">framework</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="n">FrameworkPath</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
@@ -652,15 +653,15 @@ Simulation duration: 0:13:37.214066
 <p>Finally the simulation result is printed, with the average values reported.</p>
 <p>Also, a json file is saved with the main results, that can be easily read and processed for further analysis.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;code_version&quot;</span><span class="p">:</span> <span class="s2">&quot;0.4.4&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;random_seed&quot;</span><span class="p">:</span> <span class="mi">42</span><span class="p">,</span>
-    <span class="s2">&quot;enlapsed_time_hours&quot;</span><span class="p">:</span> <span class="mf">0.22700391277777776</span><span class="p">,</span>
-    <span class="s2">&quot;total_insertions&quot;</span><span class="p">:</span> <span class="mi">3001</span><span class="p">,</span>
-    <span class="s2">&quot;temperature_K&quot;</span><span class="p">:</span> <span class="mf">298.0</span><span class="p">,</span>
-    <span class="s2">&quot;henry_coefficient_mol_kg-1_Pa-1&quot;</span><span class="p">:</span> <span class="mf">2.044178342815808</span><span class="p">,</span>
-    <span class="s2">&quot;henry_coefficient_std_mol_kg-1_Pa-1&quot;</span><span class="p">:</span> <span class="mf">0.3335905351383779</span><span class="p">,</span>
-    <span class="s2">&quot;enthalpy_of_adsorption_kJ_mol-1&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">53.78390928504431</span><span class="p">,</span>
-    <span class="s2">&quot;enthalpy_of_adsorption_std_kJ_mol-1&quot;</span><span class="p">:</span> <span class="mf">0.3488799686455756</span>
+    <span class="s2">"code_version"</span><span class="p">:</span> <span class="s2">"0.4.4"</span><span class="p">,</span>
+    <span class="s2">"random_seed"</span><span class="p">:</span> <span class="mi">42</span><span class="p">,</span>
+    <span class="s2">"enlapsed_time_hours"</span><span class="p">:</span> <span class="mf">0.22700391277777776</span><span class="p">,</span>
+    <span class="s2">"total_insertions"</span><span class="p">:</span> <span class="mi">3001</span><span class="p">,</span>
+    <span class="s2">"temperature_K"</span><span class="p">:</span> <span class="mf">298.0</span><span class="p">,</span>
+    <span class="s2">"henry_coefficient_mol_kg-1_Pa-1"</span><span class="p">:</span> <span class="mf">2.044178342815808</span><span class="p">,</span>
+    <span class="s2">"henry_coefficient_std_mol_kg-1_Pa-1"</span><span class="p">:</span> <span class="mf">0.3335905351383779</span><span class="p">,</span>
+    <span class="s2">"enthalpy_of_adsorption_kJ_mol-1"</span><span class="p">:</span> <span class="o">-</span><span class="mf">53.78390928504431</span><span class="p">,</span>
+    <span class="s2">"enthalpy_of_adsorption_std_kJ_mol-1"</span><span class="p">:</span> <span class="mf">0.3488799686455756</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -774,8 +775,8 @@ Simulation duration: 0:13:37.214066
     </aside>
   </div>
 </div><script src="../../_static/documentation_options.js?v=ebe9904d"></script>
-    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>

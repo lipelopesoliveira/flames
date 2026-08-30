@@ -6,10 +6,10 @@
         <link rel="prefetch" href="../../_static/logo-light-mode.png" as="image">
         <link rel="prefetch" href="../../_static/logo-dark-mode.png" as="image">
 
-    <link rel="shortcut icon" href="../../_static/favicon.ico"><!-- Generated with Sphinx 9.1.0 and Furo 2025.09.25 -->
+    <link rel="shortcut icon" href="../../_static/favicon.ico"><!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
         <title>flames.base_simulator - FLAMES v0.4.9</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=580074bf" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css" />
@@ -218,6 +218,7 @@
 <p class="caption" role="heading"><span class="caption-text">Tutorials: Advanced</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorials/advanced/hybrid_gcmc_md_mixed_calc.html">Mixed calculators for GCMC/MD simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/advanced/hybrid_tmmc_md.html">Hybrid TMMC/MD Simulation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Theoretical Background</span></p>
 <ul>
@@ -272,7 +273,6 @@
         <article role="main" id="furo-main-content">
           <h1>Source code for flames.base_simulator</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TextIO</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">ase</span>
@@ -281,15 +281,21 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">ase.build</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_supercell</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ase.calculators</span><span class="w"> </span><span class="kn">import</span> <span class="n">calculator</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ase.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">Trajectory</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.io.trajectory</span><span class="w"> </span><span class="kn">import</span> <span class="n">TrajectoryReader</span><span class="p">,</span> <span class="n">TrajectoryWriter</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ase.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">LBFGS</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">flames.adsorbate</span><span class="w"> </span><span class="kn">import</span> <span class="n">Adsorbate</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">flames.ase_utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">crystalOptimization</span><span class="p">,</span>
     <span class="n">nPT_Berendsen</span><span class="p">,</span>
     <span class="n">nPT_MTKNPT</span><span class="p">,</span>
     <span class="n">nPT_NoseHoover</span><span class="p">,</span>
     <span class="n">nVT_Berendsen</span><span class="p">,</span>
+    <span class="n">nVT_Langevin</span><span class="p">,</span>
+    <span class="n">nVT_NoseHoover</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flames.logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseLogger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flames.md</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_md_simulation</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">flames.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">calculate_unit_cells</span><span class="p">,</span>
     <span class="n">get_density</span><span class="p">,</span>
@@ -300,7 +306,7 @@
 <div class="viewcode-block" id="BaseSimulator">
 <a class="viewcode-back" href="../../input_description/base_simulator.html#flames.base_simulator.BaseSimulator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BaseSimulator</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    This class handles all base parameters for the simulations.</span>
 <span class="sd">    Separates the basic logic used in the simulations from the specific implementation details.</span>
 
@@ -326,7 +332,7 @@
 <span class="sd">    :type pressure: float</span>
 
 <span class="sd">    :param device:</span>
-<span class="sd">        Device to run the simulation on, e.g., ``&#39;cpu&#39;`` or ``&#39;cuda&#39;``.</span>
+<span class="sd">        Device to run the simulation on, e.g., ``'cpu'`` or ``'cuda'``.</span>
 <span class="sd">    :type device: str</span>
 
 <span class="sd">    :param vdw_radii:</span>
@@ -388,13 +394,13 @@
 <span class="sd">    :param automatic_supercell:</span>
 <span class="sd">        If ``True``, automatically creates a supercell based on the cutoff radius. Default is ``True``.</span>
 <span class="sd">    :type automatic_supercell: bool, optional</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">model</span><span class="p">:</span> <span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span><span class="p">,</span>
         <span class="n">framework_atoms</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">,</span>
-        <span class="n">adsorbate_atoms</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">,</span>
+        <span class="n">adsorbates</span><span class="p">:</span> <span class="n">Adsorbate</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Adsorbate</span><span class="p">],</span>
         <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">pressure</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">device</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -423,26 +429,29 @@
         <span class="k">if</span> <span class="n">output_folder</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span> <span class="o">=</span> <span class="n">output_folder</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;results_</span><span class="si">{</span><span class="n">temperature</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">pressure</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"results_</span><span class="si">{</span><span class="n">temperature</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">pressure</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span>
+
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="s2">&quot;Movies&quot;</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="s2">"Movies"</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">output_to_file</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">out_file</span><span class="p">:</span> <span class="n">TextIO</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="s2">&quot;Output.out&quot;</span><span class="p">),</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">out_file</span><span class="p">:</span> <span class="n">TextIO</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="s2">"Output.out"</span><span class="p">),</span> <span class="s2">"a"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">out_file</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="s2">&quot;Movies&quot;</span><span class="p">,</span> <span class="s2">&quot;Trajectory.traj&quot;</span><span class="p">),</span>
-            <span class="s2">&quot;a&quot;</span><span class="p">,</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="s2">"Movies"</span><span class="p">,</span> <span class="s2">"Trajectory.traj"</span><span class="p">),</span>
+            <span class="s2">"a"</span><span class="p">,</span>
         <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">BaseLogger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">out_file</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">save_rejected</span> <span class="o">=</span> <span class="n">save_rejected</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_rejected</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">rejected_trajectory</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span>
-                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="s2">&quot;Movies&quot;</span><span class="p">,</span> <span class="s2">&quot;Trajectory_rejected.traj&quot;</span><span class="p">),</span>
-                <span class="s2">&quot;a&quot;</span><span class="p">,</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="s2">"Movies"</span><span class="p">,</span> <span class="s2">"Trajectory_rejected.traj"</span><span class="p">),</span>
+                <span class="s2">"a"</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">save_every</span> <span class="o">=</span> <span class="n">save_frequency</span>
@@ -455,7 +464,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">set_framework</span><span class="p">(</span><span class="n">framework_atoms</span><span class="p">,</span> <span class="n">framework_energy</span><span class="o">=</span><span class="n">framework_energy</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
 
         <span class="k">if</span> <span class="n">framework_energy</span><span class="p">:</span>
@@ -463,7 +472,11 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">framework_energy</span>  <span class="c1"># type: ignore</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_adsorbate</span><span class="p">(</span><span class="n">adsorbate_atoms</span><span class="p">,</span> <span class="n">adsorbate_energy</span><span class="o">=</span><span class="n">adsorbate_energy</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_adsorbates</span><span class="p">(</span><span class="n">adsorbates</span><span class="p">,</span> <span class="n">adsorbate_energy</span><span class="o">=</span><span class="n">adsorbate_energy</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mol_fractions</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">adsorbate</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">adsorbate</span><span class="o">.</span><span class="n">mol_fraction</span> <span class="k">for</span> <span class="n">adsorbate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span>
+        <span class="p">}</span>
 
         <span class="c1"># General definitions for simulation parameters</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">T</span> <span class="o">=</span> <span class="n">temperature</span>
@@ -483,12 +496,35 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">ideal_supercell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_ideal_supercell</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">conv_factors</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;nmol&quot;</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ideal_supercell</span><span class="p">),</span>
-            <span class="s2">&quot;mol/kg&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">mol</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_framework_mass</span><span class="p">(),</span>
-            <span class="s2">&quot;mg/g&quot;</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_mass</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_framework_mass</span><span class="p">(),</span>
-            <span class="s2">&quot;cm^3 STP/gr&quot;</span><span class="p">:</span> <span class="n">mol2cm3</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">mol</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_framework_mass</span><span class="p">()</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">,</span>
-            <span class="s2">&quot;cm^3 STP/cm^3&quot;</span><span class="p">:</span> <span class="mf">1e6</span> <span class="o">*</span> <span class="n">mol2cm3</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">mol</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1e-8</span><span class="o">**</span><span class="mi">3</span><span class="p">)),</span>
-            <span class="s2">&quot;% wt&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_mass</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_framework_mass</span><span class="p">()</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span>
+            <span class="s2">"nmol"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="n">adsorbate</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ideal_supercell</span><span class="p">)</span> <span class="k">for</span> <span class="n">adsorbate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span>
+            <span class="p">},</span>
+            <span class="s2">"mol/kg"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="n">adsorbate</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">mol</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_framework_mass</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">adsorbate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span>
+            <span class="p">},</span>
+            <span class="s2">"mg/g"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="n">adsorbate</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_mass</span><span class="p">[</span><span class="n">adsorbate</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">)</span>
+                <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_framework_mass</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">adsorbate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span>
+            <span class="p">},</span>
+            <span class="s2">"cm^3 STP/gr"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="n">adsorbate</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">mol2cm3</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">mol</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_framework_mass</span><span class="p">()</span> <span class="o">*</span> <span class="mf">1e3</span>
+                <span class="k">for</span> <span class="n">adsorbate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span>
+            <span class="p">},</span>
+            <span class="s2">"cm^3 STP/cm^3"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="n">adsorbate</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="mf">1e6</span>
+                <span class="o">*</span> <span class="n">mol2cm3</span>
+                <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">mol</span>
+                <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1e-8</span><span class="o">**</span><span class="mi">3</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">adsorbate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span>
+            <span class="p">},</span>
+            <span class="s2">"% wt"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="n">adsorbate</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_mass</span><span class="p">[</span><span class="n">adsorbate</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_framework_mass</span><span class="p">()</span> <span class="o">*</span> <span class="mi">100</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">adsorbate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span>
+            <span class="p">},</span>
         <span class="p">}</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">vdw</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span>
@@ -502,7 +538,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">max_deltaE</span> <span class="o">=</span> <span class="n">max_deltaE</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_save_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actual_iteration</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Save the trajectory of the simulation to a trajectory file if</span>
 <span class="sd">        the current iteration is a multiple of the save frequency.</span>
 
@@ -510,49 +546,49 @@
 <span class="sd">                ----------</span>
 <span class="sd">                actual_iteration : int</span>
 <span class="sd">                    The current iteration number of the simulation.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">if</span> <span class="n">actual_iteration</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_every</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="c1"># Workaround to save the labels in Trajectory.info since ASE&#39;s Trajectory does not support custom arrays</span>
-            <span class="k">if</span> <span class="s2">&quot;labels&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">arrays</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;labels&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">get_array</span><span class="p">(</span><span class="s2">&quot;labels&quot;</span><span class="p">)</span>
+            <span class="c1"># Workaround to save the labels in Trajectory.info since ASE's Trajectory does not support custom arrays</span>
+            <span class="k">if</span> <span class="s2">"labels"</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">arrays</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">"labels"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">get_array</span><span class="p">(</span><span class="s2">"labels"</span><span class="p">)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_save_rejected</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms_trial</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Helper to conditionally write the rejected configuration to the trajectory.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        atoms_trial : ase.Atoms</span>
 <span class="sd">            The trial configuration that was rejected.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_rejected</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">rejected_trajectory</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">atoms_trial</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_ideal_supercell</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the ideal supercell dimensions based on the cutoff radius.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        np.ndarray</span>
 <span class="sd">            An array of three integers representing the number of unit cells in each dimension.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">calculate_unit_cells</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">get_cell</span><span class="p">(),</span> <span class="n">cutoff</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cutoff</span><span class="p">)</span>
 
 <div class="viewcode-block" id="BaseSimulator.get_framework_mass">
 <a class="viewcode-back" href="../../input_description/base_simulator.html#flames.base_simulator.BaseSimulator.get_framework_mass">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_framework_mass</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Calculate the mass of the framework in kg.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        float</span>
 <span class="sd">            The mass of the framework in kg.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">get_masses</span><span class="p">())</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">kg</span><span class="p">)</span></div>
 
 
@@ -561,7 +597,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">set_framework</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">framework_atoms</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">,</span> <span class="n">framework_energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set the framework structure for the simulation.</span>
 
 <span class="sd">        Parameters</span>
@@ -570,7 +606,7 @@
 <span class="sd">            The new framework structure as an ASE Atoms object.</span>
 <span class="sd">        framework_energy : float or None, optional</span>
 <span class="sd">            The energy of the framework in eV. If None, the energy will be calculated using the provided model.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">framework</span> <span class="o">=</span> <span class="n">framework_atoms</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">set_tags</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">))</span>
 
@@ -599,54 +635,105 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">framework_density</span> <span class="o">=</span> <span class="n">get_density</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="BaseSimulator.set_adsorbate">
-<a class="viewcode-back" href="../../input_description/base_simulator.html#flames.base_simulator.BaseSimulator.set_adsorbate">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">set_adsorbate</span><span class="p">(</span>
+<div class="viewcode-block" id="BaseSimulator.set_adsorbates">
+<a class="viewcode-back" href="../../input_description/base_simulator.html#flames.base_simulator.BaseSimulator.set_adsorbates">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_adsorbates</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">adsorbate_atoms</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">,</span>
-        <span class="n">adsorbate_energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">n_adsorbates</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">adsorbates</span><span class="p">:</span> <span class="n">Adsorbate</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Adsorbate</span><span class="p">],</span>
+        <span class="n">adsorbate_energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set the adsorbate structure for the simulation.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        adsorbate_atoms : ase.Atoms</span>
-<span class="sd">            The new adsorbate structure as an ASE Atoms object.</span>
+<span class="sd">        adsorbates : Adsorbate</span>
+<span class="sd">            The list of adsorbate structure(s) as an Adsorbate object.</span>
 <span class="sd">        adsorbate_energy : float or None, optional</span>
 <span class="sd">            The energy of the adsorbate in eV. If None, the energy will be calculated using the provided model.</span>
 <span class="sd">        n_adsorbates : int</span>
 <span class="sd">            Number of adsorbate molecules in the framework.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate</span> <span class="o">=</span> <span class="n">adsorbate_atoms</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate</span><span class="o">.</span><span class="n">set_tags</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbate</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate</span><span class="o">.</span><span class="n">set_cell</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">get_cell</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate</span><span class="o">.</span><span class="n">set_pbc</span><span class="p">([</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">])</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">adsorbates</span><span class="p">,</span> <span class="p">(</span><span class="n">Adsorbate</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"Adsorbates must be an Adsorbate object or a list of Adsorbate objects. Not "</span><span class="p">,</span>
+                <span class="nb">type</span><span class="p">(</span><span class="n">adsorbates</span><span class="p">),</span>
+            <span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">adsorbate_energy</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">adsorbates</span><span class="p">,</span> <span class="n">Adsorbate</span><span class="p">):</span>
+            <span class="n">adsorbates</span> <span class="o">=</span> <span class="p">[</span><span class="n">adsorbates</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span> <span class="o">=</span> <span class="n">adsorbates</span>
+
+        <span class="c1"># Check if mol fractions sum to 1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_mol_fractions</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">adsorbate</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">adsorbate</span><span class="o">.</span><span class="n">mol_fraction</span> <span class="k">for</span> <span class="n">adsorbate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_mol_fractions</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span> <span class="mf">1.0</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Mole fractions must sum to 1. Current sum: </span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_mol_fractions</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="si">}</span><span class="s2">"</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Set tags and properties for each adsorbate</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">adsorbate</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">):</span>
+            <span class="n">adsorbate</span><span class="o">.</span><span class="n">tag</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">adsorbate</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">set_cell</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">get_cell</span><span class="p">())</span>  <span class="c1"># type: ignore</span>
+            <span class="n">adsorbate</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">set_pbc</span><span class="p">([</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">])</span>  <span class="c1"># type: ignore</span>
+            <span class="n">adsorbate</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>  <span class="c1"># type: ignore</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">adsorbate_energy</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">"If multiple adsorbates are provided, adsorbate_energy must be a list or dict."</span>
+                <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_energy</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">adsorbate_energy</span><span class="p">}</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">adsorbate_energy</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">adsorbate_energy</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">"Length of adsorbate_energy list must match the number of adsorbates."</span>
+                <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_energy</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">adsorbate</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">energy</span>
+                <span class="k">for</span> <span class="n">adsorbate</span><span class="p">,</span> <span class="n">energy</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">,</span> <span class="n">adsorbate_energy</span><span class="p">)</span>
+            <span class="p">}</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">adsorbate_energy</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">adsorbate_energy</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">(</span><span class="n">adsorbate</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">adsorbate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">"Keys of adsorbate_energy dict must match the names of the adsorbates."</span>
+                <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_energy</span> <span class="o">=</span> <span class="n">adsorbate_energy</span>
+
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_energy</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">adsorbate</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">adsorbate</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+                <span class="k">for</span> <span class="n">adsorbate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span>
+            <span class="p">}</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbate_atoms</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbate</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_mass</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbate</span><span class="o">.</span><span class="n">get_masses</span><span class="p">())</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">kg</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">n_atoms_framework</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbate_atoms</span> <span class="o">*</span> <span class="n">n_adsorbates</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbates</span> <span class="o">=</span> <span class="n">n_adsorbates</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbate_atoms</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">adsorbate</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">adsorbate</span><span class="o">.</span><span class="n">structure</span><span class="p">)</span> <span class="k">for</span> <span class="n">adsorbate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_mass</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">adsorbate</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">adsorbate</span><span class="o">.</span><span class="n">get_molar_mass</span><span class="p">()</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">kg</span> <span class="k">for</span> <span class="n">adsorbate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span>
+        <span class="p">}</span></div>
 
+
+        <span class="c1"># self.n_atoms_framework -= self.n_adsorbate_atoms * n_adsorbates</span>
+        <span class="c1"># self.n_adsorbates = n_adsorbates</span>
 
 <div class="viewcode-block" id="BaseSimulator.set_state">
 <a class="viewcode-back" href="../../input_description/base_simulator.html#flames.base_simulator.BaseSimulator.set_state">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set the current state of the simulation.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        state : ase.Atoms</span>
 <span class="sd">            The current state of the simulation as an ASE Atoms object.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span></div>
@@ -663,7 +750,7 @@
         <span class="n">symm_tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-3</span><span class="p">,</span>
         <span class="n">max_force</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Optimize the framework structure using the provided calculator.</span>
 
 <span class="sd">        Parameters</span>
@@ -677,14 +764,14 @@
 <span class="sd">        -------</span>
 <span class="sd">        ase.Atoms</span>
 <span class="sd">            The optimized framework structure.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="nb">print</span><span class="p">(</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">            </span><span class="sd">"""</span>
 <span class="sd">=======================================================================================================</span>
 <span class="sd">Start optimizing framework structure...</span>
 <span class="sd">=======================================================================================================</span>
-<span class="sd">              &quot;&quot;&quot;</span><span class="p">,</span>
+<span class="sd">              """</span><span class="p">,</span>
             <span class="n">file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">out_file</span><span class="p">,</span>
             <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="p">)</span>
@@ -715,7 +802,7 @@
 <div class="viewcode-block" id="BaseSimulator.optimize_adsorbate">
 <a class="viewcode-back" href="../../input_description/base_simulator.html#flames.base_simulator.BaseSimulator.optimize_adsorbate">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">optimize_adsorbate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">max_force</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Optimize the adsorbate structure using the provided calculator.</span>
 
 <span class="sd">        Parameters</span>
@@ -731,40 +818,176 @@
 <span class="sd">        -------</span>
 <span class="sd">        ase.Atoms</span>
 <span class="sd">            The optimized adsorbate structure.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="nb">print</span><span class="p">(</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">            </span><span class="sd">"""</span>
 <span class="sd">=======================================================================================================</span>
 <span class="sd">Start optimizing adsorbate structure...</span>
 <span class="sd">=======================================================================================================</span>
-<span class="sd">              &quot;&quot;&quot;</span><span class="p">,</span>
+<span class="sd">              """</span><span class="p">,</span>
             <span class="n">file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">out_file</span><span class="p">,</span>
             <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="n">resultsDict</span><span class="p">,</span> <span class="n">optAdsorbate</span> <span class="o">=</span> <span class="n">crystalOptimization</span><span class="p">(</span>
-            <span class="n">atoms_in</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbate</span><span class="p">,</span>
-            <span class="n">calculator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
-            <span class="n">optimizer</span><span class="o">=</span><span class="n">LBFGS</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
-            <span class="n">fmax</span><span class="o">=</span><span class="n">max_force</span><span class="p">,</span>
-            <span class="n">opt_cell</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">fix_symmetry</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">hydrostatic_strain</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="n">constant_volume</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="n">scalar_pressure</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">P</span><span class="p">,</span>
-            <span class="n">max_steps</span><span class="o">=</span><span class="n">max_steps</span><span class="p">,</span>
-            <span class="n">trajectory</span><span class="o">=</span><span class="s2">&quot;Adsorbate_Optimization.traj&quot;</span><span class="p">,</span>
-            <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="n">symm_tol</span><span class="o">=</span><span class="mf">1e3</span><span class="p">,</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">)):</span>
+
+            <span class="n">resultsDict</span><span class="p">,</span> <span class="n">optAdsorbate</span> <span class="o">=</span> <span class="n">crystalOptimization</span><span class="p">(</span>
+                <span class="n">atoms_in</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">structure</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
+                <span class="n">calculator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+                <span class="n">optimizer</span><span class="o">=</span><span class="n">LBFGS</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
+                <span class="n">fmax</span><span class="o">=</span><span class="n">max_force</span><span class="p">,</span>
+                <span class="n">opt_cell</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">fix_symmetry</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">hydrostatic_strain</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">constant_volume</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">scalar_pressure</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">P</span><span class="p">,</span>
+                <span class="n">max_steps</span><span class="o">=</span><span class="n">max_steps</span><span class="p">,</span>
+                <span class="n">trajectory</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Adsorbate_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_Optimization.traj"</span><span class="p">,</span>
+                <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">symm_tol</span><span class="o">=</span><span class="mf">1e3</span><span class="p">,</span>
+                <span class="n">out_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">out_file</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
+            <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">structure</span> <span class="o">=</span> <span class="n">optAdsorbate</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">set_constraint</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">set_cell</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">get_cell</span><span class="p">())</span>  <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>  <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_energy</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+            <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="BaseSimulator.md">
+<a class="viewcode-back" href="../../input_description/base_simulator.html#flames.base_simulator.BaseSimulator.md">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">md</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">nsteps</span><span class="p">,</span>
+        <span class="n">atoms</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">time_step</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">ensemble</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"NVT"</span><span class="p">,</span>
+        <span class="n">thermostat</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"NoseHoover"</span><span class="p">,</span>
+        <span class="n">output_interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="n">movie_interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="n">calculator</span><span class="p">:</span> <span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">update_state</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">trajectory_file</span><span class="p">:</span> <span class="n">TrajectoryReader</span> <span class="o">|</span> <span class="n">TrajectoryWriter</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">set_momenta</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Run a molecular dynamics simulation using the specified ensemble and thermostat.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nsteps : int</span>
+<span class="sd">            Number of steps to run the MD simulation.</span>
+<span class="sd">        time_step : float, optional</span>
+<span class="sd">            Time step for the MD simulation in femtoseconds (default is 0.5 fs).</span>
+<span class="sd">        ensemble : str, optional</span>
+<span class="sd">            The ensemble to use for the MD simulation (default is "NVT").</span>
+<span class="sd">            Can be one of "NVT" or "NPT".</span>
+<span class="sd">        thermostat : str, optional</span>
+<span class="sd">            The thermostat to use for the MD simulation (default is "NoseHoover").</span>
+<span class="sd">            For NVT, can be one of "Berendsen", "NoseHoover", or "Langevin".</span>
+<span class="sd">            For NPT, can be one of "Berendsen", "NoseHoover", or "MTKNPT".</span>
+<span class="sd">        output_interval : int, optional</span>
+<span class="sd">            The interval for logging output (default is 100 steps).</span>
+<span class="sd">        movie_interval : int, optional</span>
+<span class="sd">            The interval for saving trajectory frames (default is 100 steps).</span>
+<span class="sd">        calculator : ase.calculators.calculator.Calculator or None, optional</span>
+<span class="sd">            The calculator to use for energy calculations. If None, the default model will be used.</span>
+<span class="sd">        update_state : bool, optional</span>
+<span class="sd">            If True, updates the current state of the simulation with the final state after MD.</span>
+<span class="sd">            If False, returns the final state without updating. This difference is important for using</span>
+<span class="sd">            the same method in the GCMC simulations when a MD step is used as a move. Default is True.</span>
+<span class="sd">        trajectory_file : str or None, optional</span>
+<span class="sd">            If provided, saves the trajectory to the specified file instead of the default trajectory.</span>
+<span class="sd">        set_momenta : bool, optional</span>
+<span class="sd">            Whether to set the atomic momenta to a Maxwell-Boltzmann distribution of the simulation temperature.</span>
+<span class="sd">        **kwargs : optional</span>
+<span class="sd">            Additional parameters passed directly to the specific MD thermostat (e.g., taut, tdamp, friction).</span>
+
+<span class="sd">            NVT Berendsen:</span>
+<span class="sd">                - taut : float, optional</span>
+<span class="sd">                    Time constant for the Berendsen thermostat in fs (default is 1.0 fs).</span>
+
+<span class="sd">            NVT Nose-Hoover:</span>
+<span class="sd">                - tdamp : float, optional</span>
+<span class="sd">                    Time constant for the Nose-Hoover thermostat in fs (default is 50.0 fs).</span>
+<span class="sd">                - tchain : int, optional</span>
+<span class="sd">                    Number of thermostats in the Nose-Hoover chain (default is 3).</span>
+<span class="sd">                - tloop : int, optional</span>
+<span class="sd">                    Number of loops for the Nose-Hoover chain (default is 1).</span>
+
+<span class="sd">            NVT Langevin:</span>
+<span class="sd">                - friction : float, optional</span>
+<span class="sd">                    Friction coefficient for the Langevin dynamics (default is 0.01).</span>
+
+<span class="sd">            NPT Berendsen:</span>
+<span class="sd">                - isotropic : bool, optional</span>
+<span class="sd">                    Whether to use isotropic pressure coupling (default is True).</span>
+<span class="sd">                - compressibility : float, optional</span>
+<span class="sd">                    Compressibility of the material in bar^-1 (default is 1e-4 bar^-1).</span>
+<span class="sd">                - taut : float, optional</span>
+<span class="sd">                    Time constant for the Berendsen thermostat in fs (default is 10.0 fs).</span>
+<span class="sd">                - taup : float, optional</span>
+<span class="sd">                    Time constant for the Berendsen barostat in fs (default is 500.0 fs).</span>
+
+<span class="sd">            NPT Nose-Hoover:</span>
+<span class="sd">                - ttime : float, optional</span>
+<span class="sd">                    Time constant for the Nose-Hoover thermostat in fs (default is 25.0 fs).</span>
+<span class="sd">                - ptime : float, optional</span>
+<span class="sd">                    Time constant for the Parrinello-Rahman barostat in fs (default is 75.0 fs).</span>
+<span class="sd">                - bulk_modulus : float, optional</span>
+<span class="sd">                    Bulk modulus of the material in GPa (default is 30.0 GPa).</span>
+
+<span class="sd">            NPT MTK:</span>
+<span class="sd">                - tdamp : float, optional</span>
+<span class="sd">                    Time constant for the Nose-Hoover thermostat in fs (default is 50.0 fs).</span>
+<span class="sd">                - pdamp : float, optional</span>
+<span class="sd">                    Time constant for the Nose-Hoover barostat in fs (default is 500.0 fs).</span>
+<span class="sd">                - tchain : int, optional</span>
+<span class="sd">                    Number of thermostats in the Nose-Hoover chain (default is 3).</span>
+<span class="sd">                - pchain : int, optional</span>
+<span class="sd">                    Number of barostats in the Nose-Hoover chain (default is 3).</span>
+<span class="sd">                - tloop : int, optional</span>
+<span class="sd">                    Number of loops for the Nose-Hoover thermostat chain (default is 1).</span>
+<span class="sd">                - ploop : int, optional</span>
+<span class="sd">                    Number of loops for the Nose-Hoover barostat chain (default is 1).</span>
+<span class="sd">                - vol_constraint : bool, optional</span>
+<span class="sd">                    If True, the (N, V, sigma_a = 0, T)-ensemble is sampled, which allows for full</span>
+<span class="sd">                    cell fluctuations while keeping the cell volume fixed (default is False).</span>
+<span class="sd">        """</span>
+
+        <span class="k">if</span> <span class="n">atoms</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">current_state</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">current_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="n">new_state</span> <span class="o">=</span> <span class="n">run_md_simulation</span><span class="p">(</span>
+            <span class="n">atoms</span><span class="o">=</span><span class="n">current_state</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">calculator</span> <span class="k">if</span> <span class="n">calculator</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+            <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+            <span class="n">pressure</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">*</span> <span class="mf">1e-5</span><span class="p">,</span>
+            <span class="n">time_step</span><span class="o">=</span><span class="n">time_step</span><span class="p">,</span>
+            <span class="n">num_md_steps</span><span class="o">=</span><span class="n">nsteps</span><span class="p">,</span>
+            <span class="n">ensemble</span><span class="o">=</span><span class="n">ensemble</span><span class="p">,</span>
+            <span class="n">thermostat</span><span class="o">=</span><span class="n">thermostat</span><span class="p">,</span>
+            <span class="n">out_folder</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span>
             <span class="n">out_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">out_file</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
+            <span class="n">output_interval</span><span class="o">=</span><span class="n">output_interval</span><span class="p">,</span>
+            <span class="n">movie_interval</span><span class="o">=</span><span class="n">movie_interval</span><span class="p">,</span>
+            <span class="n">trajectory_file</span><span class="o">=</span><span class="n">trajectory_file</span> <span class="k">if</span> <span class="n">trajectory_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="p">,</span>
+            <span class="n">set_momenta</span><span class="o">=</span><span class="n">set_momenta</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate</span> <span class="o">=</span> <span class="n">optAdsorbate</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate</span><span class="o">.</span><span class="n">set_constraint</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate</span><span class="o">.</span><span class="n">set_cell</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">get_cell</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span></div>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">update_state</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">new_state</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_state</span><span class="p">(</span><span class="n">new_state</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_framework</span><span class="p">(</span><span class="n">new_state</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_atoms_framework</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>  <span class="c1"># type: ignore</span></div>
 
 
 <div class="viewcode-block" id="BaseSimulator.npt">
@@ -773,15 +996,15 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">nsteps</span><span class="p">,</span>
         <span class="n">time_step</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
-        <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;iso_shape&quot;</span><span class="p">,</span>
-        <span class="n">driver</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;MTKNPT&quot;</span><span class="p">,</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"iso_shape"</span><span class="p">,</span>
+        <span class="n">driver</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"MTKNPT"</span><span class="p">,</span>
         <span class="n">set_momenta</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">output_interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
         <span class="n">movie_interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
         <span class="n">calculator</span><span class="p">:</span> <span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-    <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run a NPT simulation using the Berendsen thermostat and barostat.</span>
 
 <span class="sd">        Parameters</span>
@@ -791,10 +1014,11 @@
 <span class="sd">        time_step : float, optional</span>
 <span class="sd">            Time step for the NPT simulation (default is 0.5 fs).</span>
 <span class="sd">        mode : str, optional</span>
-<span class="sd">            The mode of the NPT simulation (default is &quot;iso_shape&quot;).</span>
-<span class="sd">            Can be one of &quot;iso_shape&quot;, &quot;aniso_shape&quot;, or &quot;aniso_flex&quot;.</span>
+<span class="sd">            The mode of the NPT simulation (default is "iso_shape").</span>
+<span class="sd">            Can be one of "iso_shape", "aniso_shape", or "aniso_flex".</span>
 <span class="sd">        driver : str, optional</span>
-<span class="sd">            The driver to use for the NPT simulation. Can be Berendsen, NoseHoover or MTKNPT (default is &quot;MTKNPT&quot;).</span>
+<span class="sd">            The driver to use for the NPT simulation.</span>
+<span class="sd">            Can be Berendsen, NoseHoover or MTKNPT (default is "MTKNPT").</span>
 <span class="sd">        set_momenta : bool, optional</span>
 <span class="sd">            Whether to set the atomic momenta to a Maxwell-Boltzmann distribution of the simulation temperature.</span>
 <span class="sd">        output_interval : int, optional</span>
@@ -805,15 +1029,20 @@
 <span class="sd">            The calculator to use for energy calculations. If None, the default model will be used.</span>
 <span class="sd">        kwargs : optional</span>
 <span class="sd">            Arguments passed to the ase molecular dynamics class.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
-        <span class="n">allowed_modes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;iso_shape&quot;</span><span class="p">,</span> <span class="s2">&quot;aniso_shape&quot;</span><span class="p">,</span> <span class="s2">&quot;aniso_flex&quot;</span><span class="p">]</span>
-        <span class="k">assert</span> <span class="n">mode</span> <span class="ow">in</span> <span class="n">allowed_modes</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Mode must be one of </span><span class="si">{</span><span class="n">allowed_modes</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="n">allowed_modes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"iso_shape"</span><span class="p">,</span> <span class="s2">"aniso_shape"</span><span class="p">,</span> <span class="s2">"aniso_flex"</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="n">mode</span> <span class="ow">in</span> <span class="n">allowed_modes</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Mode must be one of </span><span class="si">{</span><span class="n">allowed_modes</span><span class="si">}</span><span class="s2">."</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">calculator</span><span class="p">:</span>
             <span class="n">calculator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
 
-        <span class="k">if</span> <span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;iso_shape&quot;</span> <span class="ow">or</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;aniso_shape&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">driver</span> <span class="o">==</span> <span class="s2">&quot;Berendsen&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">"iso_shape"</span> <span class="ow">or</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"aniso_shape"</span><span class="p">)</span> <span class="ow">and</span> <span class="n">driver</span> <span class="o">==</span> <span class="s2">"Berendsen"</span><span class="p">:</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">_print_warning</span><span class="p">(</span>
+                <span class="s2">"Berendsen barostat is not indicated to be used in GCMC simulations. "</span>
+                <span class="s2">"It is implemented for testing purposes only. Use MTKNPT or NoseHoover instead."</span>
+            <span class="p">)</span>
 
             <span class="n">new_state</span> <span class="o">=</span> <span class="n">nPT_Berendsen</span><span class="p">(</span>
                 <span class="n">atoms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="p">,</span>
@@ -822,16 +1051,16 @@
                 <span class="n">pressure</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">*</span> <span class="mf">1e-5</span><span class="p">,</span>
                 <span class="n">time_step</span><span class="o">=</span><span class="n">time_step</span><span class="p">,</span>
                 <span class="n">num_md_steps</span><span class="o">=</span><span class="n">nsteps</span><span class="p">,</span>
-                <span class="n">isotropic</span><span class="o">=</span><span class="kc">True</span> <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;iso_shape&quot;</span> <span class="k">else</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="n">isotropic</span><span class="o">=</span><span class="kc">True</span> <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"iso_shape"</span> <span class="k">else</span> <span class="kc">False</span><span class="p">,</span>
                 <span class="n">out_folder</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span>
                 <span class="n">out_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">out_file</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
                 <span class="n">output_interval</span><span class="o">=</span><span class="n">output_interval</span><span class="p">,</span>
                 <span class="n">movie_interval</span><span class="o">=</span><span class="n">movie_interval</span><span class="p">,</span>
-                <span class="n">mc_trajectory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="p">,</span>
+                <span class="n">trajectory_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="p">,</span>
                 <span class="n">set_momenta</span><span class="o">=</span><span class="n">set_momenta</span><span class="p">,</span>
                 <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
             <span class="p">)</span>
-        <span class="k">elif</span> <span class="n">driver</span> <span class="o">==</span> <span class="s2">&quot;NoseHoover&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">driver</span> <span class="o">==</span> <span class="s2">"NoseHoover"</span><span class="p">:</span>
 
             <span class="n">new_state</span> <span class="o">=</span> <span class="n">nPT_NoseHoover</span><span class="p">(</span>
                 <span class="n">atoms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="p">,</span>
@@ -844,14 +1073,14 @@
                 <span class="n">out_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">out_file</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
                 <span class="n">output_interval</span><span class="o">=</span><span class="n">output_interval</span><span class="p">,</span>
                 <span class="n">movie_interval</span><span class="o">=</span><span class="n">movie_interval</span><span class="p">,</span>
-                <span class="n">mc_trajectory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="p">,</span>
+                <span class="n">trajectory_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="p">,</span>
                 <span class="n">set_momenta</span><span class="o">=</span><span class="n">set_momenta</span><span class="p">,</span>
                 <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
             <span class="p">)</span>
 
-        <span class="k">elif</span> <span class="n">driver</span> <span class="o">==</span> <span class="s2">&quot;MTKNPT&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">driver</span> <span class="o">==</span> <span class="s2">"MTKNPT"</span><span class="p">:</span>
 
-            <span class="n">isotropic</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;iso_flex&quot;</span> <span class="ow">or</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;iso_shape&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">False</span>
+            <span class="n">isotropic</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">"iso_flex"</span> <span class="ow">or</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"iso_shape"</span><span class="p">)</span> <span class="k">else</span> <span class="kc">False</span>
 
             <span class="n">new_state</span> <span class="o">=</span> <span class="n">nPT_MTKNPT</span><span class="p">(</span>
                 <span class="n">atoms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="p">,</span>
@@ -865,19 +1094,17 @@
                 <span class="n">out_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">out_file</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
                 <span class="n">output_interval</span><span class="o">=</span><span class="n">output_interval</span><span class="p">,</span>
                 <span class="n">movie_interval</span><span class="o">=</span><span class="n">movie_interval</span><span class="p">,</span>
-                <span class="n">mc_trajectory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="p">,</span>
+                <span class="n">trajectory_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="p">,</span>
                 <span class="n">set_momenta</span><span class="o">=</span><span class="n">set_momenta</span><span class="p">,</span>
                 <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Driver must be one of &#39;Berendsen&#39;, &#39;NoseHoover&#39; or &#39;MTKNPT&#39;. Not </span><span class="si">{</span><span class="n">driver</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="sa">f</span><span class="s2">"Driver must be one of 'Berendsen', 'NoseHoover' or 'MTKNPT'. Not </span><span class="si">{</span><span class="n">driver</span><span class="si">}</span><span class="s2">."</span>
             <span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_state</span><span class="p">(</span><span class="n">new_state</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_framework</span><span class="p">(</span><span class="n">new_state</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_atoms_framework</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>  <span class="c1"># type: ignore</span></div>
+        <span class="k">return</span> <span class="n">new_state</span></div>
 
 
 <div class="viewcode-block" id="BaseSimulator.nvt">
@@ -887,12 +1114,13 @@
         <span class="n">nsteps</span><span class="p">,</span>
         <span class="n">time_step</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
         <span class="n">set_momenta</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">driver</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"NoseHoover"</span><span class="p">,</span>
         <span class="n">output_interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
         <span class="n">movie_interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
         <span class="n">calculator</span><span class="p">:</span> <span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run a NVT simulation using the Berendsen thermostat.</span>
 
 <span class="sd">        Parameters</span>
@@ -900,9 +1128,11 @@
 <span class="sd">        nsteps : int</span>
 <span class="sd">            Number of steps to run the NVT simulation.</span>
 <span class="sd">        time_step : float, optional</span>
-<span class="sd">            Time step for the NVT simulation (default is 0.5 fs).</span>
+<span class="sd">            Time step for the NVT simulation in femtoseconds (default is 0.5 fs).</span>
 <span class="sd">        set_momenta : bool, optional</span>
 <span class="sd">            Whether to set the atomic momenta to a Maxwell-Boltzmann distribution of the simulation temperature.</span>
+<span class="sd">        driver : str, optional</span>
+<span class="sd">            The driver to use for the NVT simulation. Can be "NoseHoover" (default), Langevin, or "Berendsen" (Not recommended, for testing purposes only).</span>
 <span class="sd">        output_interval : int, optional</span>
 <span class="sd">            The interval for logging output (default is 100 steps).</span>
 <span class="sd">        movie_interval : int, optional</span>
@@ -911,26 +1141,92 @@
 <span class="sd">            The calculator to use for energy calculations. If None, the default model will be used.</span>
 <span class="sd">        kwargs : optional</span>
 <span class="sd">            Arguments passed to the ase molecular dynamics class.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+
+<span class="sd">        For NoseHoover:</span>
+<span class="sd">        - tdamp : float, optional</span>
+<span class="sd">            Time constant for the thermostat in fs (default is 50.0 fs).</span>
+<span class="sd">        - tchain : int, optional</span>
+<span class="sd">            Length of the Nose-Hoover chain (default is 3).</span>
+<span class="sd">        - tloop : int, optional</span>
+<span class="sd">            Number of loops for the Nose-Hoover chain (default is 1).</span>
+
+<span class="sd">        For Langevin:</span>
+<span class="sd">        - friction : float, optional</span>
+<span class="sd">            Friction coefficient for the Langevin thermostat in fs^-1 (default is 0.1 fs^-1).</span>
+
+<span class="sd">        For Berendsen:</span>
+<span class="sd">        - tau : float, optional</span>
+<span class="sd">            Time constant for the Berendsen thermostat in fs (default is 1.0 fs).</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">calculator</span><span class="p">:</span>
             <span class="n">calculator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
 
-        <span class="n">new_state</span> <span class="o">=</span> <span class="n">nVT_Berendsen</span><span class="p">(</span>
-            <span class="n">atoms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="p">,</span>
-            <span class="n">model</span><span class="o">=</span><span class="n">calculator</span><span class="p">,</span>
-            <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
-            <span class="n">time_step</span><span class="o">=</span><span class="n">time_step</span><span class="p">,</span>
-            <span class="n">num_md_steps</span><span class="o">=</span><span class="n">nsteps</span><span class="p">,</span>
-            <span class="n">out_folder</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span>
-            <span class="n">out_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">out_file</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
-            <span class="n">output_interval</span><span class="o">=</span><span class="n">output_interval</span><span class="p">,</span>
-            <span class="n">movie_interval</span><span class="o">=</span><span class="n">movie_interval</span><span class="p">,</span>
-            <span class="n">mc_trajectory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="p">,</span>
-            <span class="n">set_momenta</span><span class="o">=</span><span class="n">set_momenta</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="k">assert</span> <span class="n">driver</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="s2">"Berendsen"</span><span class="p">,</span>
+            <span class="s2">"Langevin"</span><span class="p">,</span>
+            <span class="s2">"NoseHoover"</span><span class="p">,</span>
+        <span class="p">],</span> <span class="s2">"Driver must be one of 'Berendsen', 'Langevin', or 'NoseHoover'."</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_state</span><span class="p">(</span><span class="n">new_state</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="n">driver</span> <span class="o">==</span> <span class="s2">"NoseHoover"</span><span class="p">:</span>
+
+            <span class="n">new_state</span> <span class="o">=</span> <span class="n">nVT_NoseHoover</span><span class="p">(</span>
+                <span class="n">atoms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="p">,</span>
+                <span class="n">model</span><span class="o">=</span><span class="n">calculator</span><span class="p">,</span>
+                <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+                <span class="n">time_step</span><span class="o">=</span><span class="n">time_step</span><span class="p">,</span>
+                <span class="n">num_md_steps</span><span class="o">=</span><span class="n">nsteps</span><span class="p">,</span>
+                <span class="n">out_folder</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span>
+                <span class="n">out_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">out_file</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
+                <span class="n">output_interval</span><span class="o">=</span><span class="n">output_interval</span><span class="p">,</span>
+                <span class="n">movie_interval</span><span class="o">=</span><span class="n">movie_interval</span><span class="p">,</span>
+                <span class="n">mc_trajectory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="p">,</span>
+                <span class="n">set_momenta</span><span class="o">=</span><span class="n">set_momenta</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_state</span><span class="p">(</span><span class="n">new_state</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">driver</span> <span class="o">==</span> <span class="s2">"Langevin"</span><span class="p">:</span>
+
+            <span class="n">new_state</span> <span class="o">=</span> <span class="n">nVT_Langevin</span><span class="p">(</span>
+                <span class="n">atoms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="p">,</span>
+                <span class="n">model</span><span class="o">=</span><span class="n">calculator</span><span class="p">,</span>
+                <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+                <span class="n">time_step</span><span class="o">=</span><span class="n">time_step</span><span class="p">,</span>
+                <span class="n">num_md_steps</span><span class="o">=</span><span class="n">nsteps</span><span class="p">,</span>
+                <span class="n">out_folder</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span>
+                <span class="n">out_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">out_file</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
+                <span class="n">output_interval</span><span class="o">=</span><span class="n">output_interval</span><span class="p">,</span>
+                <span class="n">movie_interval</span><span class="o">=</span><span class="n">movie_interval</span><span class="p">,</span>
+                <span class="n">mc_trajectory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="p">,</span>
+                <span class="n">set_momenta</span><span class="o">=</span><span class="n">set_momenta</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_state</span><span class="p">(</span><span class="n">new_state</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">driver</span> <span class="o">==</span> <span class="s2">"Berendsen"</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">_print_warning</span><span class="p">(</span>
+                <span class="s2">"Berendsen barostat is not indicated to be used in GCMC simulations. "</span>
+                <span class="s2">"It is implemented for testing purposes only. Use NoseHoover or Langevin instead."</span>
+            <span class="p">)</span>
+
+            <span class="n">new_state</span> <span class="o">=</span> <span class="n">nVT_Berendsen</span><span class="p">(</span>
+                <span class="n">atoms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="p">,</span>
+                <span class="n">model</span><span class="o">=</span><span class="n">calculator</span><span class="p">,</span>
+                <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+                <span class="n">time_step</span><span class="o">=</span><span class="n">time_step</span><span class="p">,</span>
+                <span class="n">num_md_steps</span><span class="o">=</span><span class="n">nsteps</span><span class="p">,</span>
+                <span class="n">out_folder</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span>
+                <span class="n">out_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">out_file</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
+                <span class="n">output_interval</span><span class="o">=</span><span class="n">output_interval</span><span class="p">,</span>
+                <span class="n">movie_interval</span><span class="o">=</span><span class="n">movie_interval</span><span class="p">,</span>
+                <span class="n">mc_trajectory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="p">,</span>
+                <span class="n">set_momenta</span><span class="o">=</span><span class="n">set_momenta</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_state</span><span class="p">(</span><span class="n">new_state</span><span class="p">)</span></div>
 </div>
 
 </pre></div>
@@ -973,8 +1269,8 @@
     </aside>
   </div>
 </div><script src="../../_static/documentation_options.js?v=ebe9904d"></script>
-    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
