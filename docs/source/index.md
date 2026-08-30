@@ -41,6 +41,7 @@ tutorials/basic_isotherm
 :caption: Tutorials: Advanced
 
 tutorials/advanced_hybrid_gcmc_md_mixed_calc
+tutorials/advanced_hybrid_tmmc_md
 ```
 
 ```{toctree}
