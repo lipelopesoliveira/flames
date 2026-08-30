@@ -1,12 +1,8 @@
 import numpy as np
 from ase import units
 from ase.calculators.calculator import Calculator, all_changes
-from numba import njit, set_num_threads
+from numba import njit
 from vesin import NeighborList
-
-NUM_THREADS_TO_USE = 1
-set_num_threads(NUM_THREADS_TO_USE)
-
 
 @njit(fastmath=True, parallel=False, cache=True)
 def compute_lj_numba(
@@ -36,10 +32,9 @@ def compute_lj_numba(
 
         u = inv_r6 * (A * inv_r6 - B) - shift
 
-        # Distribute the energy
-        # Because we only see each pair once, we split the pair energy equally
-        u_half = u * 0.5
         total_energy += u
+        # Distribute the energy. Because we only see each pair once, we split the pair energy equally
+        u_half = u * 0.5
         energies[i] += u_half
         energies[j] += u_half
 
@@ -49,10 +44,6 @@ def compute_lj_numba(
 class CustomLennardJones(Calculator):
     implemented_properties = ["energy", "energies"]
     default_parameters = {
-        "epsilon": 1.0,
-        "sigma": 1.0,
-        "rc": None,
-        "ro": None,
         "shifted": False,
     }
     nolabel = True

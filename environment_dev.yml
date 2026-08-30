@@ -25,6 +25,7 @@ dependencies:
     - torch-dftd
     - myst_parser
     - sphinx-copybutton
+    - sphinx-design
     - furo
     - isort
     - black
