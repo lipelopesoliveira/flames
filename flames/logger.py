@@ -443,7 +443,11 @@ class TMMCLogger(BaseLogger):
     Separates the presentation logic from the simulation logic.
     """
 
-    def print_run_header(self) -> None:
+    def _get_move_pct(self, move_name: str) -> float:
+            moves = self.sim.n_movements[move_name]
+            return np.average(moves) * 100 if len(moves) > 0 else 0.0
+    
+    def print_tmmc_run_header(self) -> None:
         """Prints the header for the main TMMC loop."""
         header = """
 ===========================================================================
@@ -457,7 +461,50 @@ Iteration  | Adsorbate  | Molecules |    Tot En.   | Del. Energy  | Ins. Energy 
 ---------- | ---------- | --------- | ------------ | ------------ | ------------ | -------"""
         self._print(header)
 
-    def print_step_info(self, step, del_energy: dict, ins_energy: dict, step_time) -> None:
+    def print_gcmc_run_header(self) -> None:
+        """Prints the header for the main GCMC loop."""
+
+        header = "Movement statistics:\n"
+
+        for adsorbate in self.sim.adsorbates:
+            header += f"\nAdsorbate: {adsorbate.name}\n"
+            for key, value in adsorbate.move_weights.__dict__.items():
+                header += f" {key.capitalize():11}: {value:.3f}\n"
+
+        header += """
+===========================================================================
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Starting GCMC simulation
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+ Iteration |  Number of  |  Uptake  |    Tot En.   |Av. Ads. En.|  Pacc  |  Pdel  |  Ptra  |  Prot  |  Prin  |  Pswap  | Time
+     -     |  Molecules  | [mmol/g] |     [eV]     |  [kJ/mol]  |    %   |    %   |   %    |   %    |   %    |    %    |  [s]
+---------- | ----------- | -------- | ------------ | ---------- | ------ | ------ | ------ | ------ | ------ | ------- | -----"""
+        self._print(header)
+
+    def print_gcmc_step_info(self, step, average_ads_energy, step_time, adsorbate_name) -> None:
+    
+            line_str = "{:^11}|{:^13}|{:>9.2f} |{:>13.4f} |{:>11.4f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:9.2f}"
+    
+            self._print(
+                line_str.format(
+                    step,
+                    sum(self.sim.uptake_list[-1]),
+                    sum(self.sim.uptake_list[-1]) * self.sim.conv_factors["mol/kg"][adsorbate_name],
+                    self.sim.current_total_energy,
+                    average_ads_energy,
+                    self._get_move_pct("insertion"),
+                    self._get_move_pct("deletion"),
+                    self._get_move_pct("translation"),
+                    self._get_move_pct("rotation"),
+                    self._get_move_pct("reinsertion"),
+                    self._get_move_pct("identity_swap"),
+                    step_time,
+                )
+            )
+    
+    def print_tmmc_step_info(self, step, del_energy: dict, ins_energy: dict, step_time) -> None:
         """Prints info on one TMMC step, iterating through all adsorbates."""
         line_str = "{:^11}| {:^9} |{:^11}|{:>13.4f} |{:>13.4f} |{:>13.4f} |{:7.2f}"
 
@@ -508,6 +555,39 @@ Loaded state with {len(state)} total atoms.
 Current total energy: {self.sim.current_total_energy:.3f} eV
 Current macrostate: {n_ads_str}
 ===========================================================================""")
+
+    def print_summary(self) -> None:
+        """
+        Print the footer for the simulation output.
+        This method is called at the end of the simulation to display the final results and elapsed time.
+        """
+
+        warning_text = "\n".join([f"WARNING: {warning}" for warning in self.warnings])
+
+        self._print(f"""
+===========================================================================
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Finishing TMMC simulation
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+===========================================================================
+Simulation finished successfully!
+
+{len(self.warnings)} Warnings during the simulation.
+{warning_text}
+
+Simulation finished at {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+Simulation duration: {datetime.datetime.now() - self.sim.start_time}
+===========================================================================
+""")
+
+        if len(self.warnings) > 0:
+            print("\n".join(["=" * 75] * 3))
+            print(f"{len(self.warnings)} Warnings during the simulation:")
+            for warning in self.warnings:
+                self._print(f"WARNING: {warning}")
+
 
 
 class WidomLogger(BaseLogger):
