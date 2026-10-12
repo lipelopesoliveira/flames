@@ -1574,26 +1574,6 @@ class GCMC(BaseSimulator):
         self._save_rejected(atoms_trial)  # type: ignore
         return False
 
-    def _pick_random_move(self) -> tuple[int, str]:
-        """
-        Randomly select a move from the `move_weights` dict.
-        If there is no molecule on the system, always return insertion.
-
-        Returns
-        -------
-        adsorbate_tag: int
-        move: str
-        """
-
-        # Pick a adsorbate based on the mol fractions
-        ads = self.rnd_generator.choice(
-            np.array(self.adsorbates), p=[ads.mol_fraction for ads in self.adsorbates]
-        )
-
-        move = ads.pick_random_move(self.rnd_generator)
-
-        return ads.tag, move
-
     def get_total_ads_energy(self) -> float:
         """
         Compute the total adsorption energy of the system.
