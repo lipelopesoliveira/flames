@@ -133,10 +133,10 @@ class Adsorbate:
         Raises:
             ValueError: If the input is not a recognized structure type or valid file.
         """
-        if isinstance(value, Atoms):
-            self._structure = value
-        else:
+        if not isinstance(value, Atoms):
             raise ValueError("Structure must be an ASE Atoms object")
+        
+        self._structure = value           
 
     @property
     def move_weights(self) -> MoveWeights:
@@ -158,7 +158,6 @@ class Adsorbate:
         if isinstance(value, MoveWeights):
             self._move_weights = value
         elif isinstance(value, dict):
-            # Assuming MoveWeights is imported and available in scope
             self._move_weights = MoveWeights(**value)
         else:
             raise ValueError(
@@ -192,7 +191,6 @@ class Adsorbate:
                 raise ValueError(
                     "Structure must be set before setting EOS parameters via dictionary."
                 )
-            # Because structure is normalized to a list, we can safely grab index 0
             self._eos = PengRobinsonEOS(**value, molar_mass=self.molar_mass)
         else:
             raise ValueError(
