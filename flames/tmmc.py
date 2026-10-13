@@ -612,70 +612,70 @@ class TMMC(BaseSimulator):
         return rnd_number < acc
 
     def try_insertion(self, adsorbate_tag: int) -> bool:
-            """
-            Try to insert a new adsorbate molecule into the framework.
-            This method randomly places the adsorbate in the framework and checks for van der Waals overlap.
-            If there is no overlap, it calculates the new potential energy and decides whether to accept the insertion
-            based on the acceptance criteria.
-    
-            Parameters
-            ----------
-            adsorbate_tag : int
-                The tag of the adsorbate molecule to be inserted.
-    
-            Returns
-            -------
-            bool
-                True if the insertion was accepted, False otherwise.
-            """
-    
-            # Get the adsorbate index based on the provided tag
-            adsorbate = next(
-                (i for i, ads in enumerate(self.adsorbates) if ads.tag == adsorbate_tag), None
-            )
-            if adsorbate is None:
-                raise ValueError(f"Adsorbate with tag {adsorbate_tag} not found.")
-    
-            atoms_trial = random_mol_insertion(
-                framework=self.current_system,
-                molecule=self.adsorbates[adsorbate].structure,
-                rnd_generator=self.rnd_generator,
-            )
-    
-            overlaped = check_overlap_vesin(
-                atoms=atoms_trial,
-                group1_indices=np.arange(len(self.current_system)),
-                group2_indices=np.arange(len(self.current_system), len(atoms_trial)),
-                vdw_radii=self.vdw,
-            )
-    
-            if overlaped:
-                return False
-    
-            # Energy calculation
-            atoms_trial.calc = self.model
-            e_new = atoms_trial.get_potential_energy()
-    
-            deltaE = (
-                e_new
-                - self.current_total_energy
-                - self.adsorbate_energy[self.adsorbates[adsorbate].name]
-            )
-    
-            if deltaE < -self.max_deltaE:
-                self.logger._print_warning(
-                    f"WARNING: Energy difference {deltaE:.4f} eV exceeds the maximum allowed {self.max_deltaE:.4f} eV."
-                )
-    
-            # Apply the acceptance criteria for insertion
-            if self._insertion_acceptance(deltaE=deltaE, adsorbate_tag=adsorbate_tag):
-                self.current_system = atoms_trial.copy()
-                self.current_total_energy = e_new
-                self.n_adsorbates[self.adsorbates[adsorbate].name] += 1
-                return True
-    
-            self._save_rejected(atoms_trial)
+        """
+        Try to insert a new adsorbate molecule into the framework.
+        This method randomly places the adsorbate in the framework and checks for van der Waals overlap.
+        If there is no overlap, it calculates the new potential energy and decides whether to accept the insertion
+        based on the acceptance criteria.
+
+        Parameters
+        ----------
+        adsorbate_tag : int
+            The tag of the adsorbate molecule to be inserted.
+
+        Returns
+        -------
+        bool
+            True if the insertion was accepted, False otherwise.
+        """
+
+        # Get the adsorbate index based on the provided tag
+        adsorbate = next(
+            (i for i, ads in enumerate(self.adsorbates) if ads.tag == adsorbate_tag), None
+        )
+        if adsorbate is None:
+            raise ValueError(f"Adsorbate with tag {adsorbate_tag} not found.")
+
+        atoms_trial = random_mol_insertion(
+            framework=self.current_system,
+            molecule=self.adsorbates[adsorbate].structure,
+            rnd_generator=self.rnd_generator,
+        )
+
+        overlaped = check_overlap_vesin(
+            atoms=atoms_trial,
+            group1_indices=np.arange(len(self.current_system)),
+            group2_indices=np.arange(len(self.current_system), len(atoms_trial)),
+            vdw_radii=self.vdw,
+        )
+
+        if overlaped:
             return False
+
+        # Energy calculation
+        atoms_trial.calc = self.model
+        e_new = atoms_trial.get_potential_energy()
+
+        deltaE = (
+            e_new
+            - self.current_total_energy
+            - self.adsorbate_energy[self.adsorbates[adsorbate].name]
+        )
+
+        if deltaE < -self.max_deltaE:
+            self.logger._print_warning(
+                f"WARNING: Energy difference {deltaE:.4f} eV exceeds the maximum allowed {self.max_deltaE:.4f} eV."
+            )
+
+        # Apply the acceptance criteria for insertion
+        if self._insertion_acceptance(deltaE=deltaE, adsorbate_tag=adsorbate_tag):
+            self.current_system = atoms_trial.copy()
+            self.current_total_energy = e_new
+            self.n_adsorbates[self.adsorbates[adsorbate].name] += 1
+            return True
+
+        self._save_rejected(atoms_trial)
+        return False
     
     def try_deletion(self, adsorbate_tag: int) -> bool:
         """
@@ -1088,7 +1088,7 @@ class TMMC(BaseSimulator):
 
         return deltaE
 
-    def try_virtual_deletion(self, adsorbate_tag: int) -> float:
+    def try_virtual_deletion(self, adsorbate_tag: int, ads_index: list | None = None) -> float:
         """
         Try to delete an adsorbate molecule from the framework.
         This method randomly selects an adsorbate molecule and attempts deletion.
@@ -1109,30 +1109,24 @@ class TMMC(BaseSimulator):
             raise ValueError(f"Adsorbate with tag {adsorbate_tag} not found.")
 
         if self.n_adsorbates[ads_name] == 0:
-            return 0.0
+            return 1e10
 
-        # Randomly select an adsorbate molecule of this specific tag to delete
-        ads_indices_list = self.get_adsorbates_index(tag=adsorbate_tag)
-        ads_indices = self.rnd_generator.choice(ads_indices_list, axis=0)
+        # Randomly select an adsorbate molecule of this specific tag to delete if ads_index is not provided
+        if not ads_index:
+            ads_indices_list = self.get_adsorbates_index(tag=adsorbate_tag)
+            ads_indices = self.rnd_generator.choice(ads_indices_list, axis=0)
 
-        del_idx = tuple(ads_indices)
-
-        if del_idx in self._del_indices:
-            deltaE = self._del_indices[del_idx]
         else:
-            atoms_trial = self.current_system.copy()
-            atoms_trial.calc = self.model  # type: ignore
+            ads_indices = ads_index
 
-            # Delete the selected adsorbate atoms from the trial structure
-            del atoms_trial[ads_indices[0] : ads_indices[-1] + 1]
+        atoms_trial = self.current_system.copy()
+        atoms_trial.calc = self.model  # type: ignore
 
-            e_new = atoms_trial.get_potential_energy()  # type: ignore
-            deltaE = e_new + self.adsorbate_energy[ads_name] - self.current_total_energy
-            self._del_indices[del_idx] = deltaE
+        # Delete the selected adsorbate atoms from the trial structure
+        del atoms_trial[ads_indices[0] : ads_indices[-1] + 1]
 
-        if hasattr(self, "_current_ins_atoms"):
-            self._current_ins_atoms.info["del_indices"] = del_idx
-            self._current_ins_atoms.info["del_energy"] = deltaE
+        e_new = atoms_trial.get_potential_energy()  # type: ignore
+        deltaE = e_new + self.adsorbate_energy[ads_name] - self.current_total_energy
 
         return deltaE
 
@@ -1243,46 +1237,6 @@ class TMMC(BaseSimulator):
         for iteration in tqdm(range(1, N + 1), disable=(self.out_file is None), desc="GCMC Step"):
             self.gcmc_step(iteration)
 
-    def tmmc_step(self, iteration: int) -> None:
-        """
-        Perform a single Transition Matrix Monte Carlo step.
-        It will attempt virtual insertions and deletions for all adsorbates and record the corresponding energies.
-
-        Parameters
-        ----------
-        iteration : int
-            The current iteration number.
-        """
-
-        actual_iteration = iteration + self.base_iteration
-
-        step_time_start = datetime.datetime.now()
-
-        ins_energies = {}
-        del_energies = {}
-
-        # TMMC probes insertion and deletion for all components at the fixed macrostate
-        for ads in self.adsorbates:
-            ins_energy = self.try_virtual_insertion(ads.tag)
-            self.total_ins_energy_list[ads.name].append(ins_energy)
-            ins_energies[ads.name] = ins_energy
-
-            del_energy = self.try_virtual_deletion(ads.tag) if self.n_adsorbates[ads.name] > 0 else 0.0
-            self.total_del_energy_list[ads.name].append(del_energy)
-            del_energies[ads.name] = del_energy
-
-        self.volume_list.append(self.current_system.get_volume())
-
-        self.logger.print_tmmc_step_info(
-            step=actual_iteration,
-            del_energy=del_energies,
-            ins_energy=ins_energies,
-            step_time=(datetime.datetime.now() - step_time_start).total_seconds(),
-        )
-
-        # Save the current state and trajectory
-        self._save_state(actual_iteration)
-
     def run_tmmc(self, N: int) -> None:
         """
         Run the transition matrix Monte Carlo simulation for N iterations.
@@ -1291,9 +1245,47 @@ class TMMC(BaseSimulator):
         but virtual insertion and deletion are performed and the corresponding
         energies and the unit cell volume are recorded.
         """
+        
+        step_time_start = datetime.datetime.now()
 
         self.logger.print_tmmc_run_header()
 
-        for iteration in tqdm(range(1, N + 1), disable=(self.out_file is None), desc="TMMC Step"):
+        ins_energies = {}
+        del_energies = {}
 
-            self.tmmc_step(iteration)
+        # Build the list of deletion energies for all adsorbates in the system
+        # This way is more efficient that performing N random virtial deletions
+        # since we can generate the N-size list of deletion energies randomly from
+        # this list of deletion energies
+
+        del_energy_list = [] 
+        
+        ads_indices_list = self.get_adsorbates_index(tag=self.adsorbates[0].tag)
+
+        for ads_idx in tqdm(ads_indices_list, disable=(self.out_file is None), desc="TMMC Deletions"):
+
+            del_energy = self.try_virtual_deletion(self.adsorbates[0].tag, ads_index=ads_idx)
+            del_energy_list.append(del_energy)
+
+        del_energy_list = [1e10] if len(del_energy_list) == 0 else del_energy_list
+
+        # Perform N virtual insertions of the adsorbate
+        for iteration in tqdm(range(1, N + 1), disable=(self.out_file is None), desc="TMMC Insertions"):
+
+            ins_energy = self.try_virtual_insertion(self.adsorbates[0].tag)
+            self.total_ins_energy_list[self.adsorbates[0].name].append(ins_energy)
+            ins_energies[self.adsorbates[0].name] = ins_energy
+
+            del_energy = self.rnd_generator.choice(del_energy_list)
+            self.total_del_energy_list[self.adsorbates[0].name].append(del_energy)
+            del_energies[self.adsorbates[0].name] = del_energy
+
+
+            self.volume_list.append(self.current_system.get_volume())
+        
+            self.logger.print_tmmc_step_info(
+                step=iteration,
+                del_energy=del_energies,
+                ins_energy=ins_energies,
+                step_time=(datetime.datetime.now() - step_time_start).total_seconds(),
+            )
