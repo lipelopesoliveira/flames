@@ -1289,3 +1289,6 @@ class TMMC(BaseSimulator):
                 ins_energy=ins_energies,
                 step_time=(datetime.datetime.now() - step_time_start).total_seconds(),
             )
+
+            # Save the current state and trajectory
+            self._save_state(iteration)
