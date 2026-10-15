@@ -402,22 +402,22 @@ class TMMC(BaseSimulator):
             else:
                 self.trajectory.write(self.current_system)  # type: ignore
 
-            macrostate_str = self.get_macrostate_str()
+        macrostate_str = self.get_macrostate_str()
 
-            for ads in self.adsorbates:
-                np.save(
-                    os.path.join(self.out_folder, f"ins_energy_{ads.name}_{macrostate_str}.npy"),
-                    np.array(self.total_ins_energy_list[ads.name]),
-                )
-                np.save(
-                    os.path.join(self.out_folder, f"del_energy_{ads.name}_{macrostate_str}.npy"),
-                    np.array(self.total_del_energy_list[ads.name]),
-                )
-
+        for ads in self.adsorbates:
             np.save(
-                os.path.join(self.out_folder, f"volume_{macrostate_str}.npy"),
-                np.array(self.volume_list),
+                os.path.join(self.out_folder, f"ins_energy_{ads.name}_{macrostate_str}.npy"),
+                np.array(self.total_ins_energy_list[ads.name]),
             )
+            np.save(
+                os.path.join(self.out_folder, f"del_energy_{ads.name}_{macrostate_str}.npy"),
+                np.array(self.total_del_energy_list[ads.name]),
+            )
+
+        np.save(
+            os.path.join(self.out_folder, f"volume_{macrostate_str}.npy"),
+            np.array(self.volume_list),
+        )
 
     def _insertion_acceptance(self, deltaE, adsorbate_tag) -> bool:
             """
