@@ -763,7 +763,7 @@ Start optimizing adsorbate structure...
         if (mode == "iso_shape" or mode == "aniso_shape") and driver == "Berendsen":
 
             self.logger._print_warning(
-                "Berendsen barostat is not indicated to be used in GCMC simulations. "
+                "Berendsen barostat is not strictly time-reversible and should not be used in combinations with GCMC simulations. "
                 "It is implemented for testing purposes only. Use MTKNPT or NoseHoover instead."
             )
 
@@ -841,7 +841,7 @@ Start optimizing adsorbate structure...
         **kwargs,
     ):
         """
-        Run a NVT simulation using the Berendsen thermostat.
+        Run a NVT simulation using the specified thermostat.
 
         Parameters
         ----------
@@ -927,8 +927,8 @@ Start optimizing adsorbate structure...
 
         if driver == "Berendsen":
             self.logger._print_warning(
-                "Berendsen barostat is not indicated to be used in GCMC simulations. "
-                "It is implemented for testing purposes only. Use NoseHoover or Langevin instead."
+                "Berendsen barostat is not strictly time-reversible and should not be used in combinations with GCMC simulations!"
+                "It is implemented for testing purposes only. Use MTKNPT or NoseHoover instead."
             )
 
             new_state = nVT_Berendsen(
