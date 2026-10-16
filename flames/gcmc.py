@@ -1678,6 +1678,9 @@ class GCMC(BaseSimulator):
     def run(self, N) -> None:
         """Run the Grand Canonical Monte Carlo simulation for N iterations."""
 
+        assert type(N) == int, "Number of iterations N must be an integer."
+        assert N > 0, "Number of iterations N must be a positive integer."
+
         self.logger.print_run_header()
 
         for iteration in tqdm(range(1, N + 1), disable=(self.out_file is None), desc="GCMC Step"):
