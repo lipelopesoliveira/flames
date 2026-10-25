@@ -1109,7 +1109,7 @@ class TMMC(BaseSimulator):
             raise ValueError(f"Adsorbate with tag {adsorbate_tag} not found.")
 
         if self.n_adsorbates[ads_name] == 0:
-            return 1e10
+            return self.max_deltaE * 100
 
         # Randomly select an adsorbate molecule of this specific tag to delete if ads_index is not provided
         if not ads_index:
@@ -1267,7 +1267,7 @@ class TMMC(BaseSimulator):
             del_energy = self.try_virtual_deletion(self.adsorbates[0].tag, ads_index=ads_idx)
             del_energy_list.append(del_energy)
 
-        del_energy_list = [1e10] if len(del_energy_list) == 0 else del_energy_list
+        del_energy_list = [self.max_deltaE * 100] if len(del_energy_list) == 0 else del_energy_list
 
         # Perform N virtual insertions of the adsorbate
         for iteration in tqdm(range(1, N + 1), disable=(self.out_file is None), desc="TMMC Insertions"):
@@ -1292,3 +1292,4 @@ class TMMC(BaseSimulator):
 
             # Save the current state and trajectory
             self._save_state(iteration)
+            
