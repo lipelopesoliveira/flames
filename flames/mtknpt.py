@@ -46,7 +46,10 @@ class MTKBarostat:
         self._pchain = pchain
         self._ploop = ploop
 
-        self._cell_dof = 9 if mask is None else sum(mask)
+        # A recent PR showed that the cell DoF is not correctly calculated in the original implementation.
+        # The correct DoF is 6 for full cell fluctuations, and not 9 as in the original implementation.
+        # For details see https://gitlab.com/ase/ase/-/merge_requests/4303
+        self._cell_dof = 6 if mask is None else sum(mask)
 
         if vol_constraint:
             self._cell_dof -= 1  # Traceless constraint removes 1 DoF
