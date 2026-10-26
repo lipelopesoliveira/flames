@@ -253,6 +253,14 @@ Accepted: {rnd_number < acc}
 =======================================================================================================
 """)
 
+    def print_optimization_start(self, target: str) -> None:
+            """Prints a header for framework or adsorbate optimization."""
+            self._print(f"""
+    ===========================================================================
+    Start optimizing {target} structure...
+    ===========================================================================
+    """)
+
 
 class GCMCLogger(BaseLogger):
     """
@@ -307,13 +315,7 @@ Starting GCMC simulation
             )
         )
 
-    def print_optimization_start(self, target: str) -> None:
-        """Prints a header for framework or adsorbate optimization."""
-        self._print(f"""
-===========================================================================
-Start optimizing {target} structure...
-===========================================================================
-""")
+    
 
     def print_load_state_info(self, n_atoms, average_ads_energy) -> None:
         """Prints information about the loading state."""
