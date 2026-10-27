@@ -264,6 +264,21 @@ class TMMC(BaseSimulator):
         with open(os.path.join(self.out_folder, file_name), "w") as f:
             json.dump(results, f, indent=4)
 
+    def set_state(self, system: ase.Atoms) -> None:
+        """
+        Set the current state of the simulation to a given ASE Atoms object.
+        This method updates the current system, total energy, and number of adsorbates.
+
+        Parameters
+        ----------
+        system : ase.Atoms
+            The ASE Atoms object representing the new state of the system.
+        """
+        self.current_system = deepcopy(system)
+        self.current_total_energy = system.get_potential_energy()
+        self.current_system.calc = self.model
+        self.n_adsorbates = self.get_number_of_adsorbates(system=system)
+
     def _save_state(self) -> None:
         """
         Save the simulation trajectory and generated energies.
@@ -412,14 +427,13 @@ class TMMC(BaseSimulator):
 
         del_energy_list = []
 
-        for i, atoms in enumerate(trajectory):
+        for frame, atoms in enumerate(trajectory):
 
-            self.current_system = deepcopy(atoms)
-            self.current_total_energy = atoms.get_potential_energy()
-        
+            self.set_state(atoms)
+
             ads_indices_list = self.get_adsorbates_index(tag=self.adsorbates[0].tag)
     
-            for ads_idx in tqdm(ads_indices_list, disable=(self.out_file is None), desc="TMMC Deletions on step {:05d}".format(i)):
+            for ads_idx in tqdm(ads_indices_list, disable=(self.out_file is None), desc="TMMC Deletions on frame  {:05d}".format(frame)):
     
                 del_energy = self.try_virtual_deletion(self.adsorbates[0].tag, ads_index=ads_idx)
                 del_energy_list.append(del_energy)
@@ -427,7 +441,7 @@ class TMMC(BaseSimulator):
             del_energy_list = [self.max_deltaE * 100] if len(del_energy_list) == 0 else del_energy_list
     
             # Perform N virtual insertions of the adsorbate
-            for iteration in tqdm(range(1, N_per_frame + 1), disable=(self.out_file is None), desc="TMMC Insertions on step {:05d}".format(i)):
+            for iteration in tqdm(range(1, N_per_frame + 1), disable=(self.out_file is None), desc="TMMC Insertions on frame {:05d}".format(frame)):
     
                 ins_energy = self.try_virtual_insertion(self.adsorbates[0].tag)
                 self.total_ins_energy_list[self.adsorbates[0].name].append(ins_energy)
@@ -441,7 +455,7 @@ class TMMC(BaseSimulator):
                 self.volume_list.append(self.current_system.get_volume())
             
                 self.logger.print_tmmc_step_info(
-                    step=iteration,
+                    step=(iteration + frame * N_per_frame),
                     del_energy=del_energies,
                     ins_energy=ins_energies,
                     step_time=(datetime.datetime.now() - step_time_start).total_seconds(),
