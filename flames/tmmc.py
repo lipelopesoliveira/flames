@@ -264,20 +264,20 @@ class TMMC(BaseSimulator):
         with open(os.path.join(self.out_folder, file_name), "w") as f:
             json.dump(results, f, indent=4)
 
-    def set_state(self, system: ase.Atoms) -> None:
+    def set_state(self, state: ase.Atoms) -> None:
         """
         Set the current state of the simulation to a given ASE Atoms object.
         This method updates the current system, total energy, and number of adsorbates.
 
         Parameters
         ----------
-        system : ase.Atoms
+        state : ase.Atoms
             The ASE Atoms object representing the new state of the system.
         """
-        self.current_system = deepcopy(system)
-        self.current_total_energy = system.get_potential_energy()
+        self.current_system = deepcopy(state)
+        self.current_total_energy = state.get_potential_energy()
         self.current_system.calc = self.model
-        self.n_adsorbates = self.get_number_of_adsorbates(system=system)
+        self.n_adsorbates = self.get_number_of_adsorbates(system=state)
 
     def _save_state(self) -> None:
         """
