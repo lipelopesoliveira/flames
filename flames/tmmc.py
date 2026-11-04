@@ -275,8 +275,8 @@ class TMMC(BaseSimulator):
             The ASE Atoms object representing the new state of the system.
         """
         self.current_system = deepcopy(state)
-        self.current_total_energy = state.get_potential_energy()
         self.current_system.calc = self.model
+        self.current_total_energy = state.get_potential_energy()
         self.n_adsorbates = self.get_number_of_adsorbates(system=state)
 
     def _save_state(self) -> None:
