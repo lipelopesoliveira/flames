@@ -141,6 +141,7 @@ class BaseSimulator:
         output_folder: str | None = None,
         debug: bool = False,
         fugacity_coeff: float = 1.0,
+        void_fraction: float = 1.0,
         random_seed: int | None = None,
         cutoff_radius: float = 6.0,
         automatic_supercell: bool = True,
@@ -150,6 +151,7 @@ class BaseSimulator:
         self.rnd_generator = np.random.default_rng(self.random_seed)
         self.cutoff = cutoff_radius
         self.automatic_supercell = automatic_supercell
+        self.void_fraction = void_fraction
 
         # -- General definitions for output --
         if output_folder is not None:

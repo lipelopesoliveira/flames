@@ -173,7 +173,7 @@ class GCMC(BaseSimulator):
         random_seed: int | None = None,
         cutoff_radius: float = 6.0,
         automatic_supercell: bool = True,
-        void_fraction: float | list[float] = 0.0,
+        void_fraction: float  = 0.0,
     ) -> None:
         """
         Initialize the Grand Canonical Monte Carlo (GCMC) simulation.
@@ -197,6 +197,7 @@ class GCMC(BaseSimulator):
             output_folder=output_folder,
             debug=debug,
             fugacity_coeff=fugacity_coeff,
+            void_fraction=void_fraction,
             random_seed=random_seed,
             cutoff_radius=cutoff_radius,
             automatic_supercell=automatic_supercell,
@@ -207,7 +208,6 @@ class GCMC(BaseSimulator):
         self.start_time = datetime.datetime.now()
 
         # Parameters for calculateing the Peng-Robinson equation of state
-        self.void_fraction = void_fraction
         self.excess_nmol = {adsorbate.name: 0.0 for adsorbate in self.adsorbates}
 
         # Parameters for storing the main results during the simulation
