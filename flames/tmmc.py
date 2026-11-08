@@ -531,17 +531,27 @@ class TMMC(BaseSimulator):
 
         return ins_weights, del_weights
 
-
-    def compute_isotherm_replica(
-            self,
-            ins_weights: list[np.ndarray],
-            del_weights: list[np.ndarray],
-            fugacities_Pa: np.ndarray,
-            show_progress: bool = True
-        ) -> tuple[np.ndarray, np.ndarray]:
+    def compute_mpd(
+        self,
+        ins_weights: list[np.ndarray],
+        del_weights: list[np.ndarray],
+        fugacities_Pa: np.ndarray,
+        show_progress: bool = True
+    ) -> np.ndarray:
         """
-        Computes uptakes and macrostate probability distributions (pi) for a given set of fugacities
-        using pre-computed insertion and deletion weights.
+        Computes the Macrostate Probability Distribution (MPD or Π) for a given set of fugacities.
+
+        At equilibrium, the system obeys the principle of detailed balance, meaning the 
+        probability flux between adjacent macrostates is equal:
+            Π(N) * P(N → N + 1) = Π(N + 1) * P(N + 1 → N)
+
+        By rearranging this equality, the true physical MPD (Π) can be constructed 
+        iteratively from the transition probabilities (P):
+            ln Π(N + 1) = ln Π(N) + ln( P(N → N + 1) / P(N + 1 → N) )
+
+        This function calculates those transition probabilities using the unbiased 
+        acceptance weights scaled by fugacity, and applies a Log-Sum-Exp (LSE) trick 
+        during normalization to guarantee numerical stability.
 
         Parameters
         ----------
@@ -550,55 +560,118 @@ class TMMC(BaseSimulator):
         del_weights : list[np.ndarray]
             List of pre-computed deletion weights for each loading.
         fugacities_Pa : np.ndarray
-            Array of fugacities in Pascal for which to compute the isotherm.
+            Array of fugacities in Pascal.
         show_progress : bool, optional
-            If True, shows a progress bar during the computation. Default is True.
+            If True, shows a progress bar. Default is True.
 
         Returns
         -------
-        uptakes : np.ndarray
-            Array of expected number of molecules (uptake) for each fugacity.
         pi : np.ndarray
-            2D array of macrostate probability distributions for each fugacity and loading.
+            2D array of the MPD for each loading and fugacity. Shape: (max_loading, n_press).
         """
+        # Convert fugacities from Pascal to ASE units (eV/Å³) for consistency with the Boltzmann weights
         fugacity_array = np.asarray(fugacities_Pa, dtype=float) * units.Pascal
         n_press = len(fugacity_array)
-        max_loading = len(ins_weights)
+        n_states = len(ins_weights)
 
-        probs_plus = np.zeros((max_loading, n_press))
-        probs_minus = np.zeros((max_loading, n_press))
+        # Initialize arrays for transition probabilities P(N -> N+1) and P(N -> N-1)
+        probs_plus = np.zeros((n_states, n_press))
+        probs_minus = np.zeros((n_states, n_press))
 
-        # Loop over loading (fast in memory, vectorized across all pressures)
-        for n_mol in tqdm(range(0, max_loading), desc="Computing isotherm", disable=not show_progress):
+        # Calculate transition probabilities P(N -> N+1) and P(N -> N-1)
+        for n_mol in tqdm(range(0, n_states), desc="Computing MPD (Π)", disable=not show_progress):
+
             # Broadcast: (n_samples, 1) * (1, n_press) -> (n_samples, n_press)
-            ins_acc = np.minimum(
-                ins_weights[n_mol][:, None] * fugacity_array[None, :], 1.0
-            )
+            ins_acc = np.minimum(ins_weights[n_mol][:, None] * fugacity_array[None, :], 1.0)
             probs_plus[n_mol] = np.mean(ins_acc, axis=0)
 
-            if n_mol > 0:
-                del_acc = np.minimum(
-                    del_weights[n_mol][:, None] / fugacity_array[None, :], 1.0
-                )
-                probs_minus[n_mol] = np.mean(del_acc, axis=0)
+            # Broadcast: (n_samples, 1) / (1, n_press) -> (n_samples, n_press)
+            del_acc = np.minimum(del_weights[n_mol][:, None] / fugacity_array[None, :], 1.0)
+            probs_minus[n_mol] = np.mean(del_acc, axis=0)
 
-        # Calculate ln(Pi) using vectorized cumulative sum
-        lnpi = np.zeros((max_loading, n_press))
-        log_ratios = np.log(probs_plus[:-1] / probs_minus[1:])
+        # Numerical safeguard: Prevent log(0) which causes NaNs in the cumsum
+        epsilon = 1e-300
+        safe_probs_plus = np.clip(probs_plus[:-1], a_min=epsilon, a_max=None)
+        safe_probs_minus = np.clip(probs_minus[1:], a_min=epsilon, a_max=None)
+
+        # Calculate ln(Pi) using detailed balance and vectorized cumulative sum
+        lnpi = np.zeros((n_states, n_press))
+        log_ratios = np.log(safe_probs_plus / safe_probs_minus)
         lnpi[1:] = np.cumsum(log_ratios, axis=0)
 
-        # Numerically stable normalization: Use Log-Sum-Exp to prevents overflow/underflow
+        # Numerically stable normalization: Log-Sum-Exp prevents overflow/underflow
         lnpi -= np.max(lnpi, axis=0, keepdims=True)
         pi = np.exp(lnpi)
         pi /= np.sum(pi, axis=0, keepdims=True)
 
-        # Expected number of molecules (uptake) for each pressure
-        n_grid = np.arange(max_loading)[:, None]
-        uptakes = np.sum(n_grid * pi, axis=0)
+        return pi
 
-        # Transpose pi so shape is (n_press, max_loading + 1) to match original pi_list
+
+    def compute_uptake_from_mpd(self, pi: np.ndarray) -> np.ndarray:
+        """
+        Calculates the expected number of molecules (uptake) from the Macrostate 
+        Probability Distribution (MPD).
+
+        Theory
+        ------
+        Because the MPD (Π) acts as the centerpiece of the ensemble, the ensemble 
+        average of any physical property A can be derived directly from it via 
+        histogram reweighting:
+            ⟨A⟩ = [ Σ_N A(N) * Π(N) ] / [ Σ_N Π(N) ]
+
+        For the adsorption isotherm (uptake), the physical property A(N) is simply 
+        the number of molecules N. Since Π is already normalized (Σ_N Π(N) = 1), 
+        the formula simplifies to the expected value:
+            ⟨N⟩ = Σ_N (N * Π(N))
+
+        Parameters
+        ----------
+        pi : np.ndarray
+            2D array of the MPD. Expected shape: (max_loading, n_press).
+
+        Returns
+        -------
+        uptakes : np.ndarray
+            1D array of expected number of molecules (uptake) for each fugacity. 
+            Shape: (n_press,).
+        """
+        n_states = pi.shape[0]
+        n_grid = np.arange(n_states)[:, None]
+        
+        # ⟨N⟩ = Σ (N * Π)
+        uptakes = np.sum(n_grid * pi, axis=0)
+        
+        return uptakes
+
+
+    def compute_isotherm_replica(
+        self,
+        ins_weights: list[np.ndarray],
+        del_weights: list[np.ndarray],
+        fugacities_Pa: np.ndarray,
+        show_progress: bool = True
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Computes uptakes and macrostate probability distributions (pi) for a given 
+        set of fugacities using pre-computed insertion and deletion weights.
+        
+        This is a convenience wrapper combining `compute_mpd` and `compute_uptake_from_mpd`.
+        """
+        # 1. Compute the Macrostate Probability Distribution
+        pi = self.compute_mpd(
+            ins_weights=ins_weights,
+            del_weights=del_weights,
+            fugacities_Pa=fugacities_Pa,
+            show_progress=show_progress
+        )
+
+        # 2. Derive the macroscopic uptake from the MPD
+        uptakes = self.compute_uptake_from_mpd(pi)
+
+        # Transpose pi so shape is (n_press, max_loading + 1) to match original API expectation
         return uptakes, pi.T
 
+        
     def compute_isotherm(
             self,
             fugacities_Pa: np.ndarray,
