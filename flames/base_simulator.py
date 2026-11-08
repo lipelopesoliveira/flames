@@ -221,7 +221,7 @@ class BaseSimulator:
         mol2cm3 = units.kB / units.J * units.mol * 273.15 / atm2pa
 
         # Get the ideal supercell. This will be updated by the set_framework method
-        self.ideal_supercell = self._get_ideal_supercell()
+        self.ideal_supercell = self._get_ideal_supercell() if self.automatic_supercell else np.array([1, 1, 1])
 
         self.conv_factors = {
             "nmol": {
