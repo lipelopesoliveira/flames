@@ -1500,7 +1500,6 @@ class GCMC(BaseSimulator):
         if self._nvtmd_acceptance(deltaE=atoms_trial.get_potential_energy() - self.current_total_energy):  # type: ignore
             self.current_system = atoms_trial.copy()  # type: ignore
             self.current_total_energy = atoms_trial.get_potential_energy()  # type: ignore
-            self.V = atoms_trial.get_volume()  # type: ignore
 
             n_adsorbate_atoms = sum(
                 [len(ads.structure) * self.n_adsorbates[ads.name] for ads in self.adsorbates]
@@ -1557,6 +1556,7 @@ class GCMC(BaseSimulator):
 
             self.current_system = atoms_trial.copy()  # type: ignore
             self.current_total_energy = atoms_trial.get_potential_energy()  # type: ignore
+            self.V = atoms_trial.get_volume() / (units.m**3) # type: ignore
 
             n_adsorbate_atoms = sum(
                 [len(ads.structure) * self.n_adsorbates[ads.name] for ads in self.adsorbates]
