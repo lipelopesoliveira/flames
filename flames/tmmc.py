@@ -166,6 +166,10 @@ class TMMC(BaseSimulator):
         # Base iteration for restarting the simulation. This is for tracking the iteration count only
         self._base_iteration: int = 0
 
+        # Pre-computed fugacity-independent Boltzmann weights for insertion and deletion moves
+        self.insertion_weights: dict[int, list[np.ndarray]] = {}
+        self.deletion_weights: dict[int, list[np.ndarray]] = {}
+
     @property
     def base_iteration(self) -> int:
         """
@@ -395,6 +399,253 @@ class TMMC(BaseSimulator):
         deltaE = e_new + self.adsorbate_energy[ads_name] - self.current_total_energy
 
         return deltaE
+
+    def check_tmmc_files_exist(self, file_path: str, max_loading: int, replicas: list | range = range(1, 5)) -> None:
+            """
+            Check if the required TMMC simulation data files exist for the specified replicas and loading.
+    
+            Parameters
+            ----------
+            file_path : str
+                Path to the directory containing the TMMC simulation data.
+            max_loading : int
+                Maximum number of adsorbate molecules to consider for loading.
+            replicas : list | range, optional
+                List or range of replica indices to check. Default is range(1, 5).
+    
+            Raises
+            ------
+            FileNotFoundError
+                If the specified directory or any required files do not exist.
+            """
+            for replica in replicas:
+                prefix = f"{file_path}_{replica}"
+                if not os.path.exists(prefix):
+                    raise FileNotFoundError(f"Directory {prefix} does not exist. Please check the path and replica index.")
+                not_found_files = []
+    
+                for n_mol in range(0, max_loading + 1):
+                    ins_file = f"{prefix}/ins_energy_H2O_{n_mol:04d}.npy"
+                    del_file = f"{prefix}/del_energy_H2O_{n_mol:04d}.npy"
+                    vol_file = f"{prefix}/volume_{n_mol:04d}.npy"
+    
+                    for file in [ins_file, del_file, vol_file]:
+                        if not os.path.exists(file):
+                            not_found_files.append(file)
+                if len(not_found_files) > 0:
+                    raise FileNotFoundError(f"The following required files are missing for replica {replica}:\n {'\n'.join(not_found_files)}")
+    
+    def load_tmmc_weights(
+            self,
+            file_path: str,
+            max_loading: int,
+            replicas: list | range = range(1, 5),
+            show_progress: bool = True
+            ) -> tuple[dict[int, list[np.ndarray]], dict[int, list[np.ndarray]]]:
+        """
+        Loads TMMC simulation data and pre-computes the fugacity-independent Boltzmann weights
+        for a given temperature, returning them separated by replica.
+
+        Parameters
+        ----------
+        file_path : str
+            Path to the directory containing the TMMC simulation data.
+        max_loading : int
+            Maximum number of adsorbate molecules to consider for loading.
+        temperature_K : float
+            Temperature in Kelvin for which to compute the Boltzmann weights.
+        replicas : list | range, optional
+            List or range of replica indices to load. Default is range(1, 5).
+        show_progress : bool, optional
+            If True, shows a progress bar during the loading of weights. Default is True.
+        
+        Returns
+        -------
+        ins_weights: dict[int, list[np.ndarray]]
+            Dictionary containing the pre-computed insertion weights for each replica.
+        del_weights: dict[int, list[np.ndarray]]
+            Dictionary containing the pre-computed deletion weights for each replica.
+
+        Raises
+        ------
+        FileNotFoundError
+            If the specified directory or any required files do not exist.
+        """
+
+        # Checks if the weights directory exists
+        self.check_tmmc_files_exist(file_path, max_loading, replicas)
+
+        ins_weights = {replica: [] for replica in replicas}
+        del_weights = {replica: [] for replica in replicas}
+
+        for replica in replicas:
+            prefix = f"tmmc_weights/{replica}"
+
+            # Read the saved wheighs if exists
+            ins_file = f"{prefix}_ins_weights.npz"
+            del_file = f"{prefix}_del_weights.npz"
+    
+            if os.path.exists(ins_file) and os.path.exists(del_file):
+                print(f"Loading precomputed weights for replica {replica} from disk...")
+                ins_data = np.load(ins_file)
+                del_data = np.load(del_file)
+                ins_weights[replica] = [ins_data[f'arr_{i}'] for i in range(len(ins_data.files))]
+                del_weights[replica] = [del_data[f'arr_{i}'] for i in range(len(del_data.files))]
+
+            else:
+                prefix = f"{file_path}_{replica}"
+                for n_mol in tqdm(
+                    range(0, max_loading + 1), 
+                    desc=f"Loading weights (Replica {replica})", 
+                    disable=not show_progress
+                ):
+                    # Load and mask insertion energies
+                    rep_ins_energies = np.load(f"{prefix}/ins_energy_H2O_{n_mol:04d}.npy")
+
+                    # Load and mask deletion energies
+                    rep_del_energies = np.load(f"{prefix}/del_energy_H2O_{n_mol:04d}.npy")
+
+                    # Load volumes
+                    volumes = np.load(f"{prefix}/volume_{n_mol:04d}.npy")
+
+                    # Precompute fugacity-independent part of insertion acceptance
+                    w_ins = (
+                        (volumes * self.beta / (n_mol + 1))
+                        * np.exp(-self.beta * rep_ins_energies)
+                    )
+                    ins_weights[replica].append(w_ins)
+                    
+                    # Precompute fugacity-independent part of deletion acceptance
+                    w_del = (
+                        (n_mol / (volumes * self.beta))
+                        * np.exp(-self.beta * rep_del_energies)
+                    )
+                    del_weights[replica].append(w_del)
+
+                # Save weights to disk for future use as compressed numpy arrays
+                np.savez_compressed(f"tmmc_weights/{replica}_ins_weights.npz", *ins_weights[replica])
+                np.savez_compressed(f"tmmc_weights/{replica}_del_weights.npz", *del_weights[replica])
+
+        self.insertion_weights = ins_weights
+        self.deletion_weights = del_weights
+
+        return ins_weights, del_weights
+
+
+    def compute_isotherm_replica(
+            self,
+            ins_weights: list[np.ndarray],
+            del_weights: list[np.ndarray],
+            fugacities_Pa: np.ndarray,
+            show_progress: bool = True
+        ) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Computes uptakes and macrostate probability distributions (pi) for a given set of fugacities
+        using pre-computed insertion and deletion weights.
+
+        Parameters
+        ----------
+        ins_weights : list[np.ndarray]
+            List of pre-computed insertion weights for each loading.
+        del_weights : list[np.ndarray]
+            List of pre-computed deletion weights for each loading.
+        fugacities_Pa : np.ndarray
+            Array of fugacities in Pascal for which to compute the isotherm.
+        show_progress : bool, optional
+            If True, shows a progress bar during the computation. Default is True.
+
+        Returns
+        -------
+        uptakes : np.ndarray
+            Array of expected number of molecules (uptake) for each fugacity.
+        pi : np.ndarray
+            2D array of macrostate probability distributions for each fugacity and loading.
+        """
+        fugacity_array = np.asarray(fugacities_Pa, dtype=float) * units.Pascal
+        n_press = len(fugacity_array)
+        max_loading = len(ins_weights)
+
+        probs_plus = np.zeros((max_loading, n_press))
+        probs_minus = np.zeros((max_loading, n_press))
+
+        # Loop over loading (fast in memory, vectorized across all pressures)
+        for n_mol in tqdm(range(0, max_loading), desc="Computing isotherm", disable=not show_progress):
+            # Broadcast: (n_samples, 1) * (1, n_press) -> (n_samples, n_press)
+            ins_acc = np.minimum(
+                ins_weights[n_mol][:, None] * fugacity_array[None, :], 1.0
+            )
+            probs_plus[n_mol] = np.mean(ins_acc, axis=0)
+
+            if n_mol > 0:
+                del_acc = np.minimum(
+                    del_weights[n_mol][:, None] / fugacity_array[None, :], 1.0
+                )
+                probs_minus[n_mol] = np.mean(del_acc, axis=0)
+
+        # Calculate ln(Pi) using vectorized cumulative sum
+        lnpi = np.zeros((max_loading, n_press))
+        log_ratios = np.log(probs_plus[:-1] / probs_minus[1:])
+        lnpi[1:] = np.cumsum(log_ratios, axis=0)
+
+        # Numerically stable normalization: Use Log-Sum-Exp to prevents overflow/underflow
+        lnpi -= np.max(lnpi, axis=0, keepdims=True)
+        pi = np.exp(lnpi)
+        pi /= np.sum(pi, axis=0, keepdims=True)
+
+        # Expected number of molecules (uptake) for each pressure
+        n_grid = np.arange(max_loading)[:, None]
+        uptakes = np.sum(n_grid * pi, axis=0)
+
+        # Transpose pi so shape is (n_press, max_loading + 1) to match original pi_list
+        return uptakes, pi.T
+
+    def compute_isotherm(
+            self,
+            fugacities_Pa: np.ndarray,
+            show_progress: bool = True
+        ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Computes uptakes and macrostate probability distributions (pi) for a list of fugacities.
+
+        Parameters
+        ----------
+        fugacities_Pa : np.ndarray
+            Array of fugacities in Pascal for which to compute the isotherm.
+        show_progress : bool, optional
+            If True, shows a progress bar during the computation. Default is True.
+
+        Returns
+        -------
+        uptakes_average : np.ndarray
+            Array of expected number of molecules (uptake) averaged across replicas for each fugacity.
+        uptakes_sd : np.ndarray
+            Array of standard error of the mean (SEM) for the uptake across replicas for each fugacity.
+        pi_average : np.ndarray
+            2D array of macrostate probability distributions averaged across replicas for each fugacity and loading.
+        """
+
+        uptakes_list = []
+        pi_list = []
+
+        for replica in range(len(self.insertion_weights)):
+            uptakes, pi = self.compute_isotherm_replica(
+                ins_weights=self.insertion_weights[replica + 1],
+                del_weights=self.deletion_weights[replica + 1],
+                fugacities_Pa=fugacities_Pa,
+                show_progress=show_progress)
+            
+            uptakes_list.append(uptakes)
+            pi_list.append(pi)
+
+        # Calculates the average uptake across replicas
+        uptakes_average = np.mean(uptakes_list, axis=0)
+
+        # Calculates the standard error of the mean (SEM) for the uptake across replicas
+        uptakes_sd = np.std(uptakes_list, axis=0) / np.sqrt(len(self.insertion_weights))
+        
+        pi_average = np.mean(pi_list, axis=0)
+
+        return uptakes_average, uptakes_sd, pi_average
 
     def run_tmmc(self, N_per_frame: int, trajectory_path: str) -> None:
         """
