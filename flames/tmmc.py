@@ -401,39 +401,39 @@ class TMMC(BaseSimulator):
         return deltaE
 
     def check_tmmc_files_exist(self, file_path: str, max_loading: int, replicas: list | range = range(1, 5)) -> None:
-            """
-            Check if the required TMMC simulation data files exist for the specified replicas and loading.
-    
-            Parameters
-            ----------
-            file_path : str
-                Path to the directory containing the TMMC simulation data.
-            max_loading : int
-                Maximum number of adsorbate molecules to consider for loading.
-            replicas : list | range, optional
-                List or range of replica indices to check. Default is range(1, 5).
-    
-            Raises
-            ------
-            FileNotFoundError
-                If the specified directory or any required files do not exist.
-            """
-            for replica in replicas:
-                prefix = f"{file_path}_{replica}"
-                if not os.path.exists(prefix):
-                    raise FileNotFoundError(f"Directory {prefix} does not exist. Please check the path and replica index.")
-                not_found_files = []
-    
-                for n_mol in range(0, max_loading + 1):
-                    ins_file = f"{prefix}/ins_energy_H2O_{n_mol:04d}.npy"
-                    del_file = f"{prefix}/del_energy_H2O_{n_mol:04d}.npy"
-                    vol_file = f"{prefix}/volume_{n_mol:04d}.npy"
-    
-                    for file in [ins_file, del_file, vol_file]:
-                        if not os.path.exists(file):
-                            not_found_files.append(file)
-                if len(not_found_files) > 0:
-                    raise FileNotFoundError(f"The following required files are missing for replica {replica}:\n {'\n'.join(not_found_files)}")
+        """
+        Check if the required TMMC simulation data files exist for the specified replicas and loading.
+
+        Parameters
+        ----------
+        file_path : str
+            Path to the directory containing the TMMC simulation data.
+        max_loading : int
+            Maximum number of adsorbate molecules to consider for loading.
+        replicas : list | range, optional
+            List or range of replica indices to check. Default is range(1, 5).
+
+        Raises
+        ------
+        FileNotFoundError
+            If the specified directory or any required files do not exist.
+        """
+        for replica in replicas:
+            prefix = f"{file_path}_{replica}"
+            if not os.path.exists(prefix):
+                raise FileNotFoundError(f"Directory {prefix} does not exist. Please check the path and replica index.")
+            not_found_files = []
+
+            for n_mol in range(0, max_loading + 1):
+                ins_file = f"{prefix}/ins_energy_H2O_{n_mol:04d}.npy"
+                del_file = f"{prefix}/del_energy_H2O_{n_mol:04d}.npy"
+                vol_file = f"{prefix}/volume_{n_mol:04d}.npy"
+
+                for file in [ins_file, del_file, vol_file]:
+                    if not os.path.exists(file):
+                        not_found_files.append(file)
+            if len(not_found_files) > 0:
+                raise FileNotFoundError(f"The following required files are missing for replica {replica}:\n" + '\n'.join(not_found_files))
     
     def load_tmmc_weights(
             self,
@@ -473,7 +473,7 @@ class TMMC(BaseSimulator):
         """
 
         # Checks if the weights directory exists
-        self.check_tmmc_files_exist(file_path, max_loading, replicas)
+        #self.check_tmmc_files_exist(file_path, max_loading, replicas)
 
         ins_weights = {replica: [] for replica in replicas}
         del_weights = {replica: [] for replica in replicas}
@@ -614,10 +614,10 @@ class TMMC(BaseSimulator):
         Calculates the expected number of molecules (uptake) from the Macrostate 
         Probability Distribution (MPD).
 
-        The MPD (Π) acts as the centerpiece of the ensemble, the ensemble 
+        The MPD (Π) acts as the centerpiece of the ensemble thus the ensemble 
         average of any physical property A can be derived directly from it via
         histogram reweighting:
-        
+
             ⟨A⟩ = [ Σ_N A(N) * Π(N) ] / [ Σ_N Π(N) ]
 
         For the adsorption isotherm (uptake), the physical property A(N) is simply 
@@ -676,6 +676,7 @@ class TMMC(BaseSimulator):
     def compute_isotherm(
             self,
             fugacities_Pa: np.ndarray,
+            uptake_units: str = "nmol",
             show_progress: bool = True
         ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
@@ -685,18 +686,26 @@ class TMMC(BaseSimulator):
         ----------
         fugacities_Pa : np.ndarray
             Array of fugacities in Pascal for which to compute the isotherm.
+        uptake_units : str, optional
+            The units in which to report the uptake. Default is "nmol".
         show_progress : bool, optional
             If True, shows a progress bar during the computation. Default is True.
 
         Returns
         -------
         uptakes_average : np.ndarray
-            Array of expected number of molecules (uptake) averaged across replicas for each fugacity.
+            Array of expected uptake (in the specified units) averaged across replicas for each fugacity.
         uptakes_sd : np.ndarray
             Array of standard error of the mean (SEM) for the uptake across replicas for each fugacity.
         pi_average : np.ndarray
             2D array of macrostate probability distributions averaged across replicas for each fugacity and loading.
         """
+
+        if not self.insertion_weights or not self.deletion_weights:
+            raise ValueError("Insertion and deletion weights must be loaded before computing the isotherm. Please run `load_tmmc_weights` first.")
+
+        if uptake_units not in self.conv_factors:
+            raise ValueError(f"Invalid uptake_units '{uptake_units}'. Valid options are: {list(self.conv_factors.keys())}")
 
         uptakes_list = []
         pi_list = []
@@ -716,7 +725,11 @@ class TMMC(BaseSimulator):
 
         # Calculates the standard error of the mean (SEM) for the uptake across replicas
         uptakes_sd = np.std(uptakes_list, axis=0) / np.sqrt(len(self.insertion_weights))
-        
+
+        # Convert uptake to the specified units
+        uptakes_average *= self.conv_factors[uptake_units][self.adsorbates[0].name]
+        uptakes_sd *= self.conv_factors[uptake_units][self.adsorbates[0].name]
+
         pi_average = np.mean(pi_list, axis=0)
 
         return uptakes_average, uptakes_sd, pi_average
