@@ -582,11 +582,13 @@ class TMMC(BaseSimulator):
         for n_mol in tqdm(range(0, n_states), desc="Computing MPD (Π)", disable=not show_progress):
 
             # Broadcast: (n_samples, 1) * (1, n_press) -> (n_samples, n_press)
-            ins_acc = np.minimum(ins_weights[n_mol][:, None] * fugacity_array[None, :], 1.0)
+            # P_ins(N -> N+1) = min(1, w_ins(N) * fugacity)
+            ins_acc = np.minimum(1.0, ins_weights[n_mol][:, None] * fugacity_array[None, :])
             probs_plus[n_mol] = np.mean(ins_acc, axis=0)
 
             # Broadcast: (n_samples, 1) / (1, n_press) -> (n_samples, n_press)
-            del_acc = np.minimum(del_weights[n_mol][:, None] / fugacity_array[None, :], 1.0)
+            # P_del(N -> N-1) = min(1, w_del(N) / fugacity)
+            del_acc = np.minimum(1.0, del_weights[n_mol][:, None] / fugacity_array[None, :])
             probs_minus[n_mol] = np.mean(del_acc, axis=0)
 
         # Numerical safeguard: Prevent log(0) which causes NaNs in the cumsum
@@ -612,11 +614,10 @@ class TMMC(BaseSimulator):
         Calculates the expected number of molecules (uptake) from the Macrostate 
         Probability Distribution (MPD).
 
-        Theory
-        ------
-        Because the MPD (Π) acts as the centerpiece of the ensemble, the ensemble 
-        average of any physical property A can be derived directly from it via 
+        The MPD (Π) acts as the centerpiece of the ensemble, the ensemble 
+        average of any physical property A can be derived directly from it via
         histogram reweighting:
+        
             ⟨A⟩ = [ Σ_N A(N) * Π(N) ] / [ Σ_N Π(N) ]
 
         For the adsorption isotherm (uptake), the physical property A(N) is simply 
