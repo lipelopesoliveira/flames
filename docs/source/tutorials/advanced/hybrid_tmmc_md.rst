@@ -262,6 +262,32 @@ In the example folder, there are two python scripts, ``run_tmmc_paralell.py`` an
 The stored values now allow to calculate the macrostate probability distribution (MPD), given access to all ensemble properties. Specifically, we can calculate the adsorption isotherm as follows.
 
 
+.. code:: python
+
+    max_loading = 44  # Maximum number of molecules to consider
+
+    ins_w, del_w  = simulator.load_tmmc_weights(
+        file_path='replica',
+        max_loading=max_loading,
+        replicas=range(1, 2),
+        show_progress=True
+    )
+
+    press_list = np.concatenate(
+    [np.arange(1, 300, 10),
+     np.arange(300, 5000, 50)]
+    )
+
+    fugacity = np.array([ads.eos.get_fugacity_coefficient(298.15, pressure_pa) * pressure_pa for pressure_pa in press_list])
+
+
+    uptake_list, uptake_sd, pi_list = simulator.compute_isotherm(
+        fugacities_Pa=fugacity,
+        uptake_units='nmol',
+        show_progress=True
+    )
+
+
 References
 ~~~~~~~~~~
 
