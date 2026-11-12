@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 Prepares markdown release notes for GitHub releases.
 """
