@@ -1,3 +1,9 @@
+"""
+This script runs a hybrid TMMC-MD simulation using the FLAMES package. It performs a series of GCMC simulations followed by MD simulations for a range of molecule counts in sequence, and then runs TMMC on the resulting trajectories.
+The script takes command-line arguments for external pressure, external temperature, and the maximum number of molecules to simulate. It uses a custom MACE model for energy calculations and saves the results in specified output folders
+for each molecule count.
+"""
+
 import os
 
 # Hide UserWarning and RuntimeWarning messages
