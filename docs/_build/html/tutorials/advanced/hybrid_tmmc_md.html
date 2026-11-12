@@ -7,7 +7,7 @@
         <link rel="prefetch" href="../../_static/logo-light-mode.png" as="image">
         <link rel="prefetch" href="../../_static/logo-dark-mode.png" as="image">
 
-    <link rel="shortcut icon" href="../../_static/favicon.ico"><!-- Generated with Sphinx 7.3.7 and Furo 2025.12.19 -->
+    <link rel="shortcut icon" href="../../_static/favicon.ico"><!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
         <title>Hybrid TMMC/MD Simulation - FLAMES v0.5.0</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
@@ -239,8 +239,6 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Development</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../CHANGELOG.html">Changelog</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../CONTRIBUTING.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://raw.githubusercontent.com/lipelopesoliveira/flames/main/LICENSE">License</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/lipelopesoliveira/flames">GitHub Repository</a></li>
 </ul>
@@ -302,7 +300,7 @@ The TMMC simulation needs to be run in combination with a Grand Canonical Monte 
 <p>In this example, we will investigate water adsorption in MOF-303, a promising candidate material for water harvesting due to its large water uptake at low relative pressures.
 Specifically, the seeding molecules are stabilized by a slight reorientation of the ligands, allowing the water molecule to form strong hydrogen-bonds with the framework.</p>
 <p>The MOF and adsorbate geometry can be found in <code class="docutils literal notranslate"><span class="pre">flames/examples/Advanced/02-TMMC/MOF-303_symm.cif</span></code> and <code class="docutils literal notranslate"><span class="pre">flames/examples/Advanced/02-TMMC/H2O.xyz</span></code>, respectively.
-For this example, we will use a basepoke MACE <a class="footnote-reference brackets" href="#id2" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> machine learning potential is located at <code class="docutils literal notranslate"><span class="pre">flames/examples/Advanced/02-TMMC/MOF-303_mace.model</span></code>.</p>
+For this example, we will use a basepoke MACE <a class="footnote-reference brackets" href="#id3" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> machine learning potential is located at <code class="docutils literal notranslate"><span class="pre">flames/examples/Advanced/02-TMMC/MOF-303_mace.model</span></code>.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>In this example, we will only run a TMMC simulation for the macrostate of 5 molecules, to obtain the full picture every possible macrostates needs to be sufficiently covered.</p>
@@ -372,7 +370,7 @@ For this example, we will use a basepoke MACE <a class="footnote-reference brack
     <span class="n">pressure</span><span class="o">=</span><span class="n">ExternalPressure</span><span class="p">,</span>
     <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
     <span class="n">vdw_radii</span><span class="o">=</span><span class="n">vdw_radii</span><span class="p">,</span>
-    <span class="n">vdw_factor</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">vdw_factor</span> <span class="o">=</span> <span class="mf">0.6</span><span class="p">,</span>
     <span class="n">adsorbate_energy</span><span class="o">=-</span><span class="mf">467.837350</span><span class="p">,</span>
     <span class="n">max_deltaE</span> <span class="o">=</span> <span class="mf">1.555</span><span class="p">,</span>
     <span class="n">save_frequency</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
@@ -412,7 +410,7 @@ For this example, we will use a basepoke MACE <a class="footnote-reference brack
     <span class="n">pressure</span><span class="o">=</span><span class="n">ExternalPressure</span><span class="p">,</span>
     <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
     <span class="n">vdw_radii</span><span class="o">=</span><span class="n">vdw_radii</span><span class="p">,</span>
-    <span class="n">vdw_factor</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">vdw_factor</span> <span class="o">=</span> <span class="mf">0.6</span><span class="p">,</span>
     <span class="n">adsorbate_energy</span><span class="o">=-</span><span class="mf">467.837350</span><span class="p">,</span>
     <span class="n">max_deltaE</span> <span class="o">=</span> <span class="mf">1.555</span><span class="p">,</span>
     <span class="n">save_frequency</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
@@ -435,11 +433,10 @@ For this example, we will use a basepoke MACE <a class="footnote-reference brack
 </section>
 <section id="equilibrating-the-system">
 <h2>2. Equilibrating the system<a class="headerlink" href="#equilibrating-the-system" title="Link to this heading">¶</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">MDSteps</span> <span class="o">=</span> <span class="mi">5000</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">MDSteps</span> <span class="o">=</span> <span class="mi">1000</span>
+<span class="n">MCSteps</span> <span class="o">=</span> <span class="mi">1000</span>
 
-<span class="n">MCSteps</span> <span class="o">=</span> <span class="mi">5000</span>
-
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
 <span class="n">gcmc</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">MCSteps</span><span class="p">)</span>
 
 <span class="n">gcmc</span><span class="o">.</span><span class="n">md</span><span class="p">(</span>
@@ -459,7 +456,7 @@ We will run 10 cycles of 5000 MC steps followed by 5000 MD steps, which should b
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">md_traj</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Trajectory_</span><span class="si">{</span><span class="n">NMolecules</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">.traj"</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span>
 
 <span class="n">gcmc</span><span class="o">.</span><span class="n">md</span><span class="p">(</span>
-    <span class="n">nsteps</span><span class="o">=</span><span class="mi">300000</span><span class="p">,</span>
+    <span class="n">nsteps</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
     <span class="n">time_step</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
     <span class="n">ensemble</span><span class="o">=</span><span class="s2">"NPT"</span><span class="p">,</span>
     <span class="n">thermostat</span><span class="o">=</span><span class="s2">"MTK"</span><span class="p">,</span>
@@ -470,12 +467,12 @@ We will run 10 cycles of 5000 MC steps followed by 5000 MD steps, which should b
 </pre></div>
 </div>
 <p>Here we will generate the equilibrated configurations by running a longer MD simulation in the NPT ensemble. The trajectory will be saved to a file for later analysis.
-We are saving the trajectory to a file named <code class="docutils literal notranslate"><span class="pre">Trajectory_0005.traj</span></code> for later analysis. The MD simulation is run for 300,000 steps with a time step of 0.5 fs and a MTK thermostat, saving
-the trajectory every 100 steps, generating a total of 3000 frames to run the TMMC simulation on.
+We are saving the trajectory to a file named <code class="docutils literal notranslate"><span class="pre">Trajectory_0005.traj</span></code> for later analysis. The MD simulation is run for 1000 steps with a time step of 0.5 fs and a MTK thermostat, saving
+the trajectory every 100 steps, generating a total of 10 frames to run the TMMC simulation on.
 The momenta are not reset at the beginning of the simulation to maintain the system’s dynamics from the previous equilibration step.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>For production calculations, the system needs to be well equilibrated for the simulations to be accurate. The number of MC and MD steps should be adjusted based on the system and the desired level of equilibration.</p>
+<p>For production calculations, the system needs to be well equilibrated for the simulations to be accurate. The number of MC and MD steps should be adjusted with considerably higher values based on the system and the desired level of equilibration.</p>
 </div>
 </section>
 <section id="running-the-tmmc-simulation">
@@ -489,7 +486,7 @@ The momenta are not reset at the beginning of the simulation to maintain the sys
     <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
     <span class="n">vdw_radii</span><span class="o">=</span><span class="n">vdw_radii</span><span class="p">,</span>
     <span class="n">adsorbate_energy</span><span class="o">=-</span><span class="mf">467.837350</span><span class="p">,</span>
-    <span class="n">vdw_factor</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">vdw_factor</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span>
     <span class="n">save_frequency</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">automatic_supercell</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">output_folder</span><span class="o">=</span><span class="n">outputFolder</span>
@@ -498,18 +495,18 @@ The momenta are not reset at the beginning of the simulation to maintain the sys
 <span class="n">tmmc</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">print_header</span><span class="p">()</span>
 
 
-<span class="n">tmmc</span><span class="o">.</span><span class="n">run_tmmc</span><span class="p">(</span><span class="mi">3000</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Trajectory_</span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">NMolecules</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">.traj"</span><span class="p">)</span>
+<span class="n">tmmc</span><span class="o">.</span><span class="n">run_tmmc</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Trajectory_</span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">NMolecules</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">.traj"</span><span class="p">)</span>
 
 <span class="n">tmmc</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">print_summary</span><span class="p">()</span>
 <span class="n">tmmc</span><span class="o">.</span><span class="n">save_results</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>Here 3000 virtual insertions and deletions will be performed on each of the 3000 frames generated in the previous step, generating in total 9.000.000 evaluations per macrostate, and 405.000.000 in total.
+<p>Here 100 virtual insertions and deletions will be performed on each of the 10 frames generated in the previous step, generating in total 1.000 evaluations per macrostate, and 45.000 in total.
 This will allow the construction of the transition matrix and allowing to calculate the macrostate probability distribution (MPD) and all ensemble properties.</p>
 <p>After this step, three new files will be created in the output folder: <code class="docutils literal notranslate"><span class="pre">del_ernergy_0005.npy</span></code>, <code class="docutils literal notranslate"><span class="pre">ins_ernergy_0005.npy</span></code>, and <code class="docutils literal notranslate"><span class="pre">volume_0005.npy</span></code>, containing the deletion energies, insertion energies and volumes, respectively.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>For the results analysis it is necessary to have data for all macrostates, which is not the case in this example. The following code snippet is only for demonstration purposes. For the MOF-303, it is necessary to run from N=0 to N=44 to obtain the full adsorption isotherm.</p>
+<p>For the results analysis it is necessary to have data for all macrostates, which is not the case in this example. The following code snippet is only for demonstration purposes. For the MOF-303, it is necessary to run from N=0 to N=45 to obtain the full adsorption isotherm.</p>
 </div>
 <p>Each macrostate can be executed in parallel, allowing to speed up the calculations.</p>
 <p>In case you plan to run them serially (if you only have access to one GPU), you can start the each new step from the results of the previous one to speed up the equilibration.
@@ -523,11 +520,278 @@ For example, you can start the N=6 macrostate from the final configuration of th
 <section id="analyzing-the-output">
 <h2>5. Analyzing the output<a class="headerlink" href="#analyzing-the-output" title="Link to this heading">¶</a></h2>
 <p>The stored values now allow to calculate the macrostate probability distribution (MPD), given access to all ensemble properties. Specifically, we can calculate the adsorption isotherm as follows.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqmd</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">read</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">vdw_radii</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">flames.adsorbate</span><span class="w"> </span><span class="kn">import</span> <span class="n">Adsorbate</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flames.tmmc</span><span class="w"> </span><span class="kn">import</span> <span class="n">TMMC</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.calculators.singlepoint</span><span class="w"> </span><span class="kn">import</span> <span class="n">SinglePointCalculator</span>
+
+<span class="n">ads</span> <span class="o">=</span> <span class="n">Adsorbate</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">'H2O'</span><span class="p">,</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">read</span><span class="p">(</span><span class="s1">'H2O.xyz'</span><span class="p">),</span>
+    <span class="n">eos</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">"criticalTemperature"</span><span class="p">:</span> <span class="mf">647.096</span><span class="p">,</span>
+        <span class="s2">"criticalPressure"</span><span class="p">:</span> <span class="mi">22064000</span><span class="p">,</span>
+        <span class="s2">"acentricFactor"</span><span class="p">:</span> <span class="mf">0.3449</span><span class="p">,</span>
+
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="n">framework</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="s1">'MOF-303_symm.cif'</span><span class="p">)</span>
+
+<span class="c1"># Create a dummy calculator to be able to use the TMMC class</span>
+<span class="n">calc</span> <span class="o">=</span> <span class="n">SinglePointCalculator</span><span class="p">(</span>
+    <span class="n">atoms</span><span class="o">=</span><span class="n">framework</span><span class="p">,</span>
+    <span class="n">energy</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">forces</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">framework</span><span class="p">),</span> <span class="mi">3</span><span class="p">)),</span>
+    <span class="n">stress</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="p">)</span>
+
+<span class="n">simulator</span> <span class="o">=</span> <span class="n">TMMC</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">calc</span><span class="p">,</span>
+    <span class="n">framework_atoms</span><span class="o">=</span><span class="n">framework</span><span class="p">,</span>
+    <span class="n">adsorbates</span><span class="o">=</span><span class="n">ads</span><span class="p">,</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="mf">298.0</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="s1">'cpu'</span><span class="p">,</span>
+    <span class="n">pressure</span><span class="o">=</span><span class="mf">1e5</span><span class="p">,</span>
+    <span class="n">vdw_radii</span><span class="o">=</span><span class="n">vdw_radii</span><span class="p">,</span>
+    <span class="n">vdw_factor</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span>
+    <span class="n">framework_energy</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">adsorbate_energy</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">automatic_supercell</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">max_loading</span> <span class="o">=</span> <span class="mi">45</span>
+
+<span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="s1">'replica_1'</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_loading</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)):</span>
+
+    <span class="n">folder</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">'results_298.00_100000.00_</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s1">03d</span><span class="si">}</span><span class="s1">'</span>
+
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="sa">f</span><span class="s1">'del_energy_H2O_</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s1">04d</span><span class="si">}</span><span class="s1">.npy'</span><span class="p">),</span> <span class="sa">f</span><span class="s1">'replica_1/del_energy_H2O_</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s1">04d</span><span class="si">}</span><span class="s1">.npy'</span><span class="p">,</span> <span class="p">)</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="sa">f</span><span class="s1">'ins_energy_H2O_</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s1">04d</span><span class="si">}</span><span class="s1">.npy'</span><span class="p">),</span> <span class="sa">f</span><span class="s1">'replica_1/ins_energy_H2O_</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s1">04d</span><span class="si">}</span><span class="s1">.npy'</span><span class="p">)</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="sa">f</span><span class="s1">'volume_</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s1">04d</span><span class="si">}</span><span class="s1">.npy'</span><span class="p">),</span> <span class="sa">f</span><span class="s1">'replica_1/volume_</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s1">04d</span><span class="si">}</span><span class="s1">.npy'</span><span class="p">)</span>
+
+<span class="n">press_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">5000</span><span class="p">,</span> <span class="mi">50</span><span class="p">)]</span>
+    <span class="p">)</span>
+
+<span class="n">fugacity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">ads</span><span class="o">.</span><span class="n">eos</span><span class="o">.</span><span class="n">get_fugacity_coefficient</span><span class="p">(</span><span class="mf">298.15</span><span class="p">,</span> <span class="n">pressure_pa</span><span class="p">)</span> <span class="o">*</span> <span class="n">pressure_pa</span> <span class="k">for</span> <span class="n">pressure_pa</span> <span class="ow">in</span> <span class="n">press_list</span><span class="p">])</span>
+
+<span class="n">ins_w</span><span class="p">,</span> <span class="n">del_w</span>  <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">load_tmmc_weights</span><span class="p">(</span>
+    <span class="n">file_path</span><span class="o">=</span><span class="s1">'replica'</span><span class="p">,</span>
+    <span class="n">max_loading</span><span class="o">=</span><span class="n">max_loading</span><span class="p">,</span>
+    <span class="n">replicas</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+    <span class="n">show_progress</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+<span class="n">uptake_list</span><span class="p">,</span> <span class="n">uptake_sd</span><span class="p">,</span> <span class="n">pi_list</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">compute_isotherm</span><span class="p">(</span>
+    <span class="n">fugacities_Pa</span><span class="o">=</span><span class="n">fugacity</span><span class="p">,</span>
+    <span class="n">uptake_units</span><span class="o">=</span><span class="s1">'nmol'</span><span class="p">,</span>
+    <span class="n">show_progress</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_isotherm</span><span class="p">(</span>
+        <span class="n">fugacity</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">uptake</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">uptake_sd</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">pi_list</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">conversion_factor</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">max_loading</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">p_sat</span><span class="o">=</span><span class="mi">3169</span><span class="p">,</span>
+        <span class="n">experimental_data_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">highlight_points</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">width_ratios</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">],</span> <span class="n">sharey</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fugacity</span> <span class="o">/</span> <span class="n">p_sat</span><span class="p">,</span> <span class="n">uptake</span> <span class="o">*</span> <span class="n">conversion_factor</span><span class="p">,</span> <span class="s1">'-'</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"TMMC Simulation"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"blue"</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">fugacity</span> <span class="o">/</span> <span class="n">p_sat</span><span class="p">,</span> <span class="p">(</span><span class="n">uptake</span> <span class="o">-</span> <span class="n">uptake_sd</span><span class="p">)</span> <span class="o">*</span> <span class="n">conversion_factor</span><span class="p">,</span> <span class="p">(</span><span class="n">uptake</span> <span class="o">+</span> <span class="n">uptake_sd</span><span class="p">)</span> <span class="o">*</span> <span class="n">conversion_factor</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"blue"</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+
+    <span class="c1">#ax[0].errorbar(fugacity / p_sat, uptake, yerr=uptake_sd, fmt='o', ecolor='blue', color='blue', label="TMMC Adsorption", alpha=0.5, capsize=2, markersize=3)</span>
+
+    <span class="k">if</span> <span class="n">experimental_data_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">exp_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">experimental_data_path</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">","</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">exp_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">exp_data</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">"dimgrey"</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Experimental Data"</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"Relative Pressure (P/P0)"</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"H$_2$O uptake (g/g)"</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+
+
+    <span class="n">color_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"red"</span><span class="p">,</span> <span class="s2">"green"</span><span class="p">,</span> <span class="s2">"orange"</span><span class="p">,</span> <span class="s2">"blue"</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">highlight_points</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Find the index that is closer to the specified highlight points</span>
+        <span class="n">points_position</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">fugacity</span> <span class="o">/</span> <span class="n">p_sat</span> <span class="o">-</span> <span class="n">point</span><span class="p">))</span> <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="n">highlight_points</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">point</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">points_position</span><span class="p">):</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fugacity</span><span class="p">[</span><span class="n">point</span><span class="p">]</span> <span class="o">/</span> <span class="n">p_sat</span><span class="p">,</span> <span class="n">uptake</span><span class="p">[</span><span class="n">point</span><span class="p">]</span> <span class="o">*</span> <span class="n">conversion_factor</span><span class="p">,</span> <span class="s1">'o'</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color_list</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">point</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">points_position</span><span class="p">):</span>
+                <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">barh</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">max_loading</span><span class="p">)))</span> <span class="o">*</span> <span class="n">conversion_factor</span><span class="p">,</span> <span class="n">pi_list</span><span class="p">[</span><span class="n">point</span><span class="p">],</span>
+                    <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">"P/P0 = </span><span class="si">{</span><span class="n">fugacity</span><span class="p">[</span><span class="n">point</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">p_sat</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="n">color_list</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="n">conversion_factor</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="n">color_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="p">)</span>
+
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.65</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">framealpha</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.65</span><span class="p">)</span>
+    <span class="c1">#ax[1].set_xlim(0, 0.3)</span>
+
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">framealpha</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">"Normalized MPD ($\Pi$)"</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+
+    <span class="c1"># Remove the top and right spines from both subplots</span>
+    <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">ax</span><span class="p">:</span>
+        <span class="n">a</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">'top'</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">a</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">'right'</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">'left'</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># Turn off scientific notation for the x-axis of the second subplot</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ticklabel_format</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="s1">'plain'</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s1">'y'</span><span class="p">)</span>
+
+    <span class="c1"># Remove left ticks and labels from the second subplot</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">'y'</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">'both'</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">labelleft</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">))</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plot_isotherm</span><span class="p">(</span>
+    <span class="n">fugacity</span><span class="o">=</span><span class="n">fugacity</span><span class="p">,</span>
+    <span class="n">uptake</span><span class="o">=</span><span class="n">uptake_list</span><span class="p">,</span>
+    <span class="n">uptake_sd</span><span class="o">=</span><span class="n">uptake_sd</span><span class="p">,</span>
+    <span class="n">conversion_factor</span><span class="o">=</span><span class="n">simulator</span><span class="o">.</span><span class="n">conv_factors</span><span class="p">[</span><span class="s1">'mg/g'</span><span class="p">][</span><span class="s1">'H2O'</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-3</span><span class="p">,</span>
+    <span class="n">pi_list</span><span class="o">=</span><span class="n">pi_list</span><span class="p">,</span>
+    <span class="n">max_loading</span><span class="o">=</span><span class="n">max_loading</span><span class="p">,</span>
+    <span class="n">p_sat</span><span class="o">=</span><span class="mi">3169</span><span class="p">,</span>
+    <span class="n">experimental_data_path</span><span class="o">=</span><span class="s2">"MOF-303_298K_exp.csv"</span><span class="p">,</span>
+    <span class="n">highlight_points</span><span class="o">=</span><span class="p">[</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">]</span>
+<span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="id2">
+<h2>Breaking down the input script<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a dummy calculator to be able to use the TMMC class</span>
+<span class="n">calc</span> <span class="o">=</span> <span class="n">SinglePointCalculator</span><span class="p">(</span>
+    <span class="n">atoms</span><span class="o">=</span><span class="n">framework</span><span class="p">,</span>
+    <span class="n">energy</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">forces</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">framework</span><span class="p">),</span> <span class="mi">3</span><span class="p">)),</span>
+    <span class="n">stress</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="p">)</span>
+
+<span class="n">simulator</span> <span class="o">=</span> <span class="n">TMMC</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">calc</span><span class="p">,</span>
+    <span class="n">framework_atoms</span><span class="o">=</span><span class="n">framework</span><span class="p">,</span>
+    <span class="n">adsorbates</span><span class="o">=</span><span class="n">ads</span><span class="p">,</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="mf">298.0</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="s1">'cpu'</span><span class="p">,</span>
+    <span class="n">pressure</span><span class="o">=</span><span class="mf">1e5</span><span class="p">,</span>
+    <span class="n">vdw_radii</span><span class="o">=</span><span class="n">vdw_radii</span><span class="p">,</span>
+    <span class="n">framework_energy</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">adsorbate_energy</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">automatic_supercell</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>This first block of the script is used to create a dummy calculator to be able to use the TMMC class.
+The TMMC class requires a calculator to be passed as an argument, but since we are only interested in analyzing the results, we can use a dummy calculator that does not perform any calculations.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">max_loading</span> <span class="o">=</span> <span class="mi">45</span>
+
+<span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="s1">'replica_1'</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_loading</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)):</span>
+
+    <span class="n">folder</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">'results_298.00_100000.00_</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s1">03d</span><span class="si">}</span><span class="s1">'</span>
+
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="sa">f</span><span class="s1">'del_energy_H2O_</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s1">04d</span><span class="si">}</span><span class="s1">.npy'</span><span class="p">),</span> <span class="sa">f</span><span class="s1">'replica_1/del_energy_H2O_</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s1">04d</span><span class="si">}</span><span class="s1">.npy'</span><span class="p">,</span> <span class="p">)</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="sa">f</span><span class="s1">'ins_energy_H2O_</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s1">04d</span><span class="si">}</span><span class="s1">.npy'</span><span class="p">),</span> <span class="sa">f</span><span class="s1">'replica_1/ins_energy_H2O_</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s1">04d</span><span class="si">}</span><span class="s1">.npy'</span><span class="p">)</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="sa">f</span><span class="s1">'volume_</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s1">04d</span><span class="si">}</span><span class="s1">.npy'</span><span class="p">),</span> <span class="sa">f</span><span class="s1">'replica_1/volume_</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s1">04d</span><span class="si">}</span><span class="s1">.npy'</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This part of the script is used to copy the results from each macrostate to a new folder called <code class="docutils literal notranslate"><span class="pre">replica_1</span></code>.
+This is done to facilitate the analysis of the results, as usually we will have multiple replicas of the same macrostate, and we want to analyze them together.</p>
+<p>Ideally, we would have multiple replicas of each macrostate (usually 5), and we would want to analyze them together. In this example, we only have one replica for each macrostate, but the code is written in a way that it can handle multiple replicas.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">press_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">5000</span><span class="p">,</span> <span class="mi">50</span><span class="p">)]</span>
+    <span class="p">)</span>
+
+<span class="n">fugacity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">ads</span><span class="o">.</span><span class="n">eos</span><span class="o">.</span><span class="n">get_fugacity_coefficient</span><span class="p">(</span><span class="mf">298.15</span><span class="p">,</span> <span class="n">pressure_pa</span><span class="p">)</span> <span class="o">*</span> <span class="n">pressure_pa</span> <span class="k">for</span> <span class="n">pressure_pa</span> <span class="ow">in</span> <span class="n">press_list</span><span class="p">])</span>
+
+<span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="s1">'tmmc_weights'</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">ins_w</span><span class="p">,</span> <span class="n">del_w</span>  <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">load_tmmc_weights</span><span class="p">(</span>
+    <span class="n">file_path</span><span class="o">=</span><span class="s1">'replica'</span><span class="p">,</span>
+    <span class="n">max_loading</span><span class="o">=</span><span class="n">max_loading</span><span class="p">,</span>
+    <span class="n">replicas</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+    <span class="n">show_progress</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+<span class="n">uptake_list</span><span class="p">,</span> <span class="n">uptake_sd</span><span class="p">,</span> <span class="n">pi_list</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">compute_isotherm</span><span class="p">(</span>
+    <span class="n">fugacities_Pa</span><span class="o">=</span><span class="n">fugacity</span><span class="p">,</span>
+    <span class="n">uptake_units</span><span class="o">=</span><span class="s1">'nmol'</span><span class="p">,</span>
+    <span class="n">show_progress</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>This part of the script is used to load the TMMC weights from the results of the simulations and compute the adsorption isotherm.
+It will load the insert and deletion energies and the volumes from all the macrostates and replicas to
+compute the macrostate probability distribution (MPD) and the adsorption isotherm. To facilitate the data processing, we are creating
+a new folder called <code class="docutils literal notranslate"><span class="pre">tmmc_weights</span></code> to store the TMMC weights for each replica. This is done to avoid loading the data from the results folder every time we want to compute the isotherm, which can be time-consuming.
+The weights are stored as <code class="docutils literal notranslate"><span class="pre">{replica}_del_weights.npz</span></code>, <code class="docutils literal notranslate"><span class="pre">{replica}_ins_weights.npz</span></code>.</p>
+<p>Then, we compute the adsorption isotherm by passing the fugacities to the <code class="docutils literal notranslate"><span class="pre">compute_isotherm</span></code> method of the TMMC class. The uptake is returned in <code class="docutils literal notranslate"><span class="pre">nmol</span></code>, which represents the number of molecules adsorbed per unit cell, and we can convert it to other units using the conversion factors provided by the TMMC class.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plot_isotherm</span><span class="p">(</span>
+    <span class="n">fugacity</span><span class="o">=</span><span class="n">fugacity</span><span class="p">,</span>
+    <span class="n">uptake</span><span class="o">=</span><span class="n">uptake_list</span><span class="p">,</span>
+    <span class="n">uptake_sd</span><span class="o">=</span><span class="n">uptake_sd</span><span class="p">,</span>
+    <span class="n">conversion_factor</span><span class="o">=</span><span class="n">simulator</span><span class="o">.</span><span class="n">conv_factors</span><span class="p">[</span><span class="s1">'mg/g'</span><span class="p">][</span><span class="s1">'H2O'</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-3</span><span class="p">,</span>
+    <span class="n">pi_list</span><span class="o">=</span><span class="n">pi_list</span><span class="p">,</span>
+    <span class="n">max_loading</span><span class="o">=</span><span class="n">max_loading</span><span class="p">,</span>
+    <span class="n">p_sat</span><span class="o">=</span><span class="mi">3169</span><span class="p">,</span>
+    <span class="n">experimental_data_path</span><span class="o">=</span><span class="s2">"MOF-303_298K_exp.csv"</span><span class="p">,</span>
+    <span class="n">highlight_points</span><span class="o">=</span><span class="p">[</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">]</span>
+<span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Finally, we can plot the adsorption isotherm and the macrostate probability distribution (MPD) using the <code class="docutils literal notranslate"><span class="pre">plot_isotherm</span></code> function defined in the script. This also plots the experimental data for comparison. The experimental data is loaded from a CSV file, which contains the relative pressure and the corresponding uptake values.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This <code class="docutils literal notranslate"><span class="pre">plot_isotherm</span></code> function is a simple example of how to plot the results, and it should be modified to suit the user’s needs.</p>
+</div>
+<p>The resulting isotherm should be similar to the one shown in the figure below, where the TMMC simulation results are compared with the experimental data.</p>
+<img alt="../../_images/MOF-303_298K_TMMC.png" src="../../_images/MOF-303_298K_TMMC.png" />
+<p>It is important to keep in mind that the results shown here are only for demonstration purposes, and the simulation needs to be run with a considerably higher number of samples to obtain more accurate results.</p>
 </section>
 <section id="references">
 <h2>References<a class="headerlink" href="#references" title="Link to this heading">¶</a></h2>
 <aside class="footnote-list brackets">
-<aside class="footnote brackets" id="id2" role="doc-footnote">
+<aside class="footnote brackets" id="id3" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
 <p>Batatia, I., Kovacs, D. P., Simm, G. N. C., Ortner, C., and Csanyi, G., 2022. MACE: Higher order equivariant message passing neural networks for fast and accurate force fields. Advances in Neural Information Processing Systems, edited by A. H. Oh, A. Agarwal, D. Belgrave, and K. Cho (2022). <a class="reference external" href="https://openreview.net/forum?id=YPpSngE-ZU">https://openreview.net/forum?id=YPpSngE-ZU</a></p>
 </aside>
@@ -608,6 +872,7 @@ For example, you can start the N=6 macrostate from the final configuration of th
 <li><a class="reference internal" href="#generating-equilibrated-configurations">3. Generating equilibrated configurations</a></li>
 <li><a class="reference internal" href="#running-the-tmmc-simulation">4. Running the TMMC simulation</a></li>
 <li><a class="reference internal" href="#analyzing-the-output">5. Analyzing the output</a></li>
+<li><a class="reference internal" href="#id2">Breaking down the input script</a></li>
 <li><a class="reference internal" href="#references">References</a></li>
 </ul>
 </li>
@@ -621,7 +886,7 @@ For example, you can start the N=6 macrostate from the final configuration of th
     </aside>
   </div>
 </div><script src="../../_static/documentation_options.js?v=1dd76d02"></script>
-    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
