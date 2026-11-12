@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import os
 
 # Hide UserWarning and RuntimeWarning messages
