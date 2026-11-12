@@ -113,17 +113,12 @@ def compute_ewald_recip(positions, charges, recip_cell, nx, ny, nz, alpha, volum
 
 
 class CustomEwald(Calculator):
-    implemented_properties = ["energy"]
-    default_parameters = {
-        "cutoff": 12.0,
-        "precision": 1e-6,
-    }
-    nolabel = True
-
-    def __init__(self, **kwargs):
+    """Custom ASE calculator for Ewald summation with dynamic parameter tuning."""
+    def __init__(self, **kwargs) -> None:
         Calculator.__init__(self, **kwargs)
         self.cutoff = kwargs.get("cutoff", 12.0)
         self.precision = kwargs.get("precision", 1e-6)
+        self.implemented_properties = ["energy", "electrostatic_energy"]
 
         # We will cache the tuning parameters so we only recalculate them
         # if the cell volume/shape changes (e.g., during NPT trial moves)
@@ -133,7 +128,7 @@ class CustomEwald(Calculator):
         self.recip_cell = None
         self.volume = None
 
-    def _tune_ewald_parameters(self, cell):
+    def _tune_ewald_parameters(self, cell) -> None:
         """Calculates alpha and k-space grid based on target precision."""
         self.volume = np.abs(np.linalg.det(cell))
 
@@ -155,7 +150,7 @@ class CustomEwald(Calculator):
         self.grid_limits = (nx, ny, nz)
         self._cached_cell = cell.copy()
 
-    def calculate(self, atoms=None, properties=None, system_changes=all_changes):
+    def calculate(self, atoms=None, properties=None, system_changes=all_changes) -> None:
         if properties is None:
             properties = self.implemented_properties
 
@@ -168,7 +163,7 @@ class CustomEwald(Calculator):
         charges = self.atoms.get_initial_charges()  # type: ignore
 
         if np.all(charges == 0):
-            raise ValueError("All atomic charges are zero. Ewald cannot compute.")
+            raise ValueError("All atomic charges are zero. Ewald should not be used.")
 
         # 2. Dynamic Auto-Tuning (Only updates if cell shape/volume changes)
         if self._cached_cell is None or not np.allclose(cell, self._cached_cell):
@@ -177,12 +172,6 @@ class CustomEwald(Calculator):
         nx, ny, nz = self.grid_limits
 
         # 3. Real-Space Component
-        # inv_cell = np.linalg.inv(cell)
-        # i_idx, j_idx, distances = numba_neighbor_list(
-        #    positions, cell, inv_cell, self.cutoff, use_robust_mic=True
-        # )
-
-        # u_real = compute_ewald_real(i_idx, j_idx, distances, charges, self.alpha)
         u_real = compute_ewald_real_exact(positions, charges, cell, self.alpha, self.cutoff)
 
         # 4. Reciprocal-Space Component
@@ -193,9 +182,8 @@ class CustomEwald(Calculator):
         # 5. Self-Energy Correction (Analytic constant)
         u_self = -(self.alpha / np.sqrt(np.pi)) * np.sum(charges**2)
 
-        # 6. Total Energy & Unit Conversion
-        # ASE standardizes electrostatic energy using the Coulomb constant
+        # 6. Total Energy & Unit Conversion to eV
         total_energy_ev = (u_real + u_recip + u_self) * units.Hartree * units.Bohr
 
         self.results["energy"] = total_energy_ev
-        self.results["free_energy"] = total_energy_ev
+        self.results["electrostatic_energy"] = total_energy_ev

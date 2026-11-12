@@ -69,15 +69,13 @@ class CustomLennardJones(Calculator):
         Default is False.
     """
 
-    implemented_properties = ["energy", "energies"]
-    nolabel = True
-
-    def __init__(self, lj_parameters: dict, **kwargs):
+    def __init__(self, lj_parameters: dict, **kwargs) -> None:
         Calculator.__init__(self, **kwargs)
 
         self.lj_params: dict = lj_parameters
         self.vdw_cutoff = kwargs.get("vdw_cutoff", 12.0)
         self.shifted = kwargs.get("shifted", False)
+        self.implemented_properties = ["energy", "energies", "lennard_jones_energy"]
 
         # 1. Cache the Vesin object so we don't rebuild it every MC step
         self.neighbor_calculator = NeighborList(cutoff=self.vdw_cutoff, full_list=False)
@@ -113,12 +111,7 @@ class CustomLennardJones(Calculator):
                     inv_rc6 = inv_rc2 * inv_rc2 * inv_rc2
                     self.shift_table[i, j] = inv_rc6 * (A * inv_rc6 - B)
 
-    def calculate(
-        self,
-        atoms=None,
-        properties=None,
-        system_changes=all_changes,
-    ):
+    def calculate(self, atoms=None, properties=None, system_changes=all_changes) -> None:
 
         if properties is None:
             properties = self.implemented_properties
@@ -159,4 +152,4 @@ class CustomLennardJones(Calculator):
 
         self.results["energy"] = total_e_k
         self.results["energies"] = atomic_e_k
-        self.results["free_energy"] = total_e_k
+        self.results["lennard_jones_energy"] = total_e_k

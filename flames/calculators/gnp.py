@@ -92,14 +92,6 @@ class CustomGNP(Calculator):
     Energy is evaluated as:
     E = exp(-(r - beta) / s) - C6 / (R^6 + r^6)
     """
-
-    implemented_properties = ["energy", "energies", "free_energy"]
-    default_parameters = {
-        "vdw_cutoff": 12.0,
-        "shifted": False,
-    }
-    nolabel = True
-
     def __init__(self, gnp_parameters: GNPParameters, **kwargs):
         """
         Parameters
@@ -116,6 +108,7 @@ class CustomGNP(Calculator):
         self.gnp_params: GNPParameters = gnp_parameters
         self.vdw_cutoff = kwargs.get("vdw_cutoff", 12.0)
         self.shifted = kwargs.get("shifted", False)
+        self.implemented_properties = ["energy", "energies", "gnp_energy"]
 
     def calculate(
         self,
@@ -176,4 +169,4 @@ class CustomGNP(Calculator):
         # Store in ASE results dictionary
         self.results["energy"] = total_e_eV
         self.results["energies"] = atomic_e_eV
-        self.results["free_energy"] = total_e_eV
+        self.results["gnp_energy"] = total_e_eV

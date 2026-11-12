@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-from typing import TextIO
 
 import ase
 import numpy as np
@@ -163,7 +162,8 @@ class BaseSimulator:
         os.makedirs(os.path.join(self.out_folder, "Movies"), exist_ok=True)
 
         if output_to_file:
-            self.out_file: TextIO | None = open(os.path.join(self.out_folder, "Output.out"), "a")
+            with open(os.path.join(self.out_folder, "Output.out"), "a") as f:
+                self.out_file = f
         else:
             self.out_file = None
 
@@ -377,7 +377,7 @@ class BaseSimulator:
             Number of adsorbate molecules in the framework.
         """
         if not isinstance(adsorbates, (Adsorbate, list)):
-            raise ValueError(
+            raise TypeError(
                 "Adsorbates must be an Adsorbate object or a list of Adsorbate objects. Not ",
                 type(adsorbates),
             )

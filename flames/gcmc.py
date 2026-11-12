@@ -307,7 +307,7 @@ class GCMC(BaseSimulator):
         if os.path.exists(os.path.join(self.out_folder, "Movies", "Trajectory.traj")):
             try:
                 self.load_state(os.path.join(self.out_folder, "Movies", "Trajectory.traj"))
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 self.logger._print(
                     "=" * 76
                     + "\n"
@@ -1364,7 +1364,9 @@ class GCMC(BaseSimulator):
 
         cm_position = atoms_trial[ads1_indices[0] : ads1_indices[-1] + 1].get_center_of_mass()
 
-        to_insert = next(ads.structure.copy() for ads in self.adsorbates if ads.tag == adsorbate2_tag)
+        to_insert = next(
+            ads.structure.copy() for ads in self.adsorbates if ads.tag == adsorbate2_tag
+        )
         to_insert.set_positions(to_insert.get_positions() - to_insert.get_center_of_mass() + cm_position)  # type: ignore
 
         # Delete the adsorbate atoms from the trial structure

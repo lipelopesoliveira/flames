@@ -142,13 +142,14 @@ class CustomEwald(Calculator):
         Default is 1e-6.
     """
 
-    implemented_properties = ["energy", "free_energy"]
-    nolabel = True
+    
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.cutoff = self.parameters.get("cutoff", 12.0)  # type: ignore
         self.precision = self.parameters.get("precision", 1e-6)  # type: ignore
+
+        self.implemented_properties = ["energy", "electrostatic_energy"]
 
         # Cache the tuning parameters so it only recalculate it if the cell volume/shape changes
         self._cached_cell = None
@@ -213,16 +214,16 @@ class CustomEwald(Calculator):
         # Real space energy
         u_real = _compute_ewald_real_numba(distances, q_i, q_j, self.alpha)
 
-        # Reciprocal Space energy
+        # 2. Reciprocal Space energy
         u_recip = _compute_ewald_recip_numba(
             positions, charges, self.recip_cell, nx, ny, nz, self.alpha, self.volume
         )
 
-        # Self Energy Correction
+        # 3. Self Energy Correction
         u_self = -(self.alpha / np.sqrt(np.pi)) * np.sum(charges**2)
 
         # Total Energy in eV
         total_energy_ev = (u_real + u_recip + u_self) * units.Hartree * units.Bohr
 
         self.results["energy"] = total_energy_ev
-        self.results["free_energy"] = total_energy_ev
+        self.results["electrostatic_energy"] = total_energy_ev

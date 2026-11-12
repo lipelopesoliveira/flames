@@ -178,16 +178,6 @@ class CustomLennardJones(Calculator):
     unexpected results!
     """
 
-    implemented_properties = ["energy", "energies"]
-    default_parameters = {
-        "epsilon": 1.0,
-        "sigma": 1.0,
-        "rc": None,
-        "ro": None,
-        "shifted": False,
-    }
-    nolabel = True
-
     def __init__(self, lj_parameters: dict, **kwargs):
         """
         Parameters
@@ -212,6 +202,7 @@ class CustomLennardJones(Calculator):
         self.lj_params: dict = lj_parameters
         self.vdw_cutoff = kwargs.get("vdw_cutoff", 12.0)
         self.shifted = kwargs.get("shifted", False)
+        self.implemented_properties = ["energy", "energies", "lennard_jones_energy"]
 
     def calculate(
         self,
@@ -261,4 +252,4 @@ class CustomLennardJones(Calculator):
 
         self.results["energy"] = total_e_k
         self.results["energies"] = atomic_e_k
-        self.results["free_energy"] = total_e_k
+        self.results["lennard_jones_energy"] = total_e_k

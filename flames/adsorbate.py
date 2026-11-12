@@ -26,7 +26,7 @@ class Adsorbate:
     def __init__(
         self,
         name: str,
-        structure: Atoms | str = Atoms(),
+        structure: Atoms | str,
         molar_mass: float | None = None,
         mol_fraction: float = 1.0,
         move_weights: MoveWeights | dict[str, float] | None = None,
@@ -131,10 +131,10 @@ class Adsorbate:
                 interpreted as file paths and read using ASE's default read behavior.
 
         Raises:
-            ValueError: If the input is not a recognized structure type or valid file.
+            TypeError: If the input is not a recognized structure type or valid file.
         """
         if not isinstance(value, Atoms):
-            raise ValueError("Structure must be an ASE Atoms object")
+            raise TypeError("Structure must be an ASE Atoms object")
 
         self._structure = value
 
@@ -153,14 +153,14 @@ class Adsorbate:
                 of move probabilities to construct one.
 
         Raises:
-            ValueError: If the input is neither a MoveWeights instance nor a dictionary.
+            TypeError: If the input is neither a MoveWeights instance nor a dictionary.
         """
         if isinstance(value, MoveWeights):
             self._move_weights = value
         elif isinstance(value, dict):
             self._move_weights = MoveWeights(**value)
         else:
-            raise ValueError(
+            raise TypeError(
                 "Weights must be a MoveWeights object or a dictionary of move probabilities."
             )
 
@@ -180,7 +180,7 @@ class Adsorbate:
                 If a dict is used, the structure must be set first to calculate molar mass.
 
         Raises:
-            ValueError: If structure is missing when passing a dict, or if the value type is invalid.
+            TypeError: If structure is missing when passing a dict, or if the value type is invalid.
         """
         if value is None:
             self._eos = None
@@ -188,12 +188,12 @@ class Adsorbate:
             self._eos = value
         elif isinstance(value, dict):
             if not self.structure:
-                raise ValueError(
+                raise TypeError(
                     "Structure must be set before setting EOS parameters via dictionary."
                 )
             self._eos = PengRobinsonEOS(**value, molar_mass=self.molar_mass)
         else:
-            raise ValueError(
+            raise TypeError(
                 "EOS must be a BaseEOS or PengRobinsonEOS object, a dictionary of EOS parameters, or None."
             )
 
@@ -205,12 +205,12 @@ class Adsorbate:
             float: The molar mass in g/mol.
 
         Raises:
-            ValueError: If the structure is not set or is empty.
+            TypeError: If the structure is not set or is empty.
         """
         if self.structure:
             return self.structure.get_masses().sum()  # type: ignore
         else:
-            raise ValueError("Structure is not set. Cannot calculate molar mass.")
+            raise TypeError("Structure is not set. Cannot calculate molar mass.")
 
     def pick_random_move(self, generator: np.random.Generator | None = None) -> str:
         """
@@ -240,7 +240,7 @@ class Adsorbate:
             Atoms | list[Atoms]: A deep copy of the selected atomic structure.
 
         Raises:
-            ValueError: If no structure has been assigned to the adsorbate.
+            TypeError: If no structure has been assigned to the adsorbate.
         """
 
         return deepcopy(self.structure)
