@@ -128,7 +128,7 @@ def test_set_structure_raises_error(dummy_water):
     """Test that EOS dict fails if there is no structure to get the molar mass from."""
     adsorbate = Adsorbate("H2O", structure=dummy_water)
 
-    with pytest.raises(ValueError, match="Structure must be an ASE Atoms object"):
+    with pytest.raises(TypeError, match="Structure must be an ASE Atoms object"):
         adsorbate.structure = None  # type: ignore
 
 
