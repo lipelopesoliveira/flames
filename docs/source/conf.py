@@ -36,7 +36,7 @@ release = VERSION
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
-    'sphinx.ext.mathjax',
+    "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
     "myst_parser",
     "sphinx.ext.intersphinx",

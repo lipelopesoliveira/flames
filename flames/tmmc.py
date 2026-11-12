@@ -548,12 +548,12 @@ class TMMC(BaseSimulator):
 
         At equilibrium, the system obeys the principle of detailed balance, meaning the
         probability flux between adjacent macrostates is equal:
-        
+
         Π(N) * P(N → N + 1) = Π(N + 1) * P(N + 1 → N)
 
         By rearranging this equality, the true physical MPD (Π) can be constructed
         iteratively from the transition probabilities (P):
-        
+
         ln Π(N + 1) = ln Π(N) + ln( P(N → N + 1) / P(N + 1 → N) )
 
         This function calculates those transition probabilities using the unbiased
