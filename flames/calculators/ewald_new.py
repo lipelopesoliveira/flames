@@ -142,8 +142,6 @@ class CustomEwald(Calculator):
         Default is 1e-6.
     """
 
-    
-
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.cutoff = self.parameters.get("cutoff", 12.0)  # type: ignore

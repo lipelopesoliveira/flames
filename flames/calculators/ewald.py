@@ -114,6 +114,7 @@ def compute_ewald_recip(positions, charges, recip_cell, nx, ny, nz, alpha, volum
 
 class CustomEwald(Calculator):
     """Custom ASE calculator for Ewald summation with dynamic parameter tuning."""
+
     def __init__(self, **kwargs) -> None:
         Calculator.__init__(self, **kwargs)
         self.cutoff = kwargs.get("cutoff", 12.0)

@@ -355,7 +355,7 @@ def read_cif(file_name: str, partial_charges_tag: str = "_atom_site_charge") -> 
 
     try:
         atom_site_label = list(cif.find_values("_atom_site_label"))
-    except Exception: # noqa: BLE001
+    except Exception:  # noqa: BLE001
         warnings.warn(
             "Warning: _atom_site_label not found in CIF file. Using _atom_site_type_symbol as labels."
         )
@@ -367,7 +367,7 @@ def read_cif(file_name: str, partial_charges_tag: str = "_atom_site_charge") -> 
         if len(partial_charges) == 0:
             partial_charges = np.zeros(len(atom_site_type_symbol))
 
-    except Exception: # noqa: BLE001
+    except Exception:  # noqa: BLE001
         warnings.warn(
             f"Warning: {partial_charges_tag} not found in CIF file. Setting all partial charges to zero."
         )

@@ -92,6 +92,7 @@ class CustomGNP(Calculator):
     Energy is evaluated as:
     E = exp(-(r - beta) / s) - C6 / (R^6 + r^6)
     """
+
     def __init__(self, gnp_parameters: GNPParameters, **kwargs):
         """
         Parameters
