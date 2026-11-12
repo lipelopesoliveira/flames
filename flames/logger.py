@@ -261,6 +261,27 @@ Accepted: {rnd_number < acc}
     ===========================================================================
     """)
 
+    def print_summary(self) -> None:
+        """
+        Print the footer for the simulation output.
+        This method is called at the end of the simulation to display the final results and elapsed time.
+        """
+
+        warning_text = "\n".join([f"WARNING: {warning}" for warning in self.warnings])
+
+        self._print(f"""
+        ===========================================================================
+        Simulation finished successfully!
+        
+        {len(self.warnings)} Warnings during the simulation.
+        {warning_text}
+        ===========================================================================
+        
+        Simulation finished at {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+        Simulation duration: {datetime.datetime.now() - self.sim.start_time}
+        ===========================================================================
+        """)
+
 
 class GCMCLogger(BaseLogger):
     """
