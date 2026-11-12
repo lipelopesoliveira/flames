@@ -231,7 +231,7 @@ class GCMC(BaseSimulator):
             "npt_md": self.try_npt_md,
         }
 
-        self.n_movements = {move: [] for move in self.movements.keys()}
+        self.n_movements = {move: [] for move in self.movements}
 
         # Base iteration for restarting the simulation. This is for tracking the iteration count only
         self._base_iteration: int = 0
@@ -346,7 +346,7 @@ class GCMC(BaseSimulator):
             state: ase.Atoms = read(state_file)  # type: ignore
 
         # Workaround to load the labels from Trajectory.info since ASE's Trajectory does not support custom arrays
-        if "labels" in state.info.keys():
+        if "labels" in state.info:
             state.set_array("labels", state.info["labels"])
 
         self.set_state(state)
@@ -355,7 +355,7 @@ class GCMC(BaseSimulator):
 
         average_binding_energy = self.current_total_energy - self.framework_energy
 
-        for ads_name in self.n_adsorbates.keys():
+        for ads_name in self.n_adsorbates:
             average_binding_energy -= self.n_adsorbates[ads_name] * self.adsorbate_energy[ads_name]
 
         average_binding_energy /= units.kJ / units.mol
@@ -1078,9 +1078,9 @@ class GCMC(BaseSimulator):
             self.get_adsorbates_index(tag=adsorbate_tag), axis=0
         )
 
-        mol_name = [
+        mol_name = next(
             adsorbate.name for adsorbate in self.adsorbates if adsorbate.tag == adsorbate_tag
-        ][0]
+        )
 
         # Create a trial system for the deletion
         atoms_trial = self.current_system.copy()
@@ -1364,9 +1364,7 @@ class GCMC(BaseSimulator):
 
         cm_position = atoms_trial[ads1_indices[0] : ads1_indices[-1] + 1].get_center_of_mass()
 
-        to_insert = [ads.structure.copy() for ads in self.adsorbates if ads.tag == adsorbate2_tag][
-            0
-        ]
+        to_insert = next(ads.structure.copy() for ads in self.adsorbates if ads.tag == adsorbate2_tag)
         to_insert.set_positions(to_insert.get_positions() - to_insert.get_center_of_mass() + cm_position)  # type: ignore
 
         # Delete the adsorbate atoms from the trial structure
@@ -1653,7 +1651,7 @@ class GCMC(BaseSimulator):
         # Randomly select a move based on the move weights
         ads_tag, move = self._pick_random_move()
 
-        ads_name = [ads.name for ads in self.adsorbates if ads.tag == ads_tag][0]
+        ads_name = next(ads.name for ads in self.adsorbates if ads.tag == ads_tag)
 
         accepted = self.movements[move](adsorbate_tag=ads_tag)
         self.n_movements[move].append(1 if accepted else 0)

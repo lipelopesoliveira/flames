@@ -5,7 +5,7 @@ import itertools
 import os
 import platform
 import sys
-from typing import Optional, TextIO
+from typing import TextIO
 
 import ase
 import numpy as np
@@ -20,7 +20,7 @@ class BaseLogger:
     Separates the presentation logic from the simulation logic.
     """
 
-    def __init__(self, simulation, output_file: Optional[TextIO] = None):
+    def __init__(self, simulation, output_file: TextIO | None = None):
         """
         Initializes the logger.
 
@@ -48,7 +48,7 @@ class BaseLogger:
     def print_header(self) -> None:
         """Prints the header for the simulation output."""
         atomic_numbers = set(
-            set(list(self.sim.framework.get_atomic_numbers()))
+            set(self.sim.framework.get_atomic_numbers())
             | set().union(
                 *[
                     set(adsorbate.structure.get_atomic_numbers())

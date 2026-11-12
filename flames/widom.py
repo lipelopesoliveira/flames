@@ -428,7 +428,7 @@ class Widom(BaseSimulator):
             group1_indices=np.arange(self.n_atoms_framework),
             group2_indices=np.arange(
                 self.n_atoms_framework,
-                self.n_atoms_framework + list(self.n_adsorbate_atoms.values())[0],
+                self.n_atoms_framework + next(iter(self.n_adsorbate_atoms.values())),
             ),
             vdw_radii=self.vdw,
         )

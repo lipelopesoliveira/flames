@@ -3,7 +3,6 @@ from __future__ import annotations
 import datetime
 import json
 import os
-
 from copy import deepcopy
 
 import ase
@@ -427,7 +426,7 @@ class TMMC(BaseSimulator):
                 )
             not_found_files = []
 
-            for n_mol in range(0, max_loading + 1):
+            for n_mol in range(max_loading + 1):
                 ins_file = f"{prefix}/ins_energy_H2O_{n_mol:04d}.npy"
                 del_file = f"{prefix}/del_energy_H2O_{n_mol:04d}.npy"
                 vol_file = f"{prefix}/volume_{n_mol:04d}.npy"
@@ -501,7 +500,7 @@ class TMMC(BaseSimulator):
             else:
                 prefix = f"{file_path}_{replica}"
                 for n_mol in tqdm(
-                    range(0, max_loading + 1),
+                    range(max_loading + 1),
                     desc=f"Loading weights (Replica {replica})",
                     disable=not show_progress,
                 ):
@@ -585,7 +584,7 @@ class TMMC(BaseSimulator):
         probs_minus = np.zeros((n_states, n_press))
 
         # Calculate transition probabilities P(N -> N+1) and P(N -> N-1)
-        for n_mol in tqdm(range(0, n_states), desc="Computing MPD (Π)", disable=not show_progress):
+        for n_mol in tqdm(range(n_states), desc="Computing MPD (Π)", disable=not show_progress):
 
             # Broadcast: (n_samples, 1) * (1, n_press) -> (n_samples, n_press)
             # P_ins(N -> N+1) = min(1, w_ins(N) * fugacity)
@@ -779,7 +778,7 @@ class TMMC(BaseSimulator):
             for ads_idx in tqdm(
                 ads_indices_list,
                 disable=(self.out_file is None),
-                desc="TMMC Deletions on frame  {:05d}".format(frame_number),
+                desc=f"TMMC Deletions on frame  {frame_number:05d}",
             ):
 
                 del_energy = self.try_virtual_deletion(self.adsorbates[0].tag, ads_index=ads_idx)
@@ -793,7 +792,7 @@ class TMMC(BaseSimulator):
             for iteration in tqdm(
                 range(1, N_per_frame + 1),
                 disable=(self.out_file is None),
-                desc="TMMC Insertions on frame {:05d}".format(frame_number),
+                desc=f"TMMC Insertions on frame {frame_number:05d}",
             ):
 
                 ins_energy = self.try_virtual_insertion(self.adsorbates[0].tag)

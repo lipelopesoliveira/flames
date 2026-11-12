@@ -1426,7 +1426,7 @@ def rdf_gcmc(
     atom_2: str,
     rmax: float = 10.0,
     binwidth: float = 0.1,
-    exclude_idx: list = [],
+    exclude_idx: list | None = None,
     surface: bool = False,
     show_progress: bool = True,
 ) -> np.ndarray:
@@ -1476,6 +1476,8 @@ def rdf_gcmc(
     """
 
     # --- 1. Setup ---
+    if exclude_idx is None:
+        exclude_idx = []
     if isinstance(images, Atoms):
         images = [images]
 
@@ -1484,7 +1486,7 @@ def rdf_gcmc(
         raise ValueError("No images provided.")
 
     # Ensure exclude_idx is a list of int
-    if not all([isinstance(ei, int) for ei in exclude_idx]):
+    if not all(isinstance(ei, int) for ei in exclude_idx):
         raise ValueError("Parameter exclude_idx must be a list of int.")
 
     # Check for integer indices in selectors (not allowed for GCMC)
@@ -1500,7 +1502,7 @@ def rdf_gcmc(
     dr = binwidth
     nbins = int(rmax / dr)
     if nbins == 0:
-        ValueError(f"Error: rmax ({rmax}) or binwidth ({binwidth}) results in 0 bins.")
+        raise ValueError(f"Error: rmax ({rmax}) or binwidth ({binwidth}) results in 0 bins.")
 
     bin_edges = np.linspace(0, rmax, nbins + 1)
     r_centers = (bin_edges[:-1] + bin_edges[1:]) / 2.0
@@ -1540,11 +1542,10 @@ def rdf_gcmc(
 
             frame_indices = []
             for element_symbol in idx_list:
-                if isinstance(element_symbol, str):
-                    if element_symbol in allElements:
-                        # Find all atoms with this symbol
-                        indices = [atom.index for atom in atoms if atom.symbol == element_symbol]  # type: ignore
-                        frame_indices.extend(indices)
+                if isinstance(element_symbol, str) and element_symbol in allElements:
+                    # Find all atoms with this symbol
+                    indices = [atom.index for atom in atoms if atom.symbol == element_symbol]  # type: ignore
+                    frame_indices.extend(indices)
                 # We already checked for ints, so no need for else
 
             # Apply exclusions and remove duplicates from this frame's list

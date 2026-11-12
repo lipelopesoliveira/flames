@@ -280,7 +280,7 @@ class BaseSimulator:
 
         if actual_iteration % self.save_every == 0:
             # Workaround to save the labels in Trajectory.info since ASE's Trajectory does not support custom arrays
-            if "labels" in self.current_system.arrays.keys():
+            if "labels" in self.current_system.arrays:
                 self.current_system.info["labels"] = self.current_system.get_array("labels")
 
             self.trajectory.write(self.current_system)  # type: ignore
@@ -422,7 +422,7 @@ class BaseSimulator:
             }
 
         elif isinstance(adsorbate_energy, dict):
-            if set(adsorbate_energy.keys()) != set(adsorbate.name for adsorbate in self.adsorbates):
+            if set(adsorbate_energy.keys()) != {adsorbate.name for adsorbate in self.adsorbates}:
                 raise ValueError(
                     "Keys of adsorbate_energy dict must match the names of the adsorbates."
                 )
@@ -512,7 +512,7 @@ Start optimizing framework structure...
             flush=True,
         )
 
-        resultsDict, optFramework = crystalOptimization(
+        _resultsDict, optFramework = crystalOptimization(
             atoms_in=self.framework,
             calculator=self.model,
             optimizer=LBFGS,  # type: ignore
@@ -565,7 +565,7 @@ Start optimizing adsorbate structure...
 
         for i in range(len(self.adsorbates)):
 
-            resultsDict, optAdsorbate = crystalOptimization(
+            _resultsDict, optAdsorbate = crystalOptimization(
                 atoms_in=self.adsorbates[i].structure,  # type: ignore
                 calculator=self.model,
                 optimizer=LBFGS,  # type: ignore
@@ -778,7 +778,7 @@ Start optimizing adsorbate structure...
                 pressure=self.P * 1e-5,
                 time_step=time_step,
                 num_md_steps=nsteps,
-                isotropic=True if mode == "iso_shape" else False,
+                isotropic=mode == "iso_shape",
                 out_folder=self.out_folder,
                 out_file=self.out_file,  # type: ignore
                 output_interval=output_interval,
@@ -807,7 +807,7 @@ Start optimizing adsorbate structure...
 
         elif driver == "MTKNPT":
 
-            isotropic = True if (mode == "iso_flex" or mode == "iso_shape") else False
+            isotropic = bool(mode == "iso_flex" or mode == "iso_shape")
 
             new_state = nPT_MTKNPT(
                 atoms=self.current_system,

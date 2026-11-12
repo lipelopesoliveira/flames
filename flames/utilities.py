@@ -229,7 +229,7 @@ def check_weights(move_weights: dict) -> dict:
         raise TypeError("move_weights must be a dictionary, not " + str(type(move_weights)))
 
     # Check if the keys in move weights are insertion, deletion, translation, rotation
-    if not all([i in valid_keys for i in set(move_weights.keys())]):
+    if not all(i in valid_keys for i in set(move_weights.keys())):
         raise MoveKeyError(list(move_weights.keys()))
 
     # Raise a warning if any of the four moves are missing

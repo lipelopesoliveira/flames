@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 import os
 import sys
-from typing import Any, Dict, Optional, TextIO, Type
+from typing import Any, TextIO
 
 from ase import Atoms, units
 from ase.calculators.calculator import Calculator
@@ -142,7 +142,7 @@ def run_md_simulation(
     ], f"Unsupported thermostat: {thermostat}."
 
     # Base dynamics parameters shared across all simulations
-    dyn_params: Dict[str, Any] = {
+    dyn_params: dict[str, Any] = {
         "atoms": atoms,
         "timestep": time_step * units.fs,
         "loginterval": movie_interval,
@@ -241,8 +241,8 @@ def run_md_simulation(
 def _md_core(
     atoms: Atoms,
     model: Calculator,
-    dyn_class: Type[MolecularDynamics],
-    dyn_params: Dict[str, Any],
+    dyn_class: type[MolecularDynamics],
+    dyn_params: dict[str, Any],
     ensemble: str,
     method_label: str,
     temperature: float,
@@ -251,7 +251,7 @@ def _md_core(
     out_folder: str,
     out_file: TextIO,
     set_momenta: bool,
-    trajectory_file: Optional[Trajectory] = None,  # type: ignore
+    trajectory_file: Trajectory | None = None,  # type: ignore
 ) -> Atoms:
     """
     Internal engine that runs the ASE molecular dynamics process,
