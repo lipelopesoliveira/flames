@@ -7,8 +7,8 @@
         <link rel="prefetch" href="../../_static/logo-light-mode.png" as="image">
         <link rel="prefetch" href="../../_static/logo-dark-mode.png" as="image">
 
-    <link rel="shortcut icon" href="../../_static/favicon.ico"><!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
-        <title>Hybrid TMMC/MD Simulation - FLAMES v0.4.9</title>
+    <link rel="shortcut icon" href="../../_static/favicon.ico"><!-- Generated with Sphinx 7.3.7 and Furo 2025.12.19 -->
+        <title>Hybrid TMMC/MD Simulation - FLAMES v0.5.0</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -165,7 +165,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">FLAMES v0.4.9</div></a>
+      <a href="../../index.html"><div class="brand">FLAMES v0.5.0</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -285,96 +285,109 @@
 <h1>Hybrid TMMC/MD Simulation<a class="headerlink" href="#hybrid-tmmc-md-simulation" title="Link to this heading">¶</a></h1>
 <section id="brief-introduction-about-tmmc-simulation">
 <h2>Brief introduction about TMMC simulation<a class="headerlink" href="#brief-introduction-about-tmmc-simulation" title="Link to this heading">¶</a></h2>
-<p>The transition matrix Monte Carlo (TMMC) scheme is based on the determination of the system’s transition probabilities going from one macrostate (referring to the number of adsorbates inside the porous material) to another.
-Thus, the change of the total energy for insertion and deletion moves is recorded and used to construct the transition matrix (more details are given in the theoretical background) from which all ensemble properties can be derived.
-The TMMC simulation needs to be run in combination with a Grand Canonical Monte Carlo (GCMC) or Molecular Dynamics (MD) simulation to propagate the system.</p>
+<p>The transition matrix Monte Carlo (TMMC) scheme is based on the determination of the system’s transition probabilities going from one macrostate (referring to a fixed number of adsorbates inside the porous material) to another.
+The change of the total energy for a virtual insertion and virtual deletion moves is recorded and used to construct the transition matrix (more details are given in the theoretical background) from which all ensemble properties can be derived.
+The TMMC simulation needs to be run in combination with a Grand Canonical Monte Carlo (GCMC) or Molecular Dynamics (MD) simulation to propagate the system. The simulation follows five steps:</p>
+<ol class="arabic simple">
+<li><p>Initiate the system with a fixed number of adsorbates in the pore;</p></li>
+<li><p>Equilibrate the system using MC moves, MD moves, or a combination of both;</p></li>
+<li><p>Generate a set of equilibrated configurations;</p></li>
+<li><p>Perform virtual insertions and deletions on the equilibrated configurations to construct the transition matrix.</p></li>
+<li><p>Analyze the results to obtain the macrostate probability distribution (MPD) and all ensemble properties (adsorption isotherm).</p></li>
+</ol>
 </section>
 <hr class="docutils" />
-<section id="setting-the-stage">
-<h2>Setting the stage<a class="headerlink" href="#setting-the-stage" title="Link to this heading">¶</a></h2>
+<section id="step-1-initializing-the-simulation">
+<h2>Step 1. Initializing the simulation<a class="headerlink" href="#step-1-initializing-the-simulation" title="Link to this heading">¶</a></h2>
 <p>In this example, we will investigate water adsorption in MOF-303, a promising candidate material for water harvesting due to its large water uptake at low relative pressures.
-Specifically, the seeding molecules are stabilized by a slight reorientation of the ligands, allowing the water molecule to form hydrogen-bonds with the framework.</p>
-<p>The input system and the adsorbate geometry can be found in <code class="docutils literal notranslate"><span class="pre">flames/tests/mofs/MOF-303_5xH2O.xsf</span></code> and <code class="docutils literal notranslate"><span class="pre">flames/tests/adsorbates/H2O.xyz</span></code>, respectively.
-The used MACE <a class="footnote-reference brackets" href="#id4" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> machine learning potential is located at <code class="docutils literal notranslate"><span class="pre">flames/tests/models/MOF-303_mace.model</span></code>.</p>
+Specifically, the seeding molecules are stabilized by a slight reorientation of the ligands, allowing the water molecule to form strong hydrogen-bonds with the framework.</p>
+<p>The MOF and adsorbate geometry can be found in <code class="docutils literal notranslate"><span class="pre">flames/examples/Advanced/02-TMMC/MOF-303_symm.cif</span></code> and <code class="docutils literal notranslate"><span class="pre">flames/examples/Advanced/02-TMMC/H2O.xyz</span></code>, respectively.
+For this example, we will use a basepoke MACE <a class="footnote-reference brackets" href="#id2" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> machine learning potential is located at <code class="docutils literal notranslate"><span class="pre">flames/examples/Advanced/02-TMMC/MOF-303_mace.model</span></code>.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>In this example, we will only run a TMMC simulation for the macrostate of 5 molecules, to obtain the full picture every possible macrostates needs to be sufficiently covered.</p>
 </div>
-<p>The script below will execute 5 MD runs at 298 K (25°C) and 1 bar followed by one virtual insertion and deletion step after each run.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-
-<span class="c1"># Hide UserWarning and RuntimeWarning messages</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">ase</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">aim2dat.elements</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_atomic_radius</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">vdw_radii</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ase.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">read</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">mace.calculators</span><span class="w"> </span><span class="kn">import</span> <span class="n">mace_mp</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">flames.tmmc</span><span class="w"> </span><span class="kn">import</span> <span class="n">TMMC</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flames.gcmc</span><span class="w"> </span><span class="kn">import</span> <span class="n">GCMC</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flames.adsorbate</span><span class="w"> </span><span class="kn">import</span> <span class="n">Adsorbate</span>
 
 <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">UserWarning</span><span class="p">)</span>
 <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">RuntimeWarning</span><span class="p">)</span>
 
-<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"KMP_DUPLICATE_LIB_OK"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"TRUE"</span>
-
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"KMP_DUPLICATE_LIB_OK"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"TRUE"</span> <span class="c1"># Only required for windows users</span>
 
 <span class="n">device</span> <span class="o">=</span> <span class="s2">"cuda"</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">"cpu"</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">MACECalculator</span><span class="p">(</span><span class="n">model_path</span><span class="o">=</span><span class="s2">"tests/models/MOF-303_mace.model"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">default_dtype</span><span class="o">=</span><span class="s2">"float64"</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">MACECalculator</span><span class="p">(</span>
+    <span class="n">model_path</span><span class="o">=</span><span class="s2">"MOF-303_mace.model"</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+    <span class="n">default_dtype</span><span class="o">=</span><span class="s2">"float64"</span>
+    <span class="p">)</span>
 
-<span class="n">FrameworkPath</span> <span class="o">=</span> <span class="s2">"tests/mofs/MOF-303_5xH2O.xsf"</span>
-<span class="n">AdsorbatePath</span> <span class="o">=</span> <span class="s2">"tests/adsorbates/H2O.xyz"</span>
+<span class="n">FrameworkPath</span> <span class="o">=</span> <span class="s2">"MOF-303_symm.cif"</span>
+<span class="n">AdsorbatePath</span> <span class="o">=</span> <span class="s2">"H2O.xyz"</span>
 
 <span class="c1"># Load the framework structure</span>
-<span class="n">framework</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="n">FrameworkPath</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+<span class="n">framework</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="n">FrameworkPath</span><span class="p">)</span>
 
 <span class="c1"># Load the adsorbate structure</span>
-<span class="n">adsorbate</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="n">AdsorbatePath</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+<span class="n">adsorbate</span> <span class="o">=</span> <span class="n">Adsorbate</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">"H2O"</span><span class="p">,</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">read</span><span class="p">(</span><span class="n">AdsorbatePath</span><span class="p">),</span>
+    <span class="n">move_weights</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">"insertion"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="s2">"deletion"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="s2">"translation"</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="s2">"rotation"</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="s2">"reinsertion"</span><span class="p">:</span> <span class="mf">0.0</span>
+        <span class="p">},</span>
+    <span class="n">eos</span><span class="o">=</span><span class="p">{</span>
+    <span class="s2">"criticalTemperature"</span><span class="p">:</span> <span class="mf">647.096</span><span class="p">,</span>
+    <span class="s2">"criticalPressure"</span><span class="p">:</span> <span class="mf">22064000.0</span><span class="p">,</span>
+    <span class="s2">"acentricFactor"</span><span class="p">:</span> <span class="mf">0.3449</span>
+    <span class="p">}</span>
+<span class="p">)</span>
 
-<span class="n">TTemperature</span> <span class="o">=</span> <span class="mf">298.0</span>  <span class="c1"># in Kelvin</span>
-<span class="n">pressure</span> <span class="o">=</span> <span class="mi">100_000</span>  <span class="c1"># in Pa = 1 bar</span>
-<span class="n">MDSteps</span> <span class="o">=</span> <span class="mi">100</span>
-<span class="n">MCSteps</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">NMolecules</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">ExternalTemperature</span> <span class="o">=</span> <span class="mf">298.0</span>  <span class="c1"># in Kelvin</span>
+<span class="c1"># The pressure below is used only for the MD steps, the pressures for generating the isotherm will be used later</span>
+<span class="n">ExternalPressure</span> <span class="o">=</span> <span class="mi">100_000</span>  <span class="c1"># in Pa = 1 bar</span>
 
-<span class="n">vdw_radii</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">97</span><span class="p">):</span>
-    <span class="n">rad</span> <span class="o">=</span> <span class="n">get_atomic_radius</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">radius_type</span><span class="o">=</span><span class="s2">"chen_manz"</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">rad</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">vdw_radii</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">2.5</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">vdw_radii</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rad</span><span class="p">)</span>
+<span class="n">outputFolder</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">'results_</span><span class="si">{</span><span class="n">ExternalTemperature</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">ExternalPressure</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">NMolecules</span><span class="si">:</span><span class="s1">03d</span><span class="si">}</span><span class="s1">'</span>
 
-<span class="n">tmmc</span> <span class="o">=</span> <span class="n">TMMC</span><span class="p">(</span>
-    <span class="n">model</span><span class="p">,</span>
-    <span class="n">framework</span><span class="p">,</span>
-    <span class="n">adsorbate</span><span class="p">,</span>
-    <span class="n">temperature</span><span class="o">=</span><span class="n">TTemperature</span><span class="p">,</span>
-    <span class="n">pressure</span><span class="o">=</span><span class="n">pressure</span><span class="p">,</span>
+<span class="n">gcmc</span> <span class="o">=</span> <span class="n">GCMC</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+    <span class="n">framework_atoms</span><span class="o">=</span><span class="n">framework</span><span class="p">,</span>
+    <span class="n">adsorbates</span><span class="o">=</span><span class="n">adsorbate</span><span class="p">,</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="n">ExternalTemperature</span><span class="p">,</span>
+    <span class="n">pressure</span><span class="o">=</span><span class="n">ExternalPressure</span><span class="p">,</span>
     <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
     <span class="n">vdw_radii</span><span class="o">=</span><span class="n">vdw_radii</span><span class="p">,</span>
-    <span class="n">vdw_factor</span><span class="o">=</span><span class="mf">1.15</span><span class="p">,</span>
-    <span class="n">save_frequency</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">max_overlap_tries</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="n">tmmc</span><span class="o">.</span><span class="n">set_adsorbate</span><span class="p">(</span><span class="n">adsorbate</span><span class="p">,</span> <span class="o">-</span><span class="mf">467.837350</span><span class="p">,</span> <span class="n">n_adsorbates</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-<span class="n">tmmc</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">print_header</span><span class="p">()</span>
-
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
-    <span class="n">tmmc</span><span class="o">.</span><span class="n">npt</span><span class="p">(</span>
-        <span class="n">MDSteps</span><span class="p">,</span>
-        <span class="n">set_momenta</span><span class="o">=</span><span class="n">i</span><span class="o">==</span><span class="mi">0</span><span class="p">,</span>
-        <span class="n">mode</span><span class="o">=</span><span class="s2">"aniso_flex"</span><span class="p">,</span>
-        <span class="n">driver</span><span class="o">=</span><span class="s2">"NoseHoover"</span><span class="p">,</span>
-        <span class="n">output_interval</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-        <span class="n">ttime</span><span class="o">=</span><span class="mf">50.0</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
-        <span class="n">pfactor</span><span class="o">=</span><span class="mf">20.0</span>
+    <span class="n">vdw_factor</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">adsorbate_energy</span><span class="o">=-</span><span class="mf">467.837350</span><span class="p">,</span>
+    <span class="n">max_deltaE</span> <span class="o">=</span> <span class="mf">1.555</span><span class="p">,</span>
+    <span class="n">save_frequency</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="n">save_rejected</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">output_to_file</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">fugacity_coeff</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">random_seed</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">cutoff_radius</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">,</span>
+    <span class="n">automatic_supercell</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">output_folder</span><span class="o">=</span><span class="n">outputFolder</span>
     <span class="p">)</span>
-    <span class="n">tmmc</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">MCSteps</span><span class="p">)</span>
 
-<span class="n">tmmc</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">print_summary</span><span class="p">()</span>
-<span class="n">tmmc</span><span class="o">.</span><span class="n">save_results</span><span class="p">()</span>
+<span class="n">gcmc</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">print_header</span><span class="p">()</span>
+
+<span class="n">gcmc</span><span class="o">.</span><span class="n">insert_adsorbates</span><span class="p">(</span><span class="n">ads_name</span><span class="o">=</span><span class="n">adsorbate</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">n_adsorbates</span><span class="o">=</span><span class="n">NMolecules</span><span class="p">,</span> <span class="n">max_attempts</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -382,85 +395,141 @@ The used MACE <a class="footnote-reference brackets" href="#id4" id="id1" role="
 <section id="breaking-down-the-input-script">
 <h2>Breaking down the input script<a class="headerlink" href="#breaking-down-the-input-script" title="Link to this heading">¶</a></h2>
 <p>The first block of the code is similar to the one used in the Widom insertion tutorial, where we import the necessary libraries, set up the device, load the model and read the framework and adsorbate structures.</p>
-<section id="initializing-the-simulation">
-<h3>Initializing the simulation<a class="headerlink" href="#initializing-the-simulation" title="Link to this heading">¶</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">TTemperature</span> <span class="o">=</span> <span class="mf">298.0</span>  <span class="c1"># in Kelvin</span>
-<span class="n">pressure</span> <span class="o">=</span> <span class="mi">100_000</span>  <span class="c1"># in Pa = 1 bar</span>
-<span class="n">MDSteps</span> <span class="o">=</span> <span class="mi">100</span>
-<span class="n">MCSteps</span> <span class="o">=</span> <span class="mi">1</span>
+<section id="initializing-the-simulator">
+<h3>Initializing the simulator<a class="headerlink" href="#initializing-the-simulator" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">NMolecules</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">ExternalTemperature</span> <span class="o">=</span> <span class="mf">298.0</span>  <span class="c1"># in Kelvin</span>
+<span class="c1"># The pressure below is used only for the MD steps, the pressures for generating the isotherm will be used later</span>
+<span class="n">ExternalPressure</span> <span class="o">=</span> <span class="mi">100_000</span>  <span class="c1"># in Pa = 1 bar</span>
 
-<span class="n">vdw_radii</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">97</span><span class="p">):</span>
-    <span class="n">rad</span> <span class="o">=</span> <span class="n">get_atomic_radius</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">radius_type</span><span class="o">=</span><span class="s2">"chen_manz"</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">rad</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">vdw_radii</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">2.5</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">vdw_radii</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rad</span><span class="p">)</span>
+<span class="n">outputFolder</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">'results_</span><span class="si">{</span><span class="n">ExternalTemperature</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">ExternalPressure</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">NMolecules</span><span class="si">:</span><span class="s1">03d</span><span class="si">}</span><span class="s1">'</span>
 
-<span class="n">tmmc</span> <span class="o">=</span> <span class="n">TMMC</span><span class="p">(</span>
+<span class="n">gcmc</span> <span class="o">=</span> <span class="n">GCMC</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+    <span class="n">framework_atoms</span><span class="o">=</span><span class="n">framework</span><span class="p">,</span>
+    <span class="n">adsorbates</span><span class="o">=</span><span class="n">adsorbate</span><span class="p">,</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="n">ExternalTemperature</span><span class="p">,</span>
+    <span class="n">pressure</span><span class="o">=</span><span class="n">ExternalPressure</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+    <span class="n">vdw_radii</span><span class="o">=</span><span class="n">vdw_radii</span><span class="p">,</span>
+    <span class="n">vdw_factor</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">adsorbate_energy</span><span class="o">=-</span><span class="mf">467.837350</span><span class="p">,</span>
+    <span class="n">max_deltaE</span> <span class="o">=</span> <span class="mf">1.555</span><span class="p">,</span>
+    <span class="n">save_frequency</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="n">save_rejected</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">output_to_file</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">fugacity_coeff</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">random_seed</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">cutoff_radius</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">,</span>
+    <span class="n">automatic_supercell</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">output_folder</span><span class="o">=</span><span class="n">outputFolder</span>
+    <span class="p">)</span>
+
+<span class="n">gcmc</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">print_header</span><span class="p">()</span>
+
+<span class="n">gcmc</span><span class="o">.</span><span class="n">insert_adsorbates</span><span class="p">(</span><span class="n">ads_name</span><span class="o">=</span><span class="n">adsorbate</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">n_adsorbates</span><span class="o">=</span><span class="n">NMolecules</span><span class="p">,</span> <span class="n">max_attempts</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here, we are starting the system with 5 water molecules ramdonly inserted in the MOF-303 framework. At this point, we also add the DFT energy of a single water molecule (<code class="docutils literal notranslate"><span class="pre">-467.837350</span></code>) to the input since the used model was not trained on single molecules or the bulk water phase.</p>
+</section>
+</section>
+<section id="equilibrating-the-system">
+<h2>2. Equilibrating the system<a class="headerlink" href="#equilibrating-the-system" title="Link to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">MDSteps</span> <span class="o">=</span> <span class="mi">5000</span>
+
+<span class="n">MCSteps</span> <span class="o">=</span> <span class="mi">5000</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+<span class="n">gcmc</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">MCSteps</span><span class="p">)</span>
+
+<span class="n">gcmc</span><span class="o">.</span><span class="n">md</span><span class="p">(</span>
+    <span class="n">nsteps</span><span class="o">=</span><span class="n">MDSteps</span><span class="p">,</span>
+    <span class="n">time_step</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">ensemble</span><span class="o">=</span><span class="s2">"NPT"</span><span class="p">,</span>
+    <span class="n">thermostat</span><span class="o">=</span><span class="s2">"MTK"</span><span class="p">,</span>
+    <span class="n">movie_interval</span><span class="o">=</span><span class="mi">100</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Here we will run cycles of MC steps followed by MD steps to equilibrate the system. The number of MC and MD steps can be adjusted based on the system and the desired level of equilibration.
+We will run 10 cycles of 5000 MC steps followed by 5000 MD steps, which should be sufficient to equilibrate the system. The MD simulation is run in the NPT ensemble with a time step of 0.5 fs and a MTK thermostat.</p>
+</section>
+<section id="generating-equilibrated-configurations">
+<h2>3. Generating equilibrated configurations<a class="headerlink" href="#generating-equilibrated-configurations" title="Link to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">md_traj</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Trajectory_</span><span class="si">{</span><span class="n">NMolecules</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">.traj"</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span>
+
+<span class="n">gcmc</span><span class="o">.</span><span class="n">md</span><span class="p">(</span>
+    <span class="n">nsteps</span><span class="o">=</span><span class="mi">300000</span><span class="p">,</span>
+    <span class="n">time_step</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">ensemble</span><span class="o">=</span><span class="s2">"NPT"</span><span class="p">,</span>
+    <span class="n">thermostat</span><span class="o">=</span><span class="s2">"MTK"</span><span class="p">,</span>
+    <span class="n">movie_interval</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">set_momenta</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">trajectory_file</span><span class="o">=</span><span class="n">md_traj</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<p>Here we will generate the equilibrated configurations by running a longer MD simulation in the NPT ensemble. The trajectory will be saved to a file for later analysis.
+We are saving the trajectory to a file named <code class="docutils literal notranslate"><span class="pre">Trajectory_0005.traj</span></code> for later analysis. The MD simulation is run for 300,000 steps with a time step of 0.5 fs and a MTK thermostat, saving
+the trajectory every 100 steps, generating a total of 3000 frames to run the TMMC simulation on.
+The momenta are not reset at the beginning of the simulation to maintain the system’s dynamics from the previous equilibration step.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>For production calculations, the system needs to be well equilibrated for the simulations to be accurate. The number of MC and MD steps should be adjusted based on the system and the desired level of equilibration.</p>
+</div>
+</section>
+<section id="running-the-tmmc-simulation">
+<h2>4. Running the TMMC simulation<a class="headerlink" href="#running-the-tmmc-simulation" title="Link to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tmmc</span> <span class="o">=</span> <span class="n">TMMC</span><span class="p">(</span>
     <span class="n">model</span><span class="p">,</span>
     <span class="n">framework</span><span class="p">,</span>
     <span class="n">adsorbate</span><span class="p">,</span>
-    <span class="n">temperature</span><span class="o">=</span><span class="n">TTemperature</span><span class="p">,</span>
-    <span class="n">pressure</span><span class="o">=</span><span class="n">pressure</span><span class="p">,</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="n">ExternalTemperature</span><span class="p">,</span>
+    <span class="n">pressure</span><span class="o">=</span><span class="n">ExternalPressure</span><span class="p">,</span>
     <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
     <span class="n">vdw_radii</span><span class="o">=</span><span class="n">vdw_radii</span><span class="p">,</span>
-    <span class="n">vdw_factor</span><span class="o">=</span><span class="mf">1.15</span><span class="p">,</span>
+    <span class="n">adsorbate_energy</span><span class="o">=-</span><span class="mf">467.837350</span><span class="p">,</span>
+    <span class="n">vdw_factor</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
     <span class="n">save_frequency</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">max_overlap_tries</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+    <span class="n">automatic_supercell</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">output_folder</span><span class="o">=</span><span class="n">outputFolder</span>
 <span class="p">)</span>
-<span class="n">tmmc</span><span class="o">.</span><span class="n">set_adsorbate</span><span class="p">(</span><span class="n">adsorbate</span><span class="p">,</span> <span class="o">-</span><span class="mf">467.837350</span><span class="p">,</span> <span class="n">n_adsorbates</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
 <span class="n">tmmc</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">print_header</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>Herein, we use the <code class="docutils literal notranslate"><span class="pre">aim2dat</span></code> Python package, <a class="footnote-reference brackets" href="#id5" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a> obtaining the atomic radii defined by Chen and Manz, <a class="footnote-reference brackets" href="#id6" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a> to define the overlap criteria.</p>
-<p>Since the starting configuration of the MOF already contains 5 water molecules, we use the <code class="docutils literal notranslate"><span class="pre">set_adsorbate_function</span></code> to overwrite the internal adsorbate counter.
-At this point, we also add the DFT energy of a single water molecule (<code class="docutils literal notranslate"><span class="pre">-467.837350</span></code>) to the input since the used model was not trained on single molecules or the bulk water phase.</p>
-</section>
-<section id="running-the-simulation">
-<h3>Running the simulation<a class="headerlink" href="#running-the-simulation" title="Link to this heading">¶</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
-    <span class="n">tmmc</span><span class="o">.</span><span class="n">npt</span><span class="p">(</span>
-        <span class="n">MDSteps</span><span class="p">,</span>
-        <span class="n">set_momenta</span><span class="o">=</span><span class="n">i</span><span class="o">==</span><span class="mi">0</span><span class="p">,</span>
-        <span class="n">mode</span><span class="o">=</span><span class="s2">"aniso_flex"</span><span class="p">,</span>
-        <span class="n">driver</span><span class="o">=</span><span class="s2">"NoseHoover"</span><span class="p">,</span>
-        <span class="n">output_interval</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-        <span class="n">ttime</span><span class="o">=</span><span class="mf">50.0</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
-        <span class="n">pfactor</span><span class="o">=</span><span class="mf">20.0</span>
-    <span class="p">)</span>
-    <span class="n">tmmc</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">MCSteps</span><span class="p">)</span>
+
+
+<span class="n">tmmc</span><span class="o">.</span><span class="n">run_tmmc</span><span class="p">(</span><span class="mi">3000</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Trajectory_</span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">NMolecules</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">.traj"</span><span class="p">)</span>
 
 <span class="n">tmmc</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">print_summary</span><span class="p">()</span>
 <span class="n">tmmc</span><span class="o">.</span><span class="n">save_results</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>The latter part of the script runs the MD and TMMC simulations within in a <code class="docutils literal notranslate"><span class="pre">for</span></code> loop and stores the results at the very end.</p>
+<p>Here 3000 virtual insertions and deletions will be performed on each of the 3000 frames generated in the previous step, generating in total 9.000.000 evaluations per macrostate, and 405.000.000 in total.
+This will allow the construction of the transition matrix and allowing to calculate the macrostate probability distribution (MPD) and all ensemble properties.</p>
+<p>After this step, three new files will be created in the output folder: <code class="docutils literal notranslate"><span class="pre">del_ernergy_0005.npy</span></code>, <code class="docutils literal notranslate"><span class="pre">ins_ernergy_0005.npy</span></code>, and <code class="docutils literal notranslate"><span class="pre">volume_0005.npy</span></code>, containing the deletion energies, insertion energies and volumes, respectively.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>For production calculations, the system needs to be well equilibrated and the number of recorded insertion and deletion steps should be much larger.</p>
+<p>For the results analysis it is necessary to have data for all macrostates, which is not the case in this example. The following code snippet is only for demonstration purposes. For the MOF-303, it is necessary to run from N=0 to N=44 to obtain the full adsorption isotherm.</p>
 </div>
-</section>
+<p>Each macrostate can be executed in parallel, allowing to speed up the calculations.</p>
+<p>In case you plan to run them serially (if you only have access to one GPU), you can start the each new step from the results of the previous one to speed up the equilibration.
+For example, you can start the N=6 macrostate from the final configuration of the N=5 macrostate, and so on:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">PreviousN</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">gcmc</span><span class="o">.</span><span class="n">load_state</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">'results_</span><span class="si">{</span><span class="n">ExternalTemperature</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">ExternalPressure</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">PreviousN</span><span class="si">:</span><span class="s1">03d</span><span class="si">}</span><span class="s1">'</span><span class="p">,</span> <span class="s1">'Movies'</span><span class="p">,</span> <span class="s1">'Trajectory.traj'</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>In the example folder, there are two python scripts, <code class="docutils literal notranslate"><span class="pre">run_tmmc_paralell.py</span></code> and <code class="docutils literal notranslate"><span class="pre">run_tmmc_serial.py</span></code>. In the second one, each point is started from the final configuration of the previous macrostate, while in the first one, each macrostate runs independently.</p>
 </section>
 <section id="analyzing-the-output">
-<h2>Analyzing the output<a class="headerlink" href="#analyzing-the-output" title="Link to this heading">¶</a></h2>
-<p>The main output obtained from the simulation is contained in the <code class="docutils literal notranslate"><span class="pre">del_ernergy_0005.npy</span></code>, <code class="docutils literal notranslate"><span class="pre">ins_ernergy_0005.npy</span></code>, and <code class="docutils literal notranslate"><span class="pre">volume_0005.npy</span></code>, containing the deletion energies, insertion energies and volumes, respectively.
-The stored values allow to calculate the macrostate probability distribution (MPD), given access to all ensemble properties (more details are given in the theoretical background).</p>
+<h2>5. Analyzing the output<a class="headerlink" href="#analyzing-the-output" title="Link to this heading">¶</a></h2>
+<p>The stored values now allow to calculate the macrostate probability distribution (MPD), given access to all ensemble properties. Specifically, we can calculate the adsorption isotherm as follows.</p>
 </section>
 <section id="references">
 <h2>References<a class="headerlink" href="#references" title="Link to this heading">¶</a></h2>
 <aside class="footnote-list brackets">
-<aside class="footnote brackets" id="id4" role="doc-footnote">
+<aside class="footnote brackets" id="id2" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
 <p>Batatia, I., Kovacs, D. P., Simm, G. N. C., Ortner, C., and Csanyi, G., 2022. MACE: Higher order equivariant message passing neural networks for fast and accurate force fields. Advances in Neural Information Processing Systems, edited by A. H. Oh, A. Agarwal, D. Belgrave, and K. Cho (2022). <a class="reference external" href="https://openreview.net/forum?id=YPpSngE-ZU">https://openreview.net/forum?id=YPpSngE-ZU</a></p>
-</aside>
-<aside class="footnote brackets" id="id5" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
-<p>Saßnick, H.-D., Edzards J., Reents T., and Cocchi C., 2026. AIM2DAT: A Python-Based Automated Ab Initio Material Modeling and Data Analysis Toolkit. Electronic Structure, 8(3), 037001. <a class="reference external" href="https://doi.org/10.1088/2516-1075/ae8964">https://doi.org/10.1088/2516-1075/ae8964</a></p>
-</aside>
-<aside class="footnote brackets" id="id6" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">3</a><span class="fn-bracket">]</span></span>
-<p>Chen, T., and Manz T. A, 2019. A Collection of Forcefield Precursors for Metal–Organic Frameworks. RSC Advances, 9(63), 36492–36507. <a class="reference external" href="https://doi.org/10.1039/C9RA07327B">https://doi.org/10.1039/C9RA07327B</a></p>
 </aside>
 </aside>
 </section>
@@ -530,13 +599,15 @@ The stored values allow to calculate the macrostate probability distribution (MP
             <ul>
 <li><a class="reference internal" href="#">Hybrid TMMC/MD Simulation</a><ul>
 <li><a class="reference internal" href="#brief-introduction-about-tmmc-simulation">Brief introduction about TMMC simulation</a></li>
-<li><a class="reference internal" href="#setting-the-stage">Setting the stage</a></li>
+<li><a class="reference internal" href="#step-1-initializing-the-simulation">Step 1. Initializing the simulation</a></li>
 <li><a class="reference internal" href="#breaking-down-the-input-script">Breaking down the input script</a><ul>
-<li><a class="reference internal" href="#initializing-the-simulation">Initializing the simulation</a></li>
-<li><a class="reference internal" href="#running-the-simulation">Running the simulation</a></li>
+<li><a class="reference internal" href="#initializing-the-simulator">Initializing the simulator</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#analyzing-the-output">Analyzing the output</a></li>
+<li><a class="reference internal" href="#equilibrating-the-system">2. Equilibrating the system</a></li>
+<li><a class="reference internal" href="#generating-equilibrated-configurations">3. Generating equilibrated configurations</a></li>
+<li><a class="reference internal" href="#running-the-tmmc-simulation">4. Running the TMMC simulation</a></li>
+<li><a class="reference internal" href="#analyzing-the-output">5. Analyzing the output</a></li>
 <li><a class="reference internal" href="#references">References</a></li>
 </ul>
 </li>
@@ -549,8 +620,8 @@ The stored values allow to calculate the macrostate probability distribution (MP
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=ebe9904d"></script>
-    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+</div><script src="../../_static/documentation_options.js?v=1dd76d02"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>

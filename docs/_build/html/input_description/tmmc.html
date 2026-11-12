@@ -7,8 +7,8 @@
         <link rel="prefetch" href="../_static/logo-light-mode.png" as="image">
         <link rel="prefetch" href="../_static/logo-dark-mode.png" as="image">
 
-    <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
-        <title>TMMC Class - FLAMES v0.4.9</title>
+    <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 7.3.7 and Furo 2025.12.19 -->
+        <title>TMMC Class - FLAMES v0.5.0</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -165,7 +165,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">FLAMES v0.4.9</div></a>
+      <a href="../index.html"><div class="brand">FLAMES v0.5.0</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -286,7 +286,7 @@
 <p>The <code class="docutils literal notranslate"><span class="pre">TMMC</span></code> class serves as the main interface for handling TMMC simulation logic.</p>
 <dl class="py class">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flames.tmmc.</span></span><span class="sig-name descname"><span class="pre">TMMC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framework_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adsorbates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pressure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vdw_radii</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vdw_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_overlap_tries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_deltaE</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_frequency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_to_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flames.tmmc.</span></span><span class="sig-name descname"><span class="pre">TMMC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framework_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adsorbates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pressure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vdw_radii</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vdw_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framework_energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adsorbate_energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_translation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.float64(1.5707963267948966)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_deltaE</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.555</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_frequency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_to_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">automatic_supercell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseSimulator</span></code></p>
 <p>Base class for transition matrix Monte Carlo (TMMC) simulations using ASE.</p>
 <p>This class implements TMMC deletion/insertion moves, recording the
@@ -297,32 +297,155 @@ deletion/insertion energies of the adsorbate.</p>
 <li><p><strong>model</strong> (<em>ase.calculators.calculator.Calculator</em>) – The calculator to use for energy calculations. Can be any ASE-compatible calculator.
 The output of the calculator should be in eV.</p></li>
 <li><p><strong>framework_atoms</strong> (<em>ase.Atoms</em>) – The framework structure as an ASE Atoms object.</p></li>
-<li><p><strong>adsorbates</strong> (<em>Adsorbate</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><em>Adsorbate</em><em>]</em>) – The adsorbate structure(s) as an Adsorbate object or list of Adsorbate objects.</p></li>
-<li><p><strong>temperature</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Temperature of the ideal reservoir in Kelvin.</p></li>
-<li><p><strong>pressure</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Pressure of the ideal reservoir in Pascal.</p></li>
-<li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Device to run the simulation on, e.g., <code class="docutils literal notranslate"><span class="pre">'cpu'</span></code> or <code class="docutils literal notranslate"><span class="pre">'cuda'</span></code>.</p></li>
+<li><p><strong>adsorbates</strong> (<em>Adsorbate</em><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><em>Adsorbate</em><em>]</em>) – The adsorbate structure(s) as an Adsorbate object or list of Adsorbate objects.</p></li>
+<li><p><strong>temperature</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Temperature of the ideal reservoir in Kelvin.</p></li>
+<li><p><strong>pressure</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Pressure of the ideal reservoir in Pascal.</p></li>
+<li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Device to run the simulation on, e.g., <code class="docutils literal notranslate"><span class="pre">'cpu'</span></code> or <code class="docutils literal notranslate"><span class="pre">'cuda'</span></code>.</p></li>
 <li><p><strong>vdw_radii</strong> (<em>np.ndarray</em>) – Van der Waals radii for the atoms in the framework and adsorbate.
 Should be an array of the same length as the number of atomic numbers in ASE.</p></li>
-<li><p><strong>vdw_factor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Factor to scale the Van der Waals radii. Default is <code class="docutils literal notranslate"><span class="pre">0.6</span></code>.</p></li>
-<li><p><strong>save_frequency</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Frequency at which to save the simulation state and results. Default is <code class="docutils literal notranslate"><span class="pre">100</span></code>.</p></li>
-<li><p><strong>output_to_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, writes the output to a file named <code class="docutils literal notranslate"><span class="pre">output_{temperature}_{pressure}.out</span></code> in the <code class="docutils literal notranslate"><span class="pre">results</span></code> directory. Default is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
-<li><p><strong>output_folder</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – Folder to save the output files. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, a folder named <code class="docutils literal notranslate"><span class="pre">results_&lt;T&gt;_&lt;P&gt;</span></code> will be created.</p></li>
-<li><p><strong>debug</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, prints detailed debug information during the simulation. Default is <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
-<li><p><strong>random_seed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – Random seed for reproducibility. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code> and will generate a random seed automatically if not provided.</p></li>
-<li><p><strong>cutoff_radius</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Interaction potential cut-off radius used to estimate the minimum unit cell. Default is <code class="docutils literal notranslate"><span class="pre">6.0</span></code>.</p></li>
+<li><p><strong>vdw_factor</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Factor to scale the Van der Waals radii. Default is <code class="docutils literal notranslate"><span class="pre">0.6</span></code>.</p></li>
+<li><p><strong>save_frequency</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Frequency at which to save the simulation state and results. Default is <code class="docutils literal notranslate"><span class="pre">100</span></code>.</p></li>
+<li><p><strong>output_to_file</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, writes the output to a file named <code class="docutils literal notranslate"><span class="pre">output_{temperature}_{pressure}.out</span></code> in the <code class="docutils literal notranslate"><span class="pre">results</span></code> directory. Default is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>output_folder</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – Folder to save the output files. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, a folder named <code class="docutils literal notranslate"><span class="pre">results_&lt;T&gt;_&lt;P&gt;</span></code> will be created.</p></li>
+<li><p><strong>debug</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, prints detailed debug information during the simulation. Default is <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>random_seed</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – Random seed for reproducibility. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code> and will generate a random seed automatically if not provided.</p></li>
+<li><p><strong>cutoff_radius</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Interaction potential cut-off radius used to estimate the minimum unit cell. Default is <code class="docutils literal notranslate"><span class="pre">6.0</span></code>.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Max_overlap_tries<span class="colon">:</span></dt>
-<dd class="field-even"><p>Maximum tries for the insertion move. Default is <code class="docutils literal notranslate"><span class="pre">100</span></code>.</p>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">check_tmmc_files_exist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_loading</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replicas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">range(1,</span> <span class="pre">5)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.check_tmmc_files_exist"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Check if the required TMMC simulation data files exist for the specified replicas and loading.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Path to the directory containing the TMMC simulation data.</p></li>
+<li><p><strong>max_loading</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Maximum number of adsorbate molecules to consider for loading.</p></li>
+<li><p><strong>replicas</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#range" title="(in Python v3.15)"><em>range</em></a><em>, </em><em>optional</em>) – List or range of replica indices to check. Default is range(1, 5).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#FileNotFoundError" title="(in Python v3.15)"><strong>FileNotFoundError</strong></a> – If the specified directory or any required files do not exist.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">compute_isotherm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fugacities_Pa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uptake_units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'nmol'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.compute_isotherm"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Computes uptakes and macrostate probability distributions (pi) for a list of fugacities.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fugacities_Pa</strong> (<em>np.ndarray</em>) – Array of fugacities in Pascal for which to compute the isotherm.</p></li>
+<li><p><strong>uptake_units</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – The units in which to report the uptake. Default is “nmol”.</p></li>
+<li><p><strong>show_progress</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, shows a progress bar during the computation. Default is True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>uptakes_average</strong> (<em>np.ndarray</em>) – Array of expected uptake (in the specified units) averaged across replicas for each fugacity.</p></li>
+<li><p><strong>uptakes_sd</strong> (<em>np.ndarray</em>) – Array of standard error of the mean (SEM) for the uptake across replicas for each fugacity.</p></li>
+<li><p><strong>pi_average</strong> (<em>np.ndarray</em>) – 2D array of macrostate probability distributions averaged across replicas for each fugacity and loading.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">compute_isotherm_replica</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ins_weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">del_weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fugacities_Pa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.compute_isotherm_replica"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Computes uptakes and macrostate probability distributions (pi) for a given
+set of fugacities using pre-computed insertion and deletion weights.</p>
+<p>This is a convenience wrapper combining <cite>compute_mpd</cite> and <cite>compute_uptake_from_mpd</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">compute_mpd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ins_weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">del_weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fugacities_Pa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.compute_mpd"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Computes the Macrostate Probability Distribution (MPD or Π) for a given set of fugacities.</p>
+<p>At equilibrium, the system obeys the principle of detailed balance, meaning the
+probability flux between adjacent macrostates is equal:</p>
+<blockquote>
+<div><p>Π(N) * P(N → N + 1) = Π(N + 1) * P(N + 1 → N)</p>
+</div></blockquote>
+<p>By rearranging this equality, the true physical MPD (Π) can be constructed
+iteratively from the transition probabilities (P):</p>
+<blockquote>
+<div><p>ln Π(N + 1) = ln Π(N) + ln( P(N → N + 1) / P(N + 1 → N) )</p>
+</div></blockquote>
+<p>This function calculates those transition probabilities using the unbiased
+acceptance weights scaled by fugacity, and applies a Log-Sum-Exp (LSE) trick
+during normalization to guarantee numerical stability.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ins_weights</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><em>np.ndarray</em><em>]</em>) – List of pre-computed insertion weights for each loading.</p></li>
+<li><p><strong>del_weights</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><em>np.ndarray</em><em>]</em>) – List of pre-computed deletion weights for each loading.</p></li>
+<li><p><strong>fugacities_Pa</strong> (<em>np.ndarray</em>) – Array of fugacities in Pascal.</p></li>
+<li><p><strong>show_progress</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, shows a progress bar. Default is True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>pi</strong> – 2D array of the MPD for each loading and fugacity. Shape: (max_loading, n_press).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">compute_uptake_from_mpd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pi</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.compute_uptake_from_mpd"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Calculates the expected number of molecules (uptake) from the Macrostate
+Probability Distribution (MPD).</p>
+<p>The MPD (Π) acts as the centerpiece of the ensemble thus the ensemble
+average of any physical property A can be derived directly from it via
+histogram reweighting:</p>
+<blockquote>
+<div><p>⟨A⟩ = [ Σ_N A(N) * Π(N) ] / [ Σ_N Π(N) ]</p>
+</div></blockquote>
+<p>For the adsorption isotherm (uptake), the physical property A(N) is simply
+the number of molecules N. Since Π is already normalized (Σ_N Π(N) = 1),
+the formula simplifies to the expected value:</p>
+<blockquote>
+<div><p>⟨N⟩ = Σ_N (N * Π(N))</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pi</strong> (<em>np.ndarray</em>) – 2D array of the MPD. Expected shape: (max_loading, n_press).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>uptakes</strong> – 1D array of expected number of molecules (uptake) for each fugacity.
+Shape: (n_press,).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">get_adsorbates_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.get_adsorbates_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Get a list of indices of the adsorbate molecules in the current system.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -336,7 +459,7 @@ Should be an array of the same length as the number of atomic numbers in ASE.</p
 <dd class="field-odd"><p>The mass of the framework in kg.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)">float</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -348,7 +471,7 @@ Should be an array of the same length as the number of atomic numbers in ASE.</p
 Example: For a binary mixture with 1 CO2 and 2 H2O, returns “0001_0002”.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -360,21 +483,38 @@ Example: For a binary mixture with 1 CO2 and 2 H2O, returns “0001_0002”.</p>
 It considers the possibility of having multiple adsorbate species in the simulation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]</span></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">load_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state_file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.load_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
-<dd><p>Load the state of the simulation from a file.</p>
+<span class="sig-name descname"><span class="pre">load_tmmc_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_loading</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replicas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">range(1,</span> <span class="pre">5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.load_tmmc_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Loads TMMC simulation data and pre-computes the fugacity-independent Boltzmann weights
+for a given temperature, returning them separated by replica.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>state_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path to the file containing the saved state of the simulation.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Path to the directory containing the TMMC simulation data.</p></li>
+<li><p><strong>max_loading</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Maximum number of adsorbate molecules to consider for loading.</p></li>
+<li><p><strong>temperature_K</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Temperature in Kelvin for which to compute the Boltzmann weights.</p></li>
+<li><p><strong>replicas</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#range" title="(in Python v3.15)"><em>range</em></a><em>, </em><em>optional</em>) – List or range of replica indices to load. Default is range(1, 5).</p></li>
+<li><p><strong>show_progress</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, shows a progress bar during the loading of weights. Default is True.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]], <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]]]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>ins_weights</strong> (<em>dict[int, list[np.ndarray]]</em>) – Dictionary containing the pre-computed insertion weights for each replica.</p></li>
+<li><p><strong>del_weights</strong> (<em>dict[int, list[np.ndarray]]</em>) – Dictionary containing the pre-computed deletion weights for each replica.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#FileNotFoundError" title="(in Python v3.15)"><strong>FileNotFoundError</strong></a> – If the specified directory or any required files do not exist.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -386,21 +526,21 @@ It considers the possibility of having multiple adsorbate species in the simulat
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>nsteps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of steps to run the MD simulation.</p></li>
-<li><p><strong>time_step</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Time step for the MD simulation in femtoseconds (default is 0.5 fs).</p></li>
-<li><p><strong>ensemble</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – The ensemble to use for the MD simulation (default is “NVT”).
+<li><p><strong>nsteps</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Number of steps to run the MD simulation.</p></li>
+<li><p><strong>time_step</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Time step for the MD simulation in femtoseconds (default is 0.5 fs).</p></li>
+<li><p><strong>ensemble</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – The ensemble to use for the MD simulation (default is “NVT”).
 Can be one of “NVT” or “NPT”.</p></li>
-<li><p><strong>thermostat</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – The thermostat to use for the MD simulation (default is “NoseHoover”).
+<li><p><strong>thermostat</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – The thermostat to use for the MD simulation (default is “NoseHoover”).
 For NVT, can be one of “Berendsen”, “NoseHoover”, or “Langevin”.
 For NPT, can be one of “Berendsen”, “NoseHoover”, or “MTKNPT”.</p></li>
-<li><p><strong>output_interval</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – The interval for logging output (default is 100 steps).</p></li>
-<li><p><strong>movie_interval</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – The interval for saving trajectory frames (default is 100 steps).</p></li>
+<li><p><strong>output_interval</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – The interval for logging output (default is 100 steps).</p></li>
+<li><p><strong>movie_interval</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – The interval for saving trajectory frames (default is 100 steps).</p></li>
 <li><p><strong>calculator</strong> (<em>ase.calculators.calculator.Calculator</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – The calculator to use for energy calculations. If None, the default model will be used.</p></li>
-<li><p><strong>update_state</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, updates the current state of the simulation with the final state after MD.
+<li><p><strong>update_state</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, updates the current state of the simulation with the final state after MD.
 If False, returns the final state without updating. This difference is important for using
 the same method in the GCMC simulations when a MD step is used as a move. Default is True.</p></li>
-<li><p><strong>trajectory_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – If provided, saves the trajectory to the specified file instead of the default trajectory.</p></li>
-<li><p><strong>set_momenta</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to set the atomic momenta to a Maxwell-Boltzmann distribution of the simulation temperature.</p></li>
+<li><p><strong>trajectory_file</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – If provided, saves the trajectory to the specified file instead of the default trajectory.</p></li>
+<li><p><strong>set_momenta</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to set the atomic momenta to a Maxwell-Boltzmann distribution of the simulation temperature.</p></li>
 <li><p><strong>**kwargs</strong> (<em>optional</em>) – <p>Additional parameters passed directly to the specific MD thermostat (e.g., taut, tdamp, friction).</p>
 <dl class="simple">
 <dt>NVT Berendsen:</dt><dd><ul>
@@ -522,7 +662,7 @@ cell fluctuations while keeping the cell volume fixed (default is False).</p>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> | <code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> | <code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -534,21 +674,21 @@ cell fluctuations while keeping the cell volume fixed (default is False).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>nsteps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of steps to run the NPT simulation.</p></li>
-<li><p><strong>time_step</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Time step for the NPT simulation (default is 0.5 fs).</p></li>
-<li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – The mode of the NPT simulation (default is “iso_shape”).
+<li><p><strong>nsteps</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Number of steps to run the NPT simulation.</p></li>
+<li><p><strong>time_step</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Time step for the NPT simulation (default is 0.5 fs).</p></li>
+<li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – The mode of the NPT simulation (default is “iso_shape”).
 Can be one of “iso_shape”, “aniso_shape”, or “aniso_flex”.</p></li>
-<li><p><strong>driver</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – The driver to use for the NPT simulation.
+<li><p><strong>driver</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – The driver to use for the NPT simulation.
 Can be Berendsen, NoseHoover or MTKNPT (default is “MTKNPT”).</p></li>
-<li><p><strong>set_momenta</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to set the atomic momenta to a Maxwell-Boltzmann distribution of the simulation temperature.</p></li>
-<li><p><strong>output_interval</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – The interval for logging output (default is 100 steps).</p></li>
-<li><p><strong>movie_interval</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – The interval for saving trajectory frames (default is 100 step).</p></li>
+<li><p><strong>set_momenta</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to set the atomic momenta to a Maxwell-Boltzmann distribution of the simulation temperature.</p></li>
+<li><p><strong>output_interval</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – The interval for logging output (default is 100 steps).</p></li>
+<li><p><strong>movie_interval</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – The interval for saving trajectory frames (default is 100 step).</p></li>
 <li><p><strong>calculator</strong> (<em>ase.calculators.calculator.Calculator</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – The calculator to use for energy calculations. If None, the default model will be used.</p></li>
 <li><p><strong>kwargs</strong> (<em>optional</em>) – Arguments passed to the ase molecular dynamics class.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> | <code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> | <code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -556,16 +696,16 @@ Can be Berendsen, NoseHoover or MTKNPT (default is “MTKNPT”).</p></li>
 <dl class="py method">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">nvt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nsteps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_momenta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">driver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'NoseHoover'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">movie_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calculator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Run a NVT simulation using the Berendsen thermostat.</p>
+<dd><p>Run a NVT simulation using the specified thermostat.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>nsteps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of steps to run the NVT simulation.</p></li>
-<li><p><strong>time_step</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Time step for the NVT simulation in femtoseconds (default is 0.5 fs).</p></li>
-<li><p><strong>set_momenta</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to set the atomic momenta to a Maxwell-Boltzmann distribution of the simulation temperature.</p></li>
-<li><p><strong>driver</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – The driver to use for the NVT simulation. Can be “NoseHoover” (default), Langevin, or “Berendsen” (Not recommended, for testing purposes only).</p></li>
-<li><p><strong>output_interval</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – The interval for logging output (default is 100 steps).</p></li>
-<li><p><strong>movie_interval</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – The interval for saving trajectory frames (default is 100 step).</p></li>
+<li><p><strong>nsteps</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Number of steps to run the NVT simulation.</p></li>
+<li><p><strong>time_step</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Time step for the NVT simulation in femtoseconds (default is 0.5 fs).</p></li>
+<li><p><strong>set_momenta</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to set the atomic momenta to a Maxwell-Boltzmann distribution of the simulation temperature.</p></li>
+<li><p><strong>driver</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – The driver to use for the NVT simulation. Can be “NoseHoover” (default), Langevin, or “Berendsen” (Not recommended, for testing purposes only).</p></li>
+<li><p><strong>output_interval</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – The interval for logging output (default is 100 steps).</p></li>
+<li><p><strong>movie_interval</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – The interval for saving trajectory frames (default is 100 step).</p></li>
 <li><p><strong>calculator</strong> (<em>ase.calculators.calculator.Calculator</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – The calculator to use for energy calculations. If None, the default model will be used.</p></li>
 <li><p><strong>kwargs</strong> (<em>optional</em>) – Arguments passed to the ase molecular dynamics class.</p></li>
 <li><p><strong>NoseHoover</strong> (<em>For</em>)</p></li>
@@ -588,9 +728,9 @@ Can be Berendsen, NoseHoover or MTKNPT (default is “MTKNPT”).</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>max_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Maximum number of optimization steps (default is 1000).</p></li>
-<li><p><strong>symm_tol</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Tolerance for symmetry (default is 1e-3).</p></li>
-<li><p><strong>max_force</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Maximum force tolerance for convergence (default is 0.05 eV/Å).</p></li>
+<li><p><strong>max_steps</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Maximum number of optimization steps (default is 1000).</p></li>
+<li><p><strong>symm_tol</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Tolerance for symmetry (default is 1e-3).</p></li>
+<li><p><strong>max_force</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Maximum force tolerance for convergence (default is 0.05 eV/Å).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -609,8 +749,8 @@ Can be Berendsen, NoseHoover or MTKNPT (default is “MTKNPT”).</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>max_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Maximum number of optimization steps (default is 1000).</p></li>
-<li><p><strong>tol</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Tolerance for convergence (default is 1e-5).</p></li>
+<li><p><strong>max_steps</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Maximum number of optimization steps (default is 1000).</p></li>
+<li><p><strong>tol</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Tolerance for convergence (default is 1e-5).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -624,24 +764,23 @@ Can be Berendsen, NoseHoover or MTKNPT (default is “MTKNPT”).</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">restart</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.restart"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
-<dd><p>Restart the simulation from the last state.</p>
-<p>This method loads the last saved state from the trajectory file and restores the simulation to that state.
-It also loads the arrays handling the deletion/insertion energies.</p>
+<span class="sig-name descname"><span class="pre">run_tmmc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N_per_frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trajectory_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.run_tmmc"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Run the transition matrix Monte Carlo simulation for N iterations in
+a given trajectory.</p>
+<p>The trajectory is read from a file and the simulation is performed on
+each frame of the trajectory for N iterations.</p>
+<p>For each iteration, no real move are actually performed on the system,
+but virtual insertion and deletion are performed and the corresponding
+energies and the unit cell volume are recorded.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>N_per_frame</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – The number of iteration for each frame in the trajectory.</p></li>
+<li><p><strong>trajectory_path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The path to the trajectory file where the simulation will be executed.</p></li>
+</ul>
 </dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
-<dd><p>Run the transition matrix Monte Carlo simulation for N iterations.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -652,10 +791,10 @@ It also loads the arrays handling the deletion/insertion energies.</p>
 <dd><p>Save a json file with the main results of the simulation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>file_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Name of the output file. Default uses macrostate string format.</p>
+<dd class="field-odd"><p><strong>file_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Name of the output file. Default uses macrostate string format.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -668,12 +807,12 @@ It also loads the arrays handling the deletion/insertion energies.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>adsorbates</strong> (<em>Adsorbate</em>) – The list of adsorbate structure(s) as an Adsorbate object.</p></li>
-<li><p><strong>adsorbate_energy</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – The energy of the adsorbate in eV. If None, the energy will be calculated using the provided model.</p></li>
-<li><p><strong>n_adsorbates</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of adsorbate molecules in the framework.</p></li>
+<li><p><strong>adsorbate_energy</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – The energy of the adsorbate in eV. If None, the energy will be calculated using the provided model.</p></li>
+<li><p><strong>n_adsorbates</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Number of adsorbate molecules in the framework.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -686,37 +825,38 @@ It also loads the arrays handling the deletion/insertion energies.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>framework_atoms</strong> (<em>ase.Atoms</em>) – The new framework structure as an ASE Atoms object.</p></li>
-<li><p><strong>framework_energy</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – The energy of the framework in eV. If None, the energy will be calculated using the provided model.</p></li>
+<li><p><strong>framework_energy</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – The energy of the framework in eV. If None, the energy will be calculated using the provided model.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">set_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Set the current state of the simulation.</p>
+<span class="sig-name descname"><span class="pre">set_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.set_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Set the current state of the simulation to a given ASE Atoms object.
+This method updates the current system, total energy, and number of adsorbates.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>state</strong> (<em>ase.Atoms</em>) – The current state of the simulation as an ASE Atoms object.</p>
+<dd class="field-odd"><p><strong>state</strong> (<em>ase.Atoms</em>) – The ASE Atoms object representing the new state of the system.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">try_deletion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adsorbate_tag</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.try_deletion"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-name descname"><span class="pre">try_virtual_deletion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adsorbate_tag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ads_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.try_virtual_deletion"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Try to delete an adsorbate molecule from the framework.
 This method randomly selects an adsorbate molecule and attempts deletion.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>adsorbate_tag</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The tag of the adsorbate molecule being deleted.</p>
+<dd class="field-odd"><p><strong>adsorbate_tag</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – The tag of the adsorbate molecule being deleted.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Deletion energy.</p>
@@ -729,35 +869,34 @@ This method randomly selects an adsorbate molecule and attempts deletion.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">try_insertion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adsorbate_tag</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.try_insertion"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-name descname"><span class="pre">try_virtual_insertion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adsorbate_tag</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.try_virtual_insertion"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Try to insert a new adsorbate molecule into the framework.
 This method randomly places the adsorbate in the framework and checks for van der Waals overlap.
 If there is no overlap, it calculates the new potential energy and decides whether to accept the insertion
 based on the acceptance criteria.</p>
-<p>If after a number of tries (self.max_overlap_tries) no valid position is found, an exception is thrown.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>adsorbate_tag</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The tag of the adsorbate molecule being inserted.</p>
+<dd class="field-odd"><p><strong>adsorbate_tag</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – The tag of the adsorbate molecule being inserted.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Insertion energy.</p>
+<dd class="field-even"><p><strong>deltaE</strong> – Insertion energy.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>deltaE</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">base_iteration</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">base_iteration</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></em></dt>
 <dd><p>Get the base iteration for the TMMC simulation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>The base iteration count.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -822,8 +961,8 @@ based on the acceptance criteria.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=ebe9904d"></script>
-    <script src="../_static/doctools.js?v=9bcbadda"></script>
+</div><script src="../_static/documentation_options.js?v=1dd76d02"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>

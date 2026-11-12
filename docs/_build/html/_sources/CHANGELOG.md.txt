@@ -1,5 +1,25 @@
 # Changelog
 
+## v[0.5.0] - Unreleased
+
+### New Features 🎉
+
+- Added GCMC movements (insertion, deletion, translation, rotation, and reinsertion) as possible moves in the TMMC simulation. This allows for a more comprehensive exploration of the system's phase space by incorporating various types of moves that can occur during the simulation.
+
+### Enhanced ✨
+
+### Fixed 🐛
+
+### Documentation 📖
+
+### Modified 🛠
+
+- Move the random move selection method to the `BaseSimulator` class, allowing for better code reuse.
+
+### Removed 🗑️
+
+- Remove `max_overlap_tries` parameter and related methods from the `TMMC` class, as it can bias the sampling of the simulation. When there is an overlap during an insertion (real or virtual), the insertion is simply rejected and a large energy value is returned to the simulation.
+
 ## v[0.4.9] - 2026-07-23
 
 ### New Features 🎉
