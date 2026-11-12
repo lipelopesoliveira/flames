@@ -1,7 +1,7 @@
-
 """
 Prepares markdown release notes for GitHub releases.
 """
+
 from __future__ import annotations
 
 import os
