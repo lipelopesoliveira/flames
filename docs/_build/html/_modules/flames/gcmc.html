@@ -7,7 +7,7 @@
         <link rel="prefetch" href="../../_static/logo-dark-mode.png" as="image">
 
     <link rel="shortcut icon" href="../../_static/favicon.ico"><!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
-        <title>flames.gcmc - FLAMES v0.4.9</title>
+        <title>flames.gcmc - FLAMES v0.5.0</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">FLAMES v0.4.9</div></a>
+      <a href="../../index.html"><div class="brand">FLAMES v0.5.0</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -238,8 +238,6 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Development</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../CHANGELOG.html">Changelog</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../CONTRIBUTING.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://raw.githubusercontent.com/lipelopesoliveira/flames/main/LICENSE">License</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/lipelopesoliveira/flames">GitHub Repository</a></li>
 </ul>
@@ -452,7 +450,7 @@
         <span class="n">random_seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">cutoff_radius</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">6.0</span><span class="p">,</span>
         <span class="n">automatic_supercell</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="n">void_fraction</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">void_fraction</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize the Grand Canonical Monte Carlo (GCMC) simulation.</span>
@@ -476,6 +474,7 @@
             <span class="n">output_folder</span><span class="o">=</span><span class="n">output_folder</span><span class="p">,</span>
             <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">,</span>
             <span class="n">fugacity_coeff</span><span class="o">=</span><span class="n">fugacity_coeff</span><span class="p">,</span>
+            <span class="n">void_fraction</span><span class="o">=</span><span class="n">void_fraction</span><span class="p">,</span>
             <span class="n">random_seed</span><span class="o">=</span><span class="n">random_seed</span><span class="p">,</span>
             <span class="n">cutoff_radius</span><span class="o">=</span><span class="n">cutoff_radius</span><span class="p">,</span>
             <span class="n">automatic_supercell</span><span class="o">=</span><span class="n">automatic_supercell</span><span class="p">,</span>
@@ -486,7 +485,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
 
         <span class="c1"># Parameters for calculateing the Peng-Robinson equation of state</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">void_fraction</span> <span class="o">=</span> <span class="n">void_fraction</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">excess_nmol</span> <span class="o">=</span> <span class="p">{</span><span class="n">adsorbate</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">adsorbate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">}</span>
 
         <span class="c1"># Parameters for storing the main results during the simulation</span>
@@ -510,7 +508,7 @@
             <span class="s2">"npt_md"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">try_npt_md</span><span class="p">,</span>
         <span class="p">}</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">n_movements</span> <span class="o">=</span> <span class="p">{</span><span class="n">move</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">move</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_movements</span> <span class="o">=</span> <span class="p">{</span><span class="n">move</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">move</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">movements</span><span class="p">}</span>
 
         <span class="c1"># Base iteration for restarting the simulation. This is for tracking the iteration count only</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_base_iteration</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
@@ -588,7 +586,7 @@
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="s2">"Movies"</span><span class="p">,</span> <span class="s2">"Trajectory.traj"</span><span class="p">)):</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">load_state</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="s2">"Movies"</span><span class="p">,</span> <span class="s2">"Trajectory.traj"</span><span class="p">))</span>
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  <span class="c1"># noqa: BLE001</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">_print</span><span class="p">(</span>
                     <span class="s2">"="</span> <span class="o">*</span> <span class="mi">76</span>
                     <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span>
@@ -630,7 +628,7 @@
             <span class="n">state</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="n">state_file</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
 
         <span class="c1"># Workaround to load the labels from Trajectory.info since ASE's Trajectory does not support custom arrays</span>
-        <span class="k">if</span> <span class="s2">"labels"</span> <span class="ow">in</span> <span class="n">state</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">if</span> <span class="s2">"labels"</span> <span class="ow">in</span> <span class="n">state</span><span class="o">.</span><span class="n">info</span><span class="p">:</span>
             <span class="n">state</span><span class="o">.</span><span class="n">set_array</span><span class="p">(</span><span class="s2">"labels"</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">"labels"</span><span class="p">])</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">set_state</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
@@ -639,7 +637,7 @@
 
         <span class="n">average_binding_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">framework_energy</span>
 
-        <span class="k">for</span> <span class="n">ads_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbates</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">ads_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbates</span><span class="p">:</span>
             <span class="n">average_binding_energy</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbates</span><span class="p">[</span><span class="n">ads_name</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_energy</span><span class="p">[</span><span class="n">ads_name</span><span class="p">]</span>
 
         <span class="n">average_binding_energy</span> <span class="o">/=</span> <span class="n">units</span><span class="o">.</span><span class="n">kJ</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">mol</span>
@@ -1383,9 +1381,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">get_adsorbates_index</span><span class="p">(</span><span class="n">tag</span><span class="o">=</span><span class="n">adsorbate_tag</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
         <span class="p">)</span>
 
-        <span class="n">mol_name</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">mol_name</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
             <span class="n">adsorbate</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">adsorbate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span> <span class="k">if</span> <span class="n">adsorbate</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">adsorbate_tag</span>
-        <span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
 
         <span class="c1"># Create a trial system for the deletion</span>
         <span class="n">atoms_trial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -1657,7 +1655,7 @@
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
-    
+
         <span class="n">adsorbate1_tag</span> <span class="o">=</span> <span class="n">adsorbate_tag</span>
         <span class="n">adsorbate2_tag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rnd_generator</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
             <span class="p">[</span><span class="n">ads</span><span class="o">.</span><span class="n">tag</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span> <span class="k">if</span> <span class="n">ads</span><span class="o">.</span><span class="n">tag</span> <span class="o">!=</span> <span class="n">adsorbate1_tag</span><span class="p">]</span>
@@ -1681,9 +1679,9 @@
 
         <span class="n">cm_position</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="p">[</span><span class="n">ads1_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">ads1_indices</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get_center_of_mass</span><span class="p">()</span>
 
-        <span class="n">to_insert</span> <span class="o">=</span> <span class="p">[</span><span class="n">ads</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span> <span class="k">if</span> <span class="n">ads</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">adsorbate2_tag</span><span class="p">][</span>
-            <span class="mi">0</span>
-        <span class="p">]</span>
+        <span class="n">to_insert</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
+            <span class="n">ads</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span> <span class="k">if</span> <span class="n">ads</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">adsorbate2_tag</span>
+        <span class="p">)</span>
         <span class="n">to_insert</span><span class="o">.</span><span class="n">set_positions</span><span class="p">(</span><span class="n">to_insert</span><span class="o">.</span><span class="n">get_positions</span><span class="p">()</span> <span class="o">-</span> <span class="n">to_insert</span><span class="o">.</span><span class="n">get_center_of_mass</span><span class="p">()</span> <span class="o">+</span> <span class="n">cm_position</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
 
         <span class="c1"># Delete the adsorbate atoms from the trial structure</span>
@@ -1823,7 +1821,6 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nvtmd_acceptance</span><span class="p">(</span><span class="n">deltaE</span><span class="o">=</span><span class="n">atoms_trial</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span><span class="p">):</span>  <span class="c1"># type: ignore</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">V</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
 
             <span class="n">n_adsorbate_atoms</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
                 <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">ads</span><span class="o">.</span><span class="n">structure</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbates</span><span class="p">[</span><span class="n">ads</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">]</span>
@@ -1883,6 +1880,7 @@
 
             <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">V</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">m</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
 
             <span class="n">n_adsorbate_atoms</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
                 <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">ads</span><span class="o">.</span><span class="n">structure</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbates</span><span class="p">[</span><span class="n">ads</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">]</span>
@@ -1900,26 +1898,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_save_rejected</span><span class="p">(</span><span class="n">atoms_trial</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
         <span class="k">return</span> <span class="kc">False</span></div>
 
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_pick_random_move</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Randomly select a move from the `move_weights` dict.</span>
-<span class="sd">        If there is no molecule on the system, always return insertion.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        adsorbate_tag: int</span>
-<span class="sd">        move: str</span>
-<span class="sd">        """</span>
-
-        <span class="c1"># Pick a adsorbate based on the mol fractions</span>
-        <span class="n">ads</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rnd_generator</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">),</span> <span class="n">p</span><span class="o">=</span><span class="p">[</span><span class="n">ads</span><span class="o">.</span><span class="n">mol_fraction</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">]</span>
-        <span class="p">)</span>
-
-        <span class="n">move</span> <span class="o">=</span> <span class="n">ads</span><span class="o">.</span><span class="n">pick_random_move</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rnd_generator</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">ads</span><span class="o">.</span><span class="n">tag</span><span class="p">,</span> <span class="n">move</span>
 
 <div class="viewcode-block" id="GCMC.get_total_ads_energy">
 <a class="viewcode-back" href="../../input_description/gcmc.html#flames.gcmc.GCMC.get_total_ads_energy">[docs]</a>
@@ -2008,7 +1986,7 @@
         <span class="c1"># Randomly select a move based on the move weights</span>
         <span class="n">ads_tag</span><span class="p">,</span> <span class="n">move</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pick_random_move</span><span class="p">()</span>
 
-        <span class="n">ads_name</span> <span class="o">=</span> <span class="p">[</span><span class="n">ads</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span> <span class="k">if</span> <span class="n">ads</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">ads_tag</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">ads_name</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">ads</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span> <span class="k">if</span> <span class="n">ads</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">ads_tag</span><span class="p">)</span>
 
         <span class="n">accepted</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">movements</span><span class="p">[</span><span class="n">move</span><span class="p">](</span><span class="n">adsorbate_tag</span><span class="o">=</span><span class="n">ads_tag</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_movements</span><span class="p">[</span><span class="n">move</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span> <span class="k">if</span> <span class="n">accepted</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
@@ -2035,6 +2013,9 @@
 <a class="viewcode-back" href="../../input_description/gcmc.html#flames.gcmc.GCMC.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Run the Grand Canonical Monte Carlo simulation for N iterations."""</span>
+
+        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">N</span><span class="p">)</span> <span class="o">==</span> <span class="nb">int</span><span class="p">,</span> <span class="s2">"Number of iterations N must be an integer."</span>
+        <span class="k">assert</span> <span class="n">N</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"Number of iterations N must be a positive integer."</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">print_run_header</span><span class="p">()</span>
 
@@ -2081,7 +2062,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=ebe9904d"></script>
+</div><script src="../../_static/documentation_options.js?v=1dd76d02"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

@@ -1,5 +1,29 @@
 # Changelog
 
+## v[0.5.0] - Unreleased
+
+### New Features 🎉
+
+- Added new MD-based GCMC movements (NVE, NPT, MVT) as possible moves that are subjected to acceptance/rejection criteria in the `GCMC` class. This allows for the integration of Molecular Dynamics (MD) simulations into the Markov chain Monte Carlo (MCMC) framework, enabling the exploration of the system's phase space through both Monte Carlo and Molecular Dynamics methods.
+
+### Enhanced ✨
+
+- Refactor the `TMMC` class to improve code readability and maintainability. The refactoring includes reorganizing methods, improving variable naming, and enhancing the overall structure of the class to facilitate future development and debugging.
+
+### Fixed 🐛
+
+### Documentation 📖
+
+- Added a new example for running TMMC simulations. This example demonstrates how to set up and execute a TMMC simulation using the `TMMC` class, providing users with practical guidance on its usage.
+
+### Modified 🛠
+
+- Move the random move selection method to the `BaseSimulator` class, allowing for better code reuse.
+
+### Removed 🗑️
+
+- Remove `max_overlap_tries` parameter and related methods from the `TMMC` class, as it can bias the sampling of the simulation. When there is an overlap during an insertion (real or virtual), the insertion is simply rejected and a large energy value is returned to the simulation.
+
 ## v[0.4.9] - 2026-07-23
 
 ### New Features 🎉

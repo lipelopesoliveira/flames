@@ -3,12 +3,12 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="prev" title="Changelog" href="CHANGELOG.html">
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="prev" title="&lt;no title&gt;" href="CHANGELOG.html">
         <link rel="prefetch" href="_static/logo-light-mode.png" as="image">
         <link rel="prefetch" href="_static/logo-dark-mode.png" as="image">
 
     <link rel="shortcut icon" href="_static/favicon.ico"><!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
-        <title>Contributing - FLAMES v0.4.9</title>
+        <title>&lt;no title&gt; - FLAMES v0.5.0</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
@@ -165,7 +165,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">FLAMES v0.4.9</div></a>
+      <a href="index.html"><div class="brand">FLAMES v0.5.0</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -176,7 +176,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
         <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
@@ -238,9 +238,7 @@
 <li class="toctree-l1"><a class="reference internal" href="input_description/tmmc.html">TMMC Class</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Development</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="CHANGELOG.html">Changelog</a></li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Contributing</a></li>
+<ul>
 <li class="toctree-l1"><a class="reference external" href="https://raw.githubusercontent.com/lipelopesoliveira/flames/main/LICENSE">License</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/lipelopesoliveira/flames">GitHub Repository</a></li>
 </ul>
@@ -276,165 +274,12 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
             <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="contributing">
-<h1>Contributing<a class="headerlink" href="#contributing" title="Link to this heading">¶</a></h1>
-<p>Thanks for considering contributing! Please read this document to learn the various ways you can contribute to this project and how to go about doing it.</p>
-<section id="bug-reports-and-feature-requests">
-<h2>Bug reports and feature requests<a class="headerlink" href="#bug-reports-and-feature-requests" title="Link to this heading">¶</a></h2>
-<section id="did-you-find-a-bug">
-<h3>Did you find a bug?<a class="headerlink" href="#did-you-find-a-bug" title="Link to this heading">¶</a></h3>
-<p>First, do <a class="reference external" href="https://github.com/lipelopesoliveira/flames/issues">a quick search</a> to see whether your issue has already been reported.
-If your issue has already been reported, please comment on the existing issue.</p>
-<p>Otherwise, open <a class="reference external" href="https://github.com/lipelopesoliveira/flames/issues">a new GitHub issue</a>.  Be sure to include a clear title
-and description.  The description should include as much relevant information as possible.  The description should
-explain how to reproduce the erroneous behavior as well as the behavior you expect to see.  Ideally you would include a
-code sample or an executable test case demonstrating the expected behavior.</p>
-</section>
-<section id="do-you-have-a-suggestion-for-an-enhancement-or-new-feature">
-<h3>Do you have a suggestion for an enhancement or new feature?<a class="headerlink" href="#do-you-have-a-suggestion-for-an-enhancement-or-new-feature" title="Link to this heading">¶</a></h3>
-<p>We use GitHub issues to track feature requests. Before you create a feature request:</p>
-<ul class="simple">
-<li><p>Make sure you have a clear idea of the enhancement you would like. If you have a vague idea, consider discussing
-it first on a GitHub issue.</p></li>
-<li><p>Check the documentation to make sure your feature does not already exist.</p></li>
-<li><p>Do <a class="reference external" href="https://github.com/lipelopesoliveira/flames/issues">a quick search</a> to see whether your feature has already been suggested.</p></li>
-</ul>
-<p>When creating your request, please:</p>
-<ul class="simple">
-<li><p>Provide a clear title and description.</p></li>
-<li><p>Explain why the enhancement would be useful. It may be helpful to highlight the feature in other libraries.</p></li>
-<li><p>Include code examples to demonstrate how the enhancement would be used.</p></li>
-</ul>
-</section>
-</section>
-<section id="making-a-pull-request">
-<h2>Making a pull request<a class="headerlink" href="#making-a-pull-request" title="Link to this heading">¶</a></h2>
-<p>When you’re ready to contribute code to address an open issue, please follow these guidelines to help us be able to review your pull request (PR) quickly.</p>
-<ol class="arabic">
-<li><p><strong>Initial setup</strong> (only do this once)</p>
- <details><summary>Expand details 👇</summary><br/>
-<p>If you haven’t already done so, please <a class="reference external" href="https://help.github.com/en/enterprise/2.13/user/articles/fork-a-repo">fork</a> this repository on GitHub.</p>
-<p>Then clone your fork locally with</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span> git clone https://github.com/USERNAME/flames.git
-</pre></div>
-</div>
-<p>or</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span> git clone git@github.com:USERNAME/flames.git
-</pre></div>
-</div>
-<p>At this point the local clone of your fork only knows that it came from <em>your</em> repo, github.com/USERNAME/flames.git, but doesn’t know anything the <em>main</em> repo, <a class="reference external" href="https://github.com/lipelopesoliveira/flames">https://github.com/lipelopesoliveira/flames.git</a>. You can see this by running</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span> git remote -v
-</pre></div>
-</div>
-<p>which will output something like this:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span> origin https://github.com/USERNAME/flames.git (fetch)
- origin https://github.com/USERNAME/flames.git (push)
-</pre></div>
-</div>
-<p>This means that your local clone can only track changes from your fork, but not from the main repo, and so you won’t be able to keep your fork up-to-date with the main repo over time. Therefore you’ll need to add another “remote” to your clone that points to <a class="reference external" href="https://github.com/lipelopesoliveira/flames">https://github.com/lipelopesoliveira/flames.git</a>. To do this, run the following:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span> git remote add upstream https://github.com/lipelopesoliveira/flames.git
-</pre></div>
-</div>
-<p>Now if you do <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">remote</span> <span class="pre">-v</span></code> again, you’ll see</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span> origin https://github.com/USERNAME/flames.git (fetch)
- origin https://github.com/USERNAME/flames.git (push)
- upstream https://github.com/lipelopesoliveira/flames.git (fetch)
- upstream https://github.com/lipelopesoliveira/flames.git (push)
-</pre></div>
-</div>
-<p>Finally, you’ll need to create a Python 3 virtual environment suitable for working on this project. There a number of tools out there that making working with virtual environments easier.
-The most direct way is with the <a class="reference external" href="https://docs.python.org/3.7/library/venv.html"><code class="docutils literal notranslate"><span class="pre">venv</span></code> module</a> in the standard library, but if you’re new to Python or you don’t already have a recent Python 3 version installed on your machine,
-we recommend <a class="reference external" href="https://docs.conda.io/en/latest/miniconda.html">Miniconda</a>.</p>
-<p>On Mac, for example, you can install Miniconda with <a class="reference external" href="https://brew.sh/">Homebrew</a>:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span> brew install miniconda
-</pre></div>
-</div>
-<p>Then you can create and activate a new Python environment by running:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span> conda create -n mlp-adsorption python=3.9
- conda activate mlp-adsorption
-</pre></div>
-</div>
-<p>Once your virtual environment is activated, you can install your local clone in “editable mode” with</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span> pip install -U pip setuptools wheel
- pip install -e .[dev]
-</pre></div>
-</div>
-<p>The “editable mode” comes from the <code class="docutils literal notranslate"><span class="pre">-e</span></code> argument to <code class="docutils literal notranslate"><span class="pre">pip</span></code>, and essential just creates a symbolic link from the site-packages directory of your virtual environment to the source code in your local clone. That way any changes you make will be immediately reflected in your virtual environment.</p>
- </details>
-</li>
-<li><p><strong>Ensure your fork is up-to-date</strong></p>
- <details><summary>Expand details 👇</summary><br/>
-<p>Once you’ve added an “upstream” remote pointing to <a class="reference external" href="https://github.com/lipelopesoliveira/flames">https://github.com/lipelopesoliveira/flames.git</a>, keeping your fork up-to-date is easy:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span> git checkout main  # if not already on main
- git pull --rebase upstream main
- git push
-</pre></div>
-</div>
- </details>
-</li>
-<li><p><strong>Create a new branch to work on your fix or enhancement</strong></p>
- <details><summary>Expand details 👇</summary><br/>
-<p>Committing directly to the main branch of your fork is not recommended. It will be easier to keep your fork clean if you work on a separate branch for each contribution you intend to make.</p>
-<p>You can create a new branch with</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span> # replace BRANCH with whatever name you want to give it
- git checkout -b BRANCH
- git push -u origin BRANCH
-</pre></div>
-</div>
- </details>
-</li>
-<li><p><strong>Test your changes</strong></p>
- <details><summary>Expand details 👇</summary><br/>
-<p>Our continuous integration (CI) testing runs <a class="reference external" href="https://github.com/lipelopesoliveira/flames/actions">a number of checks</a> for each pull request on <a class="reference external" href="https://github.com/features/actions">GitHub Actions</a>. You can run most of these tests locally, which is something you should do <em>before</em> opening a PR to help speed up the review process and make it easier for us.</p>
-<p>First, you should run <a class="reference external" href="https://github.com/PyCQA/isort"><code class="docutils literal notranslate"><span class="pre">isort</span></code></a> and <a class="reference external" href="https://github.com/psf/black"><code class="docutils literal notranslate"><span class="pre">black</span></code></a> to make sure you code is formatted consistently.
-Many IDEs support code formatters as plugins, so you may be able to setup isort and black to run automatically everytime you save.
-For example, <a class="reference external" href="https://github.com/psf/black/tree/master/plugin"><code class="docutils literal notranslate"><span class="pre">black.vim</span></code></a> will give you this functionality in Vim. But both <code class="docutils literal notranslate"><span class="pre">isort</span></code> and <code class="docutils literal notranslate"><span class="pre">black</span></code> are also easy to run directly from the command line.
-Just run this from the root of your clone:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span> isort .
- black .
-</pre></div>
-</div>
-<p>Our CI also uses <a class="reference external" href="https://github.com/astral-sh/ruff"><code class="docutils literal notranslate"><span class="pre">ruff</span></code></a> to lint the code base and <a class="reference external" href="http://mypy-lang.org/"><code class="docutils literal notranslate"><span class="pre">mypy</span></code></a> for type-checking. You should run both of these next with</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span> ruff check .
-</pre></div>
-</div>
-<p>and</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span> mypy .
-</pre></div>
-</div>
-<p>We also strive to maintain high test coverage, so most contributions should include additions to <a class="reference external" href="https://github.com/lipelopesoliveira/flames/tree/main/tests">the unit tests</a>. These tests are run with <a class="reference external" href="https://docs.pytest.org/en/latest/"><code class="docutils literal notranslate"><span class="pre">pytest</span></code></a>, which you can use to locally run any test modules that you’ve added or changed.</p>
-<p>For example, if you’ve fixed a bug in <code class="docutils literal notranslate"><span class="pre">flames/a/b.py</span></code>, you can run the tests specific to that module with</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span> pytest -v tests/a/b_test.py
-</pre></div>
-</div>
-<p>If your contribution involves additions to any public part of the API, we require that you write docstrings
-for each function, method, class, or module that you add.
-See the <a class="reference internal" href="#writing-docstrings">Writing docstrings</a> section below for details on the syntax.
-You should test to make sure the API documentation can build without errors by running</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span> make docs
-</pre></div>
-</div>
-<p>If the build fails, it’s most likely due to small formatting issues. If the error message isn’t clear, feel free to comment on this in your pull request.</p>
-<p>And finally, please update the <a class="reference external" href="https://github.com/lipelopesoliveira/flames/blob/main/CHANGELOG.md">CHANGELOG</a> with notes on your contribution in the “Unreleased” section at the top.</p>
-<p>After all of the above checks have passed, you can now open <a class="reference external" href="https://github.com/lipelopesoliveira/flames/pulls">a new GitHub pull request</a>.
-Make sure you have a clear description of the problem and the solution, and include a link to relevant issues.</p>
-<p>We look forward to reviewing your PR!</p>
- </details>
-</li>
-</ol>
-<section id="writing-docstrings">
-<h3>Writing docstrings<a class="headerlink" href="#writing-docstrings" title="Link to this heading">¶</a></h3>
-<p>We use <a class="reference external" href="https://www.sphinx-doc.org/en/master/index.html">Sphinx</a> to build our API docs, which automatically parses all docstrings
-of public classes and methods using the <a class="reference external" href="https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html">autodoc</a> extension.
-Please refer to autoc’s documentation to learn about the docstring syntax.</p>
-</section>
-</section>
-</section>
+          <p>../../.github/CONTRIBUTING.md</p>
 
         </article>
       </div>
@@ -449,7 +294,7 @@ Please refer to autoc’s documentation to learn about the docstring syntax.</p>
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Changelog</div>
+                <div class="title">&lt;no title&gt;</div>
                 
               </div>
             </a>
@@ -478,40 +323,13 @@ Please refer to autoc’s documentation to learn about the docstring syntax.</p>
         
       </footer>
     </div>
-    <aside class="toc-drawer">
+    <aside class="toc-drawer no-toc">
       
-      
-      <div class="toc-sticky toc-scroll">
-        <div class="toc-title-container">
-          <span class="toc-title">
-            On this page
-          </span>
-        </div>
-        <div class="toc-tree-container">
-          <div class="toc-tree">
-            <ul>
-<li><a class="reference internal" href="#">Contributing</a><ul>
-<li><a class="reference internal" href="#bug-reports-and-feature-requests">Bug reports and feature requests</a><ul>
-<li><a class="reference internal" href="#did-you-find-a-bug">Did you find a bug?</a></li>
-<li><a class="reference internal" href="#do-you-have-a-suggestion-for-an-enhancement-or-new-feature">Do you have a suggestion for an enhancement or new feature?</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#making-a-pull-request">Making a pull request</a><ul>
-<li><a class="reference internal" href="#writing-docstrings">Writing docstrings</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-          </div>
-        </div>
-      </div>
       
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=ebe9904d"></script>
+</div><script src="_static/documentation_options.js?v=1dd76d02"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>

@@ -3,18 +3,23 @@ from __future__ import annotations
 import datetime
 import json
 import os
+from copy import deepcopy
 
 import ase
 import numpy as np
+from ase import units
 from ase.calculators import calculator
-from ase.io import Trajectory, read
+from ase.io.trajectory import TrajectoryReader
 from tqdm import tqdm
 
 from flames import VERSION
 from flames.adsorbate import Adsorbate
 from flames.base_simulator import BaseSimulator
 from flames.logger import TMMCLogger
-from flames.operations import check_overlap_vesin, random_mol_insertion
+from flames.operations import (
+    check_overlap_vesin,
+    random_mol_insertion,
+)
 
 
 class TMMC(BaseSimulator):
@@ -58,10 +63,6 @@ class TMMC(BaseSimulator):
         Factor to scale the Van der Waals radii. Default is ``0.6``.
     :type vdw_factor: float, optional
 
-    :max_overlap_tries:
-        Maximum tries for the insertion move. Default is ``100``.
-    :type max_overlap_tries: int, optional
-
     :param save_frequency:
         Frequency at which to save the simulation state and results. Default is ``100``.
     :type save_frequency: int, optional
@@ -97,14 +98,18 @@ class TMMC(BaseSimulator):
         device: str,
         vdw_radii: np.ndarray,
         vdw_factor: float = 0.6,
-        max_overlap_tries: int = 100,
-        max_deltaE: float = 25.0,
+        framework_energy: float | None = None,
+        adsorbate_energy: float | None = None,
+        max_translation: float = 1.5,
+        max_rotation: float = np.radians(90),
+        max_deltaE: float = 1.555,
         save_frequency: int = 100,
         output_to_file: bool = True,
         output_folder: str | None = None,
         debug: bool = False,
         random_seed: int | None = None,
         cutoff_radius: float = 6.0,
+        automatic_supercell: bool = False,
     ) -> None:
         """
         Initialize the transition matrix Monte Carlo (TMMC) simulation.
@@ -119,6 +124,8 @@ class TMMC(BaseSimulator):
             device=device,
             vdw_radii=vdw_radii,
             vdw_factor=vdw_factor,
+            framework_energy=framework_energy,
+            adsorbate_energy=adsorbate_energy,
             max_deltaE=max_deltaE,
             save_frequency=save_frequency,
             save_rejected=False,
@@ -128,7 +135,7 @@ class TMMC(BaseSimulator):
             fugacity_coeff=0.0,
             random_seed=random_seed,
             cutoff_radius=cutoff_radius,
-            automatic_supercell=False,
+            automatic_supercell=automatic_supercell,
         )
 
         self.logger = TMMCLogger(simulation=self, output_file=self.out_file)
@@ -137,6 +144,10 @@ class TMMC(BaseSimulator):
 
         # Tracking number of adsorbates per species
         self.n_adsorbates: dict[str, int] = {adsorbate.name: 0 for adsorbate in self.adsorbates}
+
+        self.uptake_list: np.ndarray = np.zeros((1, len(self.adsorbates)), dtype=int)
+        self.total_energy_list: list[float] = [0]
+        self.total_ads_list: list[float] = [0]
 
         # Parameters for storing the main results during the simulation (partitioned by adsorbate)
         self.total_ins_energy_list: dict[str, list[float]] = {
@@ -148,11 +159,15 @@ class TMMC(BaseSimulator):
         self.volume_list: list[float] = []
         self._del_indices: dict = {}
 
-        # Maximum number of tries to insert a molecule without overlap
-        self.max_overlap_tries = max_overlap_tries
+        self.max_translation = max_translation
+        self.max_rotation = max_rotation
 
         # Base iteration for restarting the simulation. This is for tracking the iteration count only
         self._base_iteration: int = 0
+
+        # Pre-computed fugacity-independent Boltzmann weights for insertion and deletion moves
+        self.insertion_weights: dict[int, list[np.ndarray]] = {}
+        self.deletion_weights: dict[int, list[np.ndarray]] = {}
 
     @property
     def base_iteration(self) -> int:
@@ -220,73 +235,6 @@ class TMMC(BaseSimulator):
         """
         return "_".join([f"{self.n_adsorbates[ads.name]:04d}" for ads in self.adsorbates])
 
-    def restart(self) -> None:
-        """
-        Restart the simulation from the last state.
-
-        This method loads the last saved state from the trajectory file and restores the simulation to that state.
-        It also loads the arrays handling the deletion/insertion energies.
-        """
-
-        print("Restarting simulation...")
-
-        macrostate_str = self.get_macrostate_str()
-
-        for ads in self.adsorbates:
-            ins_file = os.path.join(self.out_folder, f"ins_energy_{ads.name}_{macrostate_str}.npy")
-            del_file = os.path.join(self.out_folder, f"del_energy_{ads.name}_{macrostate_str}.npy")
-
-            if os.path.exists(ins_file):
-                self.total_ins_energy_list[ads.name] = np.load(ins_file).tolist()
-            if os.path.exists(del_file):
-                self.total_del_energy_list[ads.name] = np.load(del_file).tolist()
-
-        vol_file = os.path.join(self.out_folder, f"volume_{macrostate_str}.npy")
-        if os.path.exists(vol_file):
-            self.volume_list = np.load(vol_file).tolist()
-
-        # Set the base iteration to the length of the list (using the first adsorbate as reference)
-        first_ads_name = self.adsorbates[0].name
-        if len(self.total_ins_energy_list[first_ads_name]) > 0:
-            self.base_iteration = len(self.total_ins_energy_list[first_ads_name])
-
-        self.logger.print_restart_info()
-
-        if os.path.exists(os.path.join(self.out_folder, "Movies", "Trajectory.traj")):
-            self.load_state(os.path.join(self.out_folder, "Movies", "Trajectory.traj"))
-
-    def load_state(self, state_file: str) -> None:
-        """
-        Load the state of the simulation from a file.
-
-        Parameters
-        ----------
-        state_file : str
-            Path to the file containing the saved state of the simulation.
-        """
-        print(f"Loading state from {state_file}...")
-
-        if not os.path.exists(state_file):
-            raise FileNotFoundError(f"State file '{state_file}' does not exist.")
-
-        if state_file.endswith(".traj"):
-            state = Trajectory(state_file, "r")[-1]  # type: ignore
-        else:
-            state: ase.Atoms = read(state_file)  # type: ignore
-
-        # Workaround to load the labels from Trajectory.info since ASE's Trajectory does not support custom arrays
-        if "labels" in state.info.keys():
-            state.set_array("labels", state.info["labels"])
-
-        # Trim off the molecule that was temporarily appended during the last saved insertion attempt
-        if "inserted_length" in state.info:
-            del state[-state.info["inserted_length"] :]
-
-        self.set_state(state)
-        self.n_adsorbates = self.get_number_of_adsorbates(state)
-
-        self.logger.print_load_state_info(n_atoms=len(state))
-
     def save_results(
         self,
         file_name: str | None = None,
@@ -319,41 +267,49 @@ class TMMC(BaseSimulator):
         with open(os.path.join(self.out_folder, file_name), "w") as f:
             json.dump(results, f, indent=4)
 
-    def _save_state(self, actual_iteration: int) -> None:
+    def set_state(self, state: ase.Atoms) -> None:
+        """
+        Set the current state of the simulation to a given ASE Atoms object.
+        This method updates the current system, total energy, and number of adsorbates.
+
+        Parameters
+        ----------
+        state : ase.Atoms
+            The ASE Atoms object representing the new state of the system.
+        """
+        self.current_system = deepcopy(state)
+        self.current_system.calc = self.model
+        self.current_total_energy = self.current_system.get_potential_energy()
+        self.n_adsorbates = self.get_number_of_adsorbates(system=state)
+
+    def _save_state(self) -> None:
         """
         Save the simulation trajectory and generated energies.
         """
-        if actual_iteration % self.save_every == 0:
-            if hasattr(self, "_current_ins_atoms"):
-                self.trajectory.write(self._current_ins_atoms)  # type: ignore
-            else:
-                self.trajectory.write(self.current_system)
 
-            macrostate_str = self.get_macrostate_str()
+        macrostate_str = self.get_macrostate_str()
 
-            for ads in self.adsorbates:
-                np.save(
-                    os.path.join(self.out_folder, f"ins_energy_{ads.name}_{macrostate_str}.npy"),
-                    np.array(self.total_ins_energy_list[ads.name]),
-                )
-                np.save(
-                    os.path.join(self.out_folder, f"del_energy_{ads.name}_{macrostate_str}.npy"),
-                    np.array(self.total_del_energy_list[ads.name]),
-                )
-
+        for ads in self.adsorbates:
             np.save(
-                os.path.join(self.out_folder, f"volume_{macrostate_str}.npy"),
-                np.array(self.volume_list),
+                os.path.join(self.out_folder, f"ins_energy_{ads.name}_{macrostate_str}.npy"),
+                np.array(self.total_ins_energy_list[ads.name]),
+            )
+            np.save(
+                os.path.join(self.out_folder, f"del_energy_{ads.name}_{macrostate_str}.npy"),
+                np.array(self.total_del_energy_list[ads.name]),
             )
 
-    def try_insertion(self, adsorbate_tag: int):
+        np.save(
+            os.path.join(self.out_folder, f"volume_{macrostate_str}.npy"),
+            np.array(self.volume_list),
+        )
+
+    def try_virtual_insertion(self, adsorbate_tag: int) -> float:
         """
         Try to insert a new adsorbate molecule into the framework.
         This method randomly places the adsorbate in the framework and checks for van der Waals overlap.
         If there is no overlap, it calculates the new potential energy and decides whether to accept the insertion
         based on the acceptance criteria.
-
-        If after a number of tries (self.max_overlap_tries) no valid position is found, an exception is thrown.
 
         Parameters
         ----------
@@ -362,45 +318,45 @@ class TMMC(BaseSimulator):
 
         Returns
         -------
-        deltaE
+        deltaE: float
             Insertion energy.
         """
         adsorbate = next((ads for ads in self.adsorbates if ads.tag == adsorbate_tag), None)
+
         if adsorbate is None:
             raise ValueError(f"Adsorbate with tag {adsorbate_tag} not found.")
 
-        for _ in range(self.max_overlap_tries):
-            atoms_trial = random_mol_insertion(
-                self.current_system, adsorbate.structure, self.rnd_generator
+        atoms_trial = random_mol_insertion(
+            self.current_system, adsorbate.structure, self.rnd_generator
+        )
+
+        overlaped = check_overlap_vesin(
+            atoms=atoms_trial,
+            group1_indices=np.arange(len(self.current_system)),
+            group2_indices=np.arange(len(self.current_system), len(atoms_trial)),
+            vdw_radii=self.vdw,
+        )
+        if overlaped:
+            return self.max_deltaE * 100
+
+        atoms_trial.calc = self.model
+        e_new = atoms_trial.get_potential_energy()
+
+        deltaE = e_new - self.current_total_energy - self.adsorbate_energy[adsorbate.name]
+
+        if deltaE < -self.max_deltaE:
+            self.logger._print_warning(
+                f"WARNING: Energy difference {deltaE:.4f} eV exceeds the maximum allowed {self.max_deltaE:.4f} eV."
             )
 
-            overlaped = check_overlap_vesin(
-                atoms=atoms_trial,
-                group1_indices=np.arange(len(self.current_system)),
-                group2_indices=np.arange(len(self.current_system), len(atoms_trial)),
-                vdw_radii=self.vdw,
-            )
-            if overlaped:
-                continue
+        atoms_trial.info["ins_energy"] = deltaE
+        atoms_trial.info["n_adsorbates"] = self.n_adsorbates
+        atoms_trial.info["inserted_length"] = len(adsorbate.structure)
+        self._current_ins_atoms = atoms_trial
 
-            atoms_trial.calc = self.model
-            e_new = atoms_trial.get_potential_energy()
+        return deltaE
 
-            deltaE = e_new - self.current_total_energy - self.adsorbate_energy[adsorbate.name]
-
-            if np.abs(deltaE) > np.abs(self.max_deltaE):
-                continue
-
-            atoms_trial.info["ins_energy"] = deltaE
-            atoms_trial.info["n_adsorbates"] = self.n_adsorbates
-            atoms_trial.info["inserted_length"] = len(adsorbate.structure)
-            self._current_ins_atoms = atoms_trial
-
-            return deltaE
-
-        raise ValueError(f"Could not insert molecule {adsorbate.name}.")
-
-    def try_deletion(self, adsorbate_tag: int):
+    def try_virtual_deletion(self, adsorbate_tag: int, ads_index: list | None = None) -> float:
         """
         Try to delete an adsorbate molecule from the framework.
         This method randomly selects an adsorbate molecule and attempts deletion.
@@ -417,61 +373,447 @@ class TMMC(BaseSimulator):
         """
         ads_name = next((ads.name for ads in self.adsorbates if ads.tag == adsorbate_tag), None)
 
+        if ads_name is None:
+            raise ValueError(f"Adsorbate with tag {adsorbate_tag} not found.")
+
         if self.n_adsorbates[ads_name] == 0:
-            return 0.0
+            return self.max_deltaE * 100
 
-        # Randomly select an adsorbate molecule of this specific tag to delete
-        ads_indices_list = self.get_adsorbates_index(tag=adsorbate_tag)
-        ads_indices = self.rnd_generator.choice(ads_indices_list, axis=0)
+        # Randomly select an adsorbate molecule of this specific tag to delete if ads_index is not provided
+        if not ads_index:
+            ads_indices_list = self.get_adsorbates_index(tag=adsorbate_tag)
+            ads_indices = self.rnd_generator.choice(ads_indices_list, axis=0)
 
-        del_idx = tuple(ads_indices)
-
-        if del_idx in self._del_indices:
-            deltaE = self._del_indices[del_idx]
         else:
-            atoms_trial = self.current_system.copy()
-            atoms_trial.calc = self.model  # type: ignore
+            ads_indices = ads_index
 
-            # Delete the selected adsorbate atoms from the trial structure
-            del atoms_trial[ads_indices[0] : ads_indices[-1] + 1]
+        atoms_trial = self.current_system.copy()
+        atoms_trial.calc = self.model  # type: ignore
 
-            e_new = atoms_trial.get_potential_energy()  # type: ignore
-            deltaE = e_new + self.adsorbate_energy[ads_name] - self.current_total_energy
-            self._del_indices[del_idx] = deltaE
+        # Delete the selected adsorbate atoms from the trial structure
+        del atoms_trial[ads_indices[0] : ads_indices[-1] + 1]
 
-        if hasattr(self, "_current_ins_atoms"):
-            self._current_ins_atoms.info["del_indices"] = del_idx
-            self._current_ins_atoms.info["del_energy"] = deltaE
+        e_new = atoms_trial.get_potential_energy()  # type: ignore
+        deltaE = e_new + self.adsorbate_energy[ads_name] - self.current_total_energy
 
         return deltaE
 
-    def run(self, N: int) -> None:
-        """Run the transition matrix Monte Carlo simulation for N iterations."""
+    def check_tmmc_files_exist(
+        self, file_path: str, max_loading: int, replicas: list | range = range(1, 5)
+    ) -> None:
+        """
+        Check if the required TMMC simulation data files exist for the specified replicas and loading.
 
-        self.logger.print_run_header()
+        Parameters
+        ----------
+        file_path : str
+            Path to the directory containing the TMMC simulation data.
+        max_loading : int
+            Maximum number of adsorbate molecules to consider for loading.
+        replicas : list | range, optional
+            List or range of replica indices to check. Default is range(1, 5).
 
-        for iteration in tqdm(range(1, N + 1), disable=(self.out_file is None), desc="TMMC Step"):
-            step_time_start = datetime.datetime.now()
+        Raises
+        ------
+        FileNotFoundError
+            If the specified directory or any required files do not exist.
+        """
+        for replica in replicas:
+            prefix = f"{file_path}_{replica}"
+            if not os.path.exists(prefix):
+                raise FileNotFoundError(
+                    f"Directory {prefix} does not exist. Please check the path and replica index."
+                )
+            not_found_files = []
 
-            ins_energies = {}
-            del_energies = {}
+            for n_mol in range(max_loading + 1):
+                ins_file = f"{prefix}/ins_energy_H2O_{n_mol:04d}.npy"
+                del_file = f"{prefix}/del_energy_H2O_{n_mol:04d}.npy"
+                vol_file = f"{prefix}/volume_{n_mol:04d}.npy"
 
-            # TMMC probes insertion and deletion for all components at the fixed macrostate
-            for ads in self.adsorbates:
-                ins_energy = self.try_insertion(ads.tag)
-                self.total_ins_energy_list[ads.name].append(ins_energy)
-                ins_energies[ads.name] = ins_energy
+                for file in [ins_file, del_file, vol_file]:
+                    if not os.path.exists(file):
+                        not_found_files.append(file)
+            if len(not_found_files) > 0:
+                raise FileNotFoundError(
+                    f"The following required files are missing for replica {replica}:\n"
+                    + "\n".join(not_found_files)
+                )
 
-                del_energy = self.try_deletion(ads.tag) if self.n_adsorbates[ads.name] > 0 else 0.0
-                self.total_del_energy_list[ads.name].append(del_energy)
-                del_energies[ads.name] = del_energy
+    def load_tmmc_weights(
+        self,
+        file_path: str,
+        max_loading: int,
+        replicas: list | range = range(1, 5),
+        show_progress: bool = True,
+    ) -> tuple[dict[int, list[np.ndarray]], dict[int, list[np.ndarray]]]:
+        """
+        Loads TMMC simulation data and pre-computes the fugacity-independent Boltzmann weights
+        for a given temperature, returning them separated by replica.
 
-            self.volume_list.append(self.current_system.get_volume())
+        Parameters
+        ----------
+        file_path : str
+            Path to the directory containing the TMMC simulation data.
+        max_loading : int
+            Maximum number of adsorbate molecules to consider for loading.
+        temperature_K : float
+            Temperature in Kelvin for which to compute the Boltzmann weights.
+        replicas : list | range, optional
+            List or range of replica indices to load. Default is range(1, 5).
+        show_progress : bool, optional
+            If True, shows a progress bar during the loading of weights. Default is True.
 
-            self.logger.print_step_info(
-                step=iteration + self.base_iteration,
-                del_energy=del_energies,
-                ins_energy=ins_energies,
-                step_time=(datetime.datetime.now() - step_time_start).total_seconds(),
+        Returns
+        -------
+        ins_weights: dict[int, list[np.ndarray]]
+            Dictionary containing the pre-computed insertion weights for each replica.
+        del_weights: dict[int, list[np.ndarray]]
+            Dictionary containing the pre-computed deletion weights for each replica.
+
+        Raises
+        ------
+        FileNotFoundError
+            If the specified directory or any required files do not exist.
+        """
+
+        # Checks if the weights directory exists
+        # self.check_tmmc_files_exist(file_path, max_loading, replicas)
+
+        ins_weights = {replica: [] for replica in replicas}
+        del_weights = {replica: [] for replica in replicas}
+
+        for replica in replicas:
+            prefix = f"tmmc_weights/{replica}"
+
+            # Read the saved wheighs if exists
+            ins_file = f"{prefix}_ins_weights.npz"
+            del_file = f"{prefix}_del_weights.npz"
+
+            if os.path.exists(ins_file) and os.path.exists(del_file):
+                print(f"Loading precomputed weights for replica {replica} from disk...")
+                ins_data = np.load(ins_file)
+                del_data = np.load(del_file)
+                ins_weights[replica] = [ins_data[f"arr_{i}"] for i in range(len(ins_data.files))]
+                del_weights[replica] = [del_data[f"arr_{i}"] for i in range(len(del_data.files))]
+
+            else:
+                prefix = f"{file_path}_{replica}"
+                for n_mol in tqdm(
+                    range(max_loading + 1),
+                    desc=f"Loading weights (Replica {replica})",
+                    disable=not show_progress,
+                ):
+                    # Load and mask insertion energies
+                    rep_ins_energies = np.load(f"{prefix}/ins_energy_H2O_{n_mol:04d}.npy")
+
+                    # Load and mask deletion energies
+                    rep_del_energies = np.load(f"{prefix}/del_energy_H2O_{n_mol:04d}.npy")
+
+                    # Load volumes
+                    volumes = np.load(f"{prefix}/volume_{n_mol:04d}.npy")
+
+                    # Precompute fugacity-independent part of insertion acceptance
+                    w_ins = (volumes * self.beta / (n_mol + 1)) * np.exp(
+                        -self.beta * rep_ins_energies
+                    )
+                    ins_weights[replica].append(w_ins)
+
+                    # Precompute fugacity-independent part of deletion acceptance
+                    w_del = (n_mol / (volumes * self.beta)) * np.exp(-self.beta * rep_del_energies)
+                    del_weights[replica].append(w_del)
+
+                # Save weights to disk for future use as compressed numpy arrays
+                np.savez_compressed(
+                    f"tmmc_weights/{replica}_ins_weights.npz", *ins_weights[replica]
+                )
+                np.savez_compressed(
+                    f"tmmc_weights/{replica}_del_weights.npz", *del_weights[replica]
+                )
+
+        self.insertion_weights = ins_weights
+        self.deletion_weights = del_weights
+
+        return ins_weights, del_weights
+
+    def compute_mpd(
+        self,
+        ins_weights: list[np.ndarray],
+        del_weights: list[np.ndarray],
+        fugacities_Pa: np.ndarray,
+        show_progress: bool = True,
+    ) -> np.ndarray:
+        """
+        Computes the Macrostate Probability Distribution (MPD or Π) for a given set of fugacities.
+
+        At equilibrium, the system obeys the principle of detailed balance, meaning the
+        probability flux between adjacent macrostates is equal:
+
+        Π(N) * P(N → N + 1) = Π(N + 1) * P(N + 1 → N)
+
+        By rearranging this equality, the true physical MPD (Π) can be constructed
+        iteratively from the transition probabilities (P):
+
+        ln Π(N + 1) = ln Π(N) + ln( P(N → N + 1) / P(N + 1 → N) )
+
+        This function calculates those transition probabilities using the unbiased
+        acceptance weights scaled by fugacity, and applies a Log-Sum-Exp (LSE) trick
+        during normalization to guarantee numerical stability.
+
+        Parameters
+        ----------
+        ins_weights : list[np.ndarray]
+            List of pre-computed insertion weights for each loading.
+        del_weights : list[np.ndarray]
+            List of pre-computed deletion weights for each loading.
+        fugacities_Pa : np.ndarray
+            Array of fugacities in Pascal.
+        show_progress : bool, optional
+            If True, shows a progress bar. Default is True.
+
+        Returns
+        -------
+        pi : np.ndarray
+            2D array of the MPD for each loading and fugacity. Shape: (max_loading, n_press).
+        """
+        # Convert fugacities from Pascal to ASE units (eV/Å³) for consistency with the Boltzmann weights
+        fugacity_array = np.asarray(fugacities_Pa, dtype=float) * units.Pascal
+        n_press = len(fugacity_array)
+        n_states = len(ins_weights)
+
+        # Initialize arrays for transition probabilities P(N -> N+1) and P(N -> N-1)
+        probs_plus = np.zeros((n_states, n_press))
+        probs_minus = np.zeros((n_states, n_press))
+
+        # Calculate transition probabilities P(N -> N+1) and P(N -> N-1)
+        for n_mol in tqdm(range(n_states), desc="Computing MPD (Π)", disable=not show_progress):
+
+            # Broadcast: (n_samples, 1) * (1, n_press) -> (n_samples, n_press)
+            # P_ins(N -> N+1) = min(1, w_ins(N) * fugacity)
+            ins_acc = np.minimum(1.0, ins_weights[n_mol][:, None] * fugacity_array[None, :])
+            probs_plus[n_mol] = np.mean(ins_acc, axis=0)
+
+            # Broadcast: (n_samples, 1) / (1, n_press) -> (n_samples, n_press)
+            # P_del(N -> N-1) = min(1, w_del(N) / fugacity)
+            del_acc = np.minimum(1.0, del_weights[n_mol][:, None] / fugacity_array[None, :])
+            probs_minus[n_mol] = np.mean(del_acc, axis=0)
+
+        # Numerical safeguard: Prevent log(0) which causes NaNs in the cumsum
+        epsilon = 1e-300
+        safe_probs_plus = np.clip(probs_plus[:-1], a_min=epsilon, a_max=None)
+        safe_probs_minus = np.clip(probs_minus[1:], a_min=epsilon, a_max=None)
+
+        # Calculate ln(Pi) using detailed balance and vectorized cumulative sum
+        lnpi = np.zeros((n_states, n_press))
+        log_ratios = np.log(safe_probs_plus / safe_probs_minus)
+        lnpi[1:] = np.cumsum(log_ratios, axis=0)
+
+        # Numerically stable normalization: Log-Sum-Exp prevents overflow/underflow
+        lnpi -= np.max(lnpi, axis=0, keepdims=True)
+        pi = np.exp(lnpi)
+        pi /= np.sum(pi, axis=0, keepdims=True)
+
+        return pi
+
+    def compute_uptake_from_mpd(self, pi: np.ndarray) -> np.ndarray:
+        """
+        Calculates the expected number of molecules (uptake) from the Macrostate
+        Probability Distribution (MPD).
+
+        The MPD (Π) acts as the centerpiece of the ensemble thus the ensemble
+        average of any physical property A can be derived directly from it via
+        histogram reweighting:
+
+        ⟨A⟩ = [ Σ_N A(N) * Π(N) ] / [ Σ_N Π(N) ]
+
+        For the adsorption isotherm (uptake), the physical property A(N) is simply
+        the number of molecules N. Since Π is already normalized (Σ_N Π(N) = 1),
+        the formula simplifies to the expected value:
+
+        ⟨N⟩ = Σ_N (N * Π(N))
+
+        Parameters
+        ----------
+        pi : np.ndarray
+            2D array of the MPD. Expected shape: (max_loading, n_press).
+
+        Returns
+        -------
+        uptakes : np.ndarray
+            1D array of expected number of molecules (uptake) for each fugacity.
+            Shape: (n_press,).
+        """
+        n_states = pi.shape[0]
+        n_grid = np.arange(n_states)[:, None]
+
+        # ⟨N⟩ = Σ (N * Π)
+        uptakes = np.sum(n_grid * pi, axis=0)
+
+        return uptakes
+
+    def compute_isotherm_replica(
+        self,
+        ins_weights: list[np.ndarray],
+        del_weights: list[np.ndarray],
+        fugacities_Pa: np.ndarray,
+        show_progress: bool = True,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Computes uptakes and macrostate probability distributions (pi) for a given
+        set of fugacities using pre-computed insertion and deletion weights.
+
+        This is a convenience wrapper combining `compute_mpd` and `compute_uptake_from_mpd`.
+        """
+        # 1. Compute the Macrostate Probability Distribution
+        pi = self.compute_mpd(
+            ins_weights=ins_weights,
+            del_weights=del_weights,
+            fugacities_Pa=fugacities_Pa,
+            show_progress=show_progress,
+        )
+
+        # 2. Derive the macroscopic uptake from the MPD
+        uptakes = self.compute_uptake_from_mpd(pi)
+
+        # Transpose pi so shape is (n_press, max_loading + 1) to match original API expectation
+        return uptakes, pi.T
+
+    def compute_isotherm(
+        self, fugacities_Pa: np.ndarray, uptake_units: str = "nmol", show_progress: bool = True
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Computes uptakes and macrostate probability distributions (pi) for a list of fugacities.
+
+        Parameters
+        ----------
+        fugacities_Pa : np.ndarray
+            Array of fugacities in Pascal for which to compute the isotherm.
+        uptake_units : str, optional
+            The units in which to report the uptake. Default is "nmol".
+        show_progress : bool, optional
+            If True, shows a progress bar during the computation. Default is True.
+
+        Returns
+        -------
+        uptakes_average : np.ndarray
+            Array of expected uptake (in the specified units) averaged across replicas for each fugacity.
+        uptakes_sd : np.ndarray
+            Array of standard error of the mean (SEM) for the uptake across replicas for each fugacity.
+        pi_average : np.ndarray
+            2D array of macrostate probability distributions averaged across replicas for each fugacity and loading.
+        """
+
+        if not self.insertion_weights or not self.deletion_weights:
+            raise ValueError(
+                "Insertion and deletion weights must be loaded before computing the isotherm. Please run `load_tmmc_weights` first."
             )
-            self._save_state(iteration + self.base_iteration)
+
+        if uptake_units not in self.conv_factors:
+            raise ValueError(
+                f"Invalid uptake_units '{uptake_units}'. Valid options are: {list(self.conv_factors.keys())}"
+            )
+
+        uptakes_list = []
+        pi_list = []
+
+        for replica in range(len(self.insertion_weights)):
+            uptakes, pi = self.compute_isotherm_replica(
+                ins_weights=self.insertion_weights[replica + 1],
+                del_weights=self.deletion_weights[replica + 1],
+                fugacities_Pa=fugacities_Pa,
+                show_progress=show_progress,
+            )
+
+            uptakes_list.append(uptakes)
+            pi_list.append(pi)
+
+        # Calculates the average uptake across replicas
+        uptakes_average = np.mean(uptakes_list, axis=0)
+
+        # Calculates the standard error of the mean (SEM) for the uptake across replicas
+        uptakes_sd = np.std(uptakes_list, axis=0) / np.sqrt(len(self.insertion_weights))
+
+        # Convert uptake to the specified units
+        uptakes_average *= self.conv_factors[uptake_units][self.adsorbates[0].name]
+        uptakes_sd *= self.conv_factors[uptake_units][self.adsorbates[0].name]
+
+        pi_average = np.mean(pi_list, axis=0)
+
+        return uptakes_average, uptakes_sd, pi_average
+
+    def run_tmmc(self, N_per_frame: int, trajectory_path: str) -> None:
+        """
+        Run the transition matrix Monte Carlo simulation for N iterations in
+        a given trajectory.
+
+        The trajectory is read from a file and the simulation is performed on
+        each frame of the trajectory for N iterations.
+
+        For each iteration, no real move are actually performed on the system,
+        but virtual insertion and deletion are performed and the corresponding
+        energies and the unit cell volume are recorded.
+
+        Parameters
+        ----------
+        N_per_frame : int
+            The number of iteration for each frame in the trajectory.
+        trajectory_path : str
+            The path to the trajectory file where the simulation will be executed.
+        """
+
+        step_time_start = datetime.datetime.now()
+
+        self.logger.print_tmmc_run_header()
+
+        ins_energies = {}
+        del_energies = {}
+
+        trajectory = TrajectoryReader(trajectory_path)
+
+        del_energy_list = []
+
+        for frame_number, frame in enumerate(trajectory):
+
+            self.set_state(frame)  # type: ignore
+
+            ads_indices_list = self.get_adsorbates_index(tag=self.adsorbates[0].tag)
+
+            for ads_idx in tqdm(
+                ads_indices_list,
+                disable=(self.out_file is None),
+                desc=f"TMMC Deletions on frame  {frame_number:05d}",
+            ):
+
+                del_energy = self.try_virtual_deletion(self.adsorbates[0].tag, ads_index=ads_idx)
+                del_energy_list.append(del_energy)
+
+            del_energy_list = (
+                [self.max_deltaE * 100] if len(del_energy_list) == 0 else del_energy_list
+            )
+
+            # Perform N virtual insertions of the adsorbate
+            for iteration in tqdm(
+                range(1, N_per_frame + 1),
+                disable=(self.out_file is None),
+                desc=f"TMMC Insertions on frame {frame_number:05d}",
+            ):
+
+                ins_energy = self.try_virtual_insertion(self.adsorbates[0].tag)
+                self.total_ins_energy_list[self.adsorbates[0].name].append(ins_energy)
+                ins_energies[self.adsorbates[0].name] = ins_energy
+
+                del_energy = self.rnd_generator.choice(del_energy_list)
+                self.total_del_energy_list[self.adsorbates[0].name].append(del_energy)
+                del_energies[self.adsorbates[0].name] = del_energy
+
+                self.volume_list.append(self.current_system.get_volume())
+
+                self.logger.print_tmmc_step_info(
+                    step=(iteration + frame_number * N_per_frame),
+                    del_energy=del_energies,
+                    ins_energy=ins_energies,
+                    step_time=(datetime.datetime.now() - step_time_start).total_seconds(),
+                )
+
+                # Save the current state and trajectory
+                self._save_state()

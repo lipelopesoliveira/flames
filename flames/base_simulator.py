@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-from typing import TextIO
 
 import ase
 import numpy as np
@@ -141,6 +140,7 @@ class BaseSimulator:
         output_folder: str | None = None,
         debug: bool = False,
         fugacity_coeff: float = 1.0,
+        void_fraction: float = 1.0,
         random_seed: int | None = None,
         cutoff_radius: float = 6.0,
         automatic_supercell: bool = True,
@@ -150,6 +150,7 @@ class BaseSimulator:
         self.rnd_generator = np.random.default_rng(self.random_seed)
         self.cutoff = cutoff_radius
         self.automatic_supercell = automatic_supercell
+        self.void_fraction = void_fraction
 
         # -- General definitions for output --
         if output_folder is not None:
@@ -161,7 +162,8 @@ class BaseSimulator:
         os.makedirs(os.path.join(self.out_folder, "Movies"), exist_ok=True)
 
         if output_to_file:
-            self.out_file: TextIO | None = open(os.path.join(self.out_folder, "Output.out"), "a")
+            with open(os.path.join(self.out_folder, "Output.out"), "a") as f:
+                self.out_file = f
         else:
             self.out_file = None
 
@@ -219,7 +221,9 @@ class BaseSimulator:
         mol2cm3 = units.kB / units.J * units.mol * 273.15 / atm2pa
 
         # Get the ideal supercell. This will be updated by the set_framework method
-        self.ideal_supercell = self._get_ideal_supercell()
+        self.ideal_supercell = (
+            self._get_ideal_supercell() if self.automatic_supercell else np.array([1, 1, 1])
+        )
 
         self.conv_factors = {
             "nmol": {
@@ -276,7 +280,7 @@ class BaseSimulator:
 
         if actual_iteration % self.save_every == 0:
             # Workaround to save the labels in Trajectory.info since ASE's Trajectory does not support custom arrays
-            if "labels" in self.current_system.arrays.keys():
+            if "labels" in self.current_system.arrays:
                 self.current_system.info["labels"] = self.current_system.get_array("labels")
 
             self.trajectory.write(self.current_system)  # type: ignore
@@ -373,7 +377,7 @@ class BaseSimulator:
             Number of adsorbate molecules in the framework.
         """
         if not isinstance(adsorbates, (Adsorbate, list)):
-            raise ValueError(
+            raise TypeError(
                 "Adsorbates must be an Adsorbate object or a list of Adsorbate objects. Not ",
                 type(adsorbates),
             )
@@ -418,7 +422,7 @@ class BaseSimulator:
             }
 
         elif isinstance(adsorbate_energy, dict):
-            if set(adsorbate_energy.keys()) != set(adsorbate.name for adsorbate in self.adsorbates):
+            if set(adsorbate_energy.keys()) != {adsorbate.name for adsorbate in self.adsorbates}:
                 raise ValueError(
                     "Keys of adsorbate_energy dict must match the names of the adsorbates."
                 )
@@ -452,6 +456,26 @@ class BaseSimulator:
         self.current_system = state.copy()
         self.current_system.calc = self.model
         self.current_total_energy = self.current_system.get_potential_energy()
+
+    def _pick_random_move(self) -> tuple[int, str]:
+        """
+        Randomly select a move from the `move_weights` dict.
+        If there is no molecule on the system, always return insertion.
+
+        Returns
+        -------
+        adsorbate_tag: int
+        move: str
+        """
+
+        # Pick a adsorbate based on the mol fractions
+        ads = self.rnd_generator.choice(
+            np.array(self.adsorbates), p=[ads.mol_fraction for ads in self.adsorbates]
+        )
+
+        move = ads.pick_random_move(self.rnd_generator)
+
+        return ads.tag, move
 
     def optimize_framework(
         self,
@@ -488,7 +512,7 @@ Start optimizing framework structure...
             flush=True,
         )
 
-        resultsDict, optFramework = crystalOptimization(
+        _resultsDict, optFramework = crystalOptimization(
             atoms_in=self.framework,
             calculator=self.model,
             optimizer=LBFGS,  # type: ignore
@@ -541,7 +565,7 @@ Start optimizing adsorbate structure...
 
         for i in range(len(self.adsorbates)):
 
-            resultsDict, optAdsorbate = crystalOptimization(
+            _resultsDict, optAdsorbate = crystalOptimization(
                 atoms_in=self.adsorbates[i].structure,  # type: ignore
                 calculator=self.model,
                 optimizer=LBFGS,  # type: ignore
@@ -743,7 +767,7 @@ Start optimizing adsorbate structure...
         if (mode == "iso_shape" or mode == "aniso_shape") and driver == "Berendsen":
 
             self.logger._print_warning(
-                "Berendsen barostat is not indicated to be used in GCMC simulations. "
+                "Berendsen barostat is not strictly time-reversible and should not be used in combinations with GCMC simulations. "
                 "It is implemented for testing purposes only. Use MTKNPT or NoseHoover instead."
             )
 
@@ -754,7 +778,7 @@ Start optimizing adsorbate structure...
                 pressure=self.P * 1e-5,
                 time_step=time_step,
                 num_md_steps=nsteps,
-                isotropic=True if mode == "iso_shape" else False,
+                isotropic=mode == "iso_shape",
                 out_folder=self.out_folder,
                 out_file=self.out_file,  # type: ignore
                 output_interval=output_interval,
@@ -783,7 +807,7 @@ Start optimizing adsorbate structure...
 
         elif driver == "MTKNPT":
 
-            isotropic = True if (mode == "iso_flex" or mode == "iso_shape") else False
+            isotropic = bool(mode == "iso_flex" or mode == "iso_shape")
 
             new_state = nPT_MTKNPT(
                 atoms=self.current_system,
@@ -821,7 +845,7 @@ Start optimizing adsorbate structure...
         **kwargs,
     ):
         """
-        Run a NVT simulation using the Berendsen thermostat.
+        Run a NVT simulation using the specified thermostat.
 
         Parameters
         ----------
@@ -907,8 +931,8 @@ Start optimizing adsorbate structure...
 
         if driver == "Berendsen":
             self.logger._print_warning(
-                "Berendsen barostat is not indicated to be used in GCMC simulations. "
-                "It is implemented for testing purposes only. Use NoseHoover or Langevin instead."
+                "Berendsen barostat is not strictly time-reversible and should not be used in combinations with GCMC simulations!"
+                "It is implemented for testing purposes only. Use MTKNPT or NoseHoover instead."
             )
 
             new_state = nVT_Berendsen(

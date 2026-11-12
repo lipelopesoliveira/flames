@@ -173,7 +173,7 @@ class GCMC(BaseSimulator):
         random_seed: int | None = None,
         cutoff_radius: float = 6.0,
         automatic_supercell: bool = True,
-        void_fraction: float | list[float] = 0.0,
+        void_fraction: float = 0.0,
     ) -> None:
         """
         Initialize the Grand Canonical Monte Carlo (GCMC) simulation.
@@ -197,6 +197,7 @@ class GCMC(BaseSimulator):
             output_folder=output_folder,
             debug=debug,
             fugacity_coeff=fugacity_coeff,
+            void_fraction=void_fraction,
             random_seed=random_seed,
             cutoff_radius=cutoff_radius,
             automatic_supercell=automatic_supercell,
@@ -207,7 +208,6 @@ class GCMC(BaseSimulator):
         self.start_time = datetime.datetime.now()
 
         # Parameters for calculateing the Peng-Robinson equation of state
-        self.void_fraction = void_fraction
         self.excess_nmol = {adsorbate.name: 0.0 for adsorbate in self.adsorbates}
 
         # Parameters for storing the main results during the simulation
@@ -231,7 +231,7 @@ class GCMC(BaseSimulator):
             "npt_md": self.try_npt_md,
         }
 
-        self.n_movements = {move: [] for move in self.movements.keys()}
+        self.n_movements = {move: [] for move in self.movements}
 
         # Base iteration for restarting the simulation. This is for tracking the iteration count only
         self._base_iteration: int = 0
@@ -307,7 +307,7 @@ class GCMC(BaseSimulator):
         if os.path.exists(os.path.join(self.out_folder, "Movies", "Trajectory.traj")):
             try:
                 self.load_state(os.path.join(self.out_folder, "Movies", "Trajectory.traj"))
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 self.logger._print(
                     "=" * 76
                     + "\n"
@@ -346,7 +346,7 @@ class GCMC(BaseSimulator):
             state: ase.Atoms = read(state_file)  # type: ignore
 
         # Workaround to load the labels from Trajectory.info since ASE's Trajectory does not support custom arrays
-        if "labels" in state.info.keys():
+        if "labels" in state.info:
             state.set_array("labels", state.info["labels"])
 
         self.set_state(state)
@@ -355,7 +355,7 @@ class GCMC(BaseSimulator):
 
         average_binding_energy = self.current_total_energy - self.framework_energy
 
-        for ads_name in self.n_adsorbates.keys():
+        for ads_name in self.n_adsorbates:
             average_binding_energy -= self.n_adsorbates[ads_name] * self.adsorbate_energy[ads_name]
 
         average_binding_energy /= units.kJ / units.mol
@@ -1078,9 +1078,9 @@ class GCMC(BaseSimulator):
             self.get_adsorbates_index(tag=adsorbate_tag), axis=0
         )
 
-        mol_name = [
+        mol_name = next(
             adsorbate.name for adsorbate in self.adsorbates if adsorbate.tag == adsorbate_tag
-        ][0]
+        )
 
         # Create a trial system for the deletion
         atoms_trial = self.current_system.copy()
@@ -1340,7 +1340,7 @@ class GCMC(BaseSimulator):
 
         if len(self.adsorbates) < 2:
             return False
-    
+
         adsorbate1_tag = adsorbate_tag
         adsorbate2_tag = self.rnd_generator.choice(
             [ads.tag for ads in self.adsorbates if ads.tag != adsorbate1_tag]
@@ -1364,9 +1364,9 @@ class GCMC(BaseSimulator):
 
         cm_position = atoms_trial[ads1_indices[0] : ads1_indices[-1] + 1].get_center_of_mass()
 
-        to_insert = [ads.structure.copy() for ads in self.adsorbates if ads.tag == adsorbate2_tag][
-            0
-        ]
+        to_insert = next(
+            ads.structure.copy() for ads in self.adsorbates if ads.tag == adsorbate2_tag
+        )
         to_insert.set_positions(to_insert.get_positions() - to_insert.get_center_of_mass() + cm_position)  # type: ignore
 
         # Delete the adsorbate atoms from the trial structure
@@ -1500,7 +1500,6 @@ class GCMC(BaseSimulator):
         if self._nvtmd_acceptance(deltaE=atoms_trial.get_potential_energy() - self.current_total_energy):  # type: ignore
             self.current_system = atoms_trial.copy()  # type: ignore
             self.current_total_energy = atoms_trial.get_potential_energy()  # type: ignore
-            self.V = atoms_trial.get_volume()  # type: ignore
 
             n_adsorbate_atoms = sum(
                 [len(ads.structure) * self.n_adsorbates[ads.name] for ads in self.adsorbates]
@@ -1557,6 +1556,7 @@ class GCMC(BaseSimulator):
 
             self.current_system = atoms_trial.copy()  # type: ignore
             self.current_total_energy = atoms_trial.get_potential_energy()  # type: ignore
+            self.V = atoms_trial.get_volume() / (units.m**3)  # type: ignore
 
             n_adsorbate_atoms = sum(
                 [len(ads.structure) * self.n_adsorbates[ads.name] for ads in self.adsorbates]
@@ -1573,26 +1573,6 @@ class GCMC(BaseSimulator):
 
         self._save_rejected(atoms_trial)  # type: ignore
         return False
-
-    def _pick_random_move(self) -> tuple[int, str]:
-        """
-        Randomly select a move from the `move_weights` dict.
-        If there is no molecule on the system, always return insertion.
-
-        Returns
-        -------
-        adsorbate_tag: int
-        move: str
-        """
-
-        # Pick a adsorbate based on the mol fractions
-        ads = self.rnd_generator.choice(
-            np.array(self.adsorbates), p=[ads.mol_fraction for ads in self.adsorbates]
-        )
-
-        move = ads.pick_random_move(self.rnd_generator)
-
-        return ads.tag, move
 
     def get_total_ads_energy(self) -> float:
         """
@@ -1673,7 +1653,7 @@ class GCMC(BaseSimulator):
         # Randomly select a move based on the move weights
         ads_tag, move = self._pick_random_move()
 
-        ads_name = [ads.name for ads in self.adsorbates if ads.tag == ads_tag][0]
+        ads_name = next(ads.name for ads in self.adsorbates if ads.tag == ads_tag)
 
         accepted = self.movements[move](adsorbate_tag=ads_tag)
         self.n_movements[move].append(1 if accepted else 0)
@@ -1697,6 +1677,9 @@ class GCMC(BaseSimulator):
 
     def run(self, N) -> None:
         """Run the Grand Canonical Monte Carlo simulation for N iterations."""
+
+        assert type(N) == int, "Number of iterations N must be an integer."
+        assert N > 0, "Number of iterations N must be a positive integer."
 
         self.logger.print_run_header()
 

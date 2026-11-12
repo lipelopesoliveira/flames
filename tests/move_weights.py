@@ -126,7 +126,7 @@ def test_pick_random_move_returns_valid_key():
     mw = MoveWeights()
     rng = np.random.default_rng(seed=42)
     move = mw.pick_random_move(generator=rng)
-    assert move in mw.asdict().keys()
+    assert move in mw.asdict()
 
 
 def test_pick_random_move_respects_probabilities():

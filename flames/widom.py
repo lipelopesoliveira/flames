@@ -157,6 +157,8 @@ class Widom(BaseSimulator):
 
         self.start_time = datetime.datetime.now()
 
+        self.void_fraction = 1
+
         self.minimum_configuration: ase.Atoms = self.framework.copy()
         self.minimum_energy: float = 0
         self.base_iteration = 0
@@ -426,7 +428,7 @@ class Widom(BaseSimulator):
             group1_indices=np.arange(self.n_atoms_framework),
             group2_indices=np.arange(
                 self.n_atoms_framework,
-                self.n_atoms_framework + list(self.n_adsorbate_atoms.values())[0],
+                self.n_atoms_framework + next(iter(self.n_adsorbate_atoms.values())),
             ),
             vdw_radii=self.vdw,
         )
