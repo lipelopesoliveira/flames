@@ -377,14 +377,10 @@ set of fugacities using pre-computed insertion and deletion weights.</p>
 <dd><p>Computes the Macrostate Probability Distribution (MPD or Π) for a given set of fugacities.</p>
 <p>At equilibrium, the system obeys the principle of detailed balance, meaning the
 probability flux between adjacent macrostates is equal:</p>
-<blockquote>
-<div><p>Π(N) * P(N → N + 1) = Π(N + 1) * P(N + 1 → N)</p>
-</div></blockquote>
+<p>Π(N) * P(N → N + 1) = Π(N + 1) * P(N + 1 → N)</p>
 <p>By rearranging this equality, the true physical MPD (Π) can be constructed
 iteratively from the transition probabilities (P):</p>
-<blockquote>
-<div><p>ln Π(N + 1) = ln Π(N) + ln( P(N → N + 1) / P(N + 1 → N) )</p>
-</div></blockquote>
+<p>ln Π(N + 1) = ln Π(N) + ln( P(N → N + 1) / P(N + 1 → N) )</p>
 <p>This function calculates those transition probabilities using the unbiased
 acceptance weights scaled by fugacity, and applies a Log-Sum-Exp (LSE) trick
 during normalization to guarantee numerical stability.</p>
@@ -414,15 +410,11 @@ Probability Distribution (MPD).</p>
 <p>The MPD (Π) acts as the centerpiece of the ensemble thus the ensemble
 average of any physical property A can be derived directly from it via
 histogram reweighting:</p>
-<blockquote>
-<div><p>⟨A⟩ = [ Σ_N A(N) * Π(N) ] / [ Σ_N Π(N) ]</p>
-</div></blockquote>
+<p>⟨A⟩ = [ Σ_N A(N) * Π(N) ] / [ Σ_N Π(N) ]</p>
 <p>For the adsorption isotherm (uptake), the physical property A(N) is simply
 the number of molecules N. Since Π is already normalized (Σ_N Π(N) = 1),
 the formula simplifies to the expected value:</p>
-<blockquote>
-<div><p>⟨N⟩ = Σ_N (N * Π(N))</p>
-</div></blockquote>
+<p>⟨N⟩ = Σ_N (N * Π(N))</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>pi</strong> (<em>np.ndarray</em>) – 2D array of the MPD. Expected shape: (max_loading, n_press).</p>

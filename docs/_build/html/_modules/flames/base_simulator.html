@@ -276,7 +276,6 @@
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TextIO</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">ase</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -440,7 +439,8 @@
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="s2">"Movies"</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">output_to_file</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">out_file</span><span class="p">:</span> <span class="n">TextIO</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="s2">"Output.out"</span><span class="p">),</span> <span class="s2">"a"</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="s2">"Output.out"</span><span class="p">),</span> <span class="s2">"a"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">out_file</span> <span class="o">=</span> <span class="n">f</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">out_file</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -498,7 +498,9 @@
         <span class="n">mol2cm3</span> <span class="o">=</span> <span class="n">units</span><span class="o">.</span><span class="n">kB</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">J</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">mol</span> <span class="o">*</span> <span class="mf">273.15</span> <span class="o">/</span> <span class="n">atm2pa</span>
 
         <span class="c1"># Get the ideal supercell. This will be updated by the set_framework method</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ideal_supercell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_ideal_supercell</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">automatic_supercell</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ideal_supercell</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_get_ideal_supercell</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">automatic_supercell</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">conv_factors</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">"nmol"</span><span class="p">:</span> <span class="p">{</span>
@@ -555,7 +557,7 @@
 
         <span class="k">if</span> <span class="n">actual_iteration</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_every</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="c1"># Workaround to save the labels in Trajectory.info since ASE's Trajectory does not support custom arrays</span>
-            <span class="k">if</span> <span class="s2">"labels"</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">arrays</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="s2">"labels"</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">arrays</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">"labels"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">get_array</span><span class="p">(</span><span class="s2">"labels"</span><span class="p">)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
@@ -660,7 +662,7 @@
 <span class="sd">            Number of adsorbate molecules in the framework.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">adsorbates</span><span class="p">,</span> <span class="p">(</span><span class="n">Adsorbate</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
                 <span class="s2">"Adsorbates must be an Adsorbate object or a list of Adsorbate objects. Not "</span><span class="p">,</span>
                 <span class="nb">type</span><span class="p">(</span><span class="n">adsorbates</span><span class="p">),</span>
             <span class="p">)</span>
@@ -705,7 +707,7 @@
             <span class="p">}</span>
 
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">adsorbate_energy</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-            <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">adsorbate_energy</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">(</span><span class="n">adsorbate</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">adsorbate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">adsorbate_energy</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">!=</span> <span class="p">{</span><span class="n">adsorbate</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">adsorbate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">}:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                     <span class="s2">"Keys of adsorbate_energy dict must match the names of the adsorbates."</span>
                 <span class="p">)</span>
@@ -801,7 +803,7 @@
             <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="n">resultsDict</span><span class="p">,</span> <span class="n">optFramework</span> <span class="o">=</span> <span class="n">crystalOptimization</span><span class="p">(</span>
+        <span class="n">_resultsDict</span><span class="p">,</span> <span class="n">optFramework</span> <span class="o">=</span> <span class="n">crystalOptimization</span><span class="p">(</span>
             <span class="n">atoms_in</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="p">,</span>
             <span class="n">calculator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
             <span class="n">optimizer</span><span class="o">=</span><span class="n">LBFGS</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
@@ -857,7 +859,7 @@
 
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">)):</span>
 
-            <span class="n">resultsDict</span><span class="p">,</span> <span class="n">optAdsorbate</span> <span class="o">=</span> <span class="n">crystalOptimization</span><span class="p">(</span>
+            <span class="n">_resultsDict</span><span class="p">,</span> <span class="n">optAdsorbate</span> <span class="o">=</span> <span class="n">crystalOptimization</span><span class="p">(</span>
                 <span class="n">atoms_in</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">structure</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
                 <span class="n">calculator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
                 <span class="n">optimizer</span><span class="o">=</span><span class="n">LBFGS</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
@@ -1076,7 +1078,7 @@
                 <span class="n">pressure</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">*</span> <span class="mf">1e-5</span><span class="p">,</span>
                 <span class="n">time_step</span><span class="o">=</span><span class="n">time_step</span><span class="p">,</span>
                 <span class="n">num_md_steps</span><span class="o">=</span><span class="n">nsteps</span><span class="p">,</span>
-                <span class="n">isotropic</span><span class="o">=</span><span class="kc">True</span> <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"iso_shape"</span> <span class="k">else</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="n">isotropic</span><span class="o">=</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">"iso_shape"</span><span class="p">,</span>
                 <span class="n">out_folder</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span>
                 <span class="n">out_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">out_file</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
                 <span class="n">output_interval</span><span class="o">=</span><span class="n">output_interval</span><span class="p">,</span>
@@ -1105,7 +1107,7 @@
 
         <span class="k">elif</span> <span class="n">driver</span> <span class="o">==</span> <span class="s2">"MTKNPT"</span><span class="p">:</span>
 
-            <span class="n">isotropic</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">"iso_flex"</span> <span class="ow">or</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"iso_shape"</span><span class="p">)</span> <span class="k">else</span> <span class="kc">False</span>
+            <span class="n">isotropic</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">"iso_flex"</span> <span class="ow">or</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"iso_shape"</span><span class="p">)</span>
 
             <span class="n">new_state</span> <span class="o">=</span> <span class="n">nPT_MTKNPT</span><span class="p">(</span>
                 <span class="n">atoms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="p">,</span>

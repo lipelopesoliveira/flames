@@ -278,7 +278,6 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-
 <span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">ase</span>
@@ -621,7 +620,6 @@
         <span class="k">if</span> <span class="n">adsorbate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Adsorbate with tag </span><span class="si">{</span><span class="n">adsorbate_tag</span><span class="si">}</span><span class="s2"> not found."</span><span class="p">)</span>
 
-
         <span class="n">atoms_trial</span> <span class="o">=</span> <span class="n">random_mol_insertion</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="p">,</span> <span class="n">adsorbate</span><span class="o">.</span><span class="n">structure</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rnd_generator</span>
         <span class="p">)</span>
@@ -700,7 +698,9 @@
 
 <div class="viewcode-block" id="TMMC.check_tmmc_files_exist">
 <a class="viewcode-back" href="../../input_description/tmmc.html#flames.tmmc.TMMC.check_tmmc_files_exist">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">check_tmmc_files_exist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">max_loading</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">replicas</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="nb">range</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_tmmc_files_exist</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">max_loading</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">replicas</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="nb">range</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Check if the required TMMC simulation data files exist for the specified replicas and loading.</span>
 
@@ -721,10 +721,12 @@
         <span class="k">for</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">replicas</span><span class="p">:</span>
             <span class="n">prefix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">replica</span><span class="si">}</span><span class="s2">"</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">prefix</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Directory </span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2"> does not exist. Please check the path and replica index."</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"Directory </span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2"> does not exist. Please check the path and replica index."</span>
+                <span class="p">)</span>
             <span class="n">not_found_files</span> <span class="o">=</span> <span class="p">[]</span>
 
-            <span class="k">for</span> <span class="n">n_mol</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_loading</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">n_mol</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_loading</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
                 <span class="n">ins_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">/ins_energy_H2O_</span><span class="si">{</span><span class="n">n_mol</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">.npy"</span>
                 <span class="n">del_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">/del_energy_H2O_</span><span class="si">{</span><span class="n">n_mol</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">.npy"</span>
                 <span class="n">vol_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">/volume_</span><span class="si">{</span><span class="n">n_mol</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">.npy"</span>
@@ -733,18 +735,21 @@
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
                         <span class="n">not_found_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">not_found_files</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The following required files are missing for replica </span><span class="si">{</span><span class="n">replica</span><span class="si">}</span><span class="s2">:</span><span class="se">\n</span><span class="s2">"</span> <span class="o">+</span> <span class="s1">'</span><span class="se">\n</span><span class="s1">'</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">not_found_files</span><span class="p">))</span></div>
+                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"The following required files are missing for replica </span><span class="si">{</span><span class="n">replica</span><span class="si">}</span><span class="s2">:</span><span class="se">\n</span><span class="s2">"</span>
+                    <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">not_found_files</span><span class="p">)</span>
+                <span class="p">)</span></div>
 
-    
+
 <div class="viewcode-block" id="TMMC.load_tmmc_weights">
 <a class="viewcode-back" href="../../input_description/tmmc.html#flames.tmmc.TMMC.load_tmmc_weights">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">load_tmmc_weights</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-            <span class="n">max_loading</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-            <span class="n">replicas</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="nb">range</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
-            <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]:</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">max_loading</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">replicas</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="nb">range</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+        <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Loads TMMC simulation data and pre-computes the fugacity-independent Boltzmann weights</span>
 <span class="sd">        for a given temperature, returning them separated by replica.</span>
@@ -761,7 +766,7 @@
 <span class="sd">            List or range of replica indices to load. Default is range(1, 5).</span>
 <span class="sd">        show_progress : bool, optional</span>
 <span class="sd">            If True, shows a progress bar during the loading of weights. Default is True.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        ins_weights: dict[int, list[np.ndarray]]</span>
@@ -776,7 +781,7 @@
 <span class="sd">        """</span>
 
         <span class="c1"># Checks if the weights directory exists</span>
-        <span class="c1">#self.check_tmmc_files_exist(file_path, max_loading, replicas)</span>
+        <span class="c1"># self.check_tmmc_files_exist(file_path, max_loading, replicas)</span>
 
         <span class="n">ins_weights</span> <span class="o">=</span> <span class="p">{</span><span class="n">replica</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">replicas</span><span class="p">}</span>
         <span class="n">del_weights</span> <span class="o">=</span> <span class="p">{</span><span class="n">replica</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">replicas</span><span class="p">}</span>
@@ -787,20 +792,20 @@
             <span class="c1"># Read the saved wheighs if exists</span>
             <span class="n">ins_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">_ins_weights.npz"</span>
             <span class="n">del_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">_del_weights.npz"</span>
-    
+
             <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">ins_file</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">del_file</span><span class="p">):</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading precomputed weights for replica </span><span class="si">{</span><span class="n">replica</span><span class="si">}</span><span class="s2"> from disk..."</span><span class="p">)</span>
                 <span class="n">ins_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">ins_file</span><span class="p">)</span>
                 <span class="n">del_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">del_file</span><span class="p">)</span>
-                <span class="n">ins_weights</span><span class="p">[</span><span class="n">replica</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">ins_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">'arr_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">'</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ins_data</span><span class="o">.</span><span class="n">files</span><span class="p">))]</span>
-                <span class="n">del_weights</span><span class="p">[</span><span class="n">replica</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">del_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">'arr_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">'</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">del_data</span><span class="o">.</span><span class="n">files</span><span class="p">))]</span>
+                <span class="n">ins_weights</span><span class="p">[</span><span class="n">replica</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">ins_data</span><span class="p">[</span><span class="sa">f</span><span class="s2">"arr_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ins_data</span><span class="o">.</span><span class="n">files</span><span class="p">))]</span>
+                <span class="n">del_weights</span><span class="p">[</span><span class="n">replica</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">del_data</span><span class="p">[</span><span class="sa">f</span><span class="s2">"arr_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">del_data</span><span class="o">.</span><span class="n">files</span><span class="p">))]</span>
 
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">prefix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">replica</span><span class="si">}</span><span class="s2">"</span>
                 <span class="k">for</span> <span class="n">n_mol</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span>
-                    <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_loading</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> 
-                    <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Loading weights (Replica </span><span class="si">{</span><span class="n">replica</span><span class="si">}</span><span class="s2">)"</span><span class="p">,</span> 
-                    <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="n">show_progress</span>
+                    <span class="nb">range</span><span class="p">(</span><span class="n">max_loading</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+                    <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Loading weights (Replica </span><span class="si">{</span><span class="n">replica</span><span class="si">}</span><span class="s2">)"</span><span class="p">,</span>
+                    <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="n">show_progress</span><span class="p">,</span>
                 <span class="p">):</span>
                     <span class="c1"># Load and mask insertion energies</span>
                     <span class="n">rep_ins_energies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">/ins_energy_H2O_</span><span class="si">{</span><span class="n">n_mol</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">.npy"</span><span class="p">)</span>
@@ -812,22 +817,22 @@
                     <span class="n">volumes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">/volume_</span><span class="si">{</span><span class="n">n_mol</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">.npy"</span><span class="p">)</span>
 
                     <span class="c1"># Precompute fugacity-independent part of insertion acceptance</span>
-                    <span class="n">w_ins</span> <span class="o">=</span> <span class="p">(</span>
-                        <span class="p">(</span><span class="n">volumes</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_mol</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
-                        <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">*</span> <span class="n">rep_ins_energies</span><span class="p">)</span>
+                    <span class="n">w_ins</span> <span class="o">=</span> <span class="p">(</span><span class="n">volumes</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_mol</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
+                        <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">*</span> <span class="n">rep_ins_energies</span>
                     <span class="p">)</span>
                     <span class="n">ins_weights</span><span class="p">[</span><span class="n">replica</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">w_ins</span><span class="p">)</span>
-                    
+
                     <span class="c1"># Precompute fugacity-independent part of deletion acceptance</span>
-                    <span class="n">w_del</span> <span class="o">=</span> <span class="p">(</span>
-                        <span class="p">(</span><span class="n">n_mol</span> <span class="o">/</span> <span class="p">(</span><span class="n">volumes</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="p">))</span>
-                        <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">*</span> <span class="n">rep_del_energies</span><span class="p">)</span>
-                    <span class="p">)</span>
+                    <span class="n">w_del</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_mol</span> <span class="o">/</span> <span class="p">(</span><span class="n">volumes</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">*</span> <span class="n">rep_del_energies</span><span class="p">)</span>
                     <span class="n">del_weights</span><span class="p">[</span><span class="n">replica</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">w_del</span><span class="p">)</span>
 
                 <span class="c1"># Save weights to disk for future use as compressed numpy arrays</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">savez_compressed</span><span class="p">(</span><span class="sa">f</span><span class="s2">"tmmc_weights/</span><span class="si">{</span><span class="n">replica</span><span class="si">}</span><span class="s2">_ins_weights.npz"</span><span class="p">,</span> <span class="o">*</span><span class="n">ins_weights</span><span class="p">[</span><span class="n">replica</span><span class="p">])</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">savez_compressed</span><span class="p">(</span><span class="sa">f</span><span class="s2">"tmmc_weights/</span><span class="si">{</span><span class="n">replica</span><span class="si">}</span><span class="s2">_del_weights.npz"</span><span class="p">,</span> <span class="o">*</span><span class="n">del_weights</span><span class="p">[</span><span class="n">replica</span><span class="p">])</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">savez_compressed</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"tmmc_weights/</span><span class="si">{</span><span class="n">replica</span><span class="si">}</span><span class="s2">_ins_weights.npz"</span><span class="p">,</span> <span class="o">*</span><span class="n">ins_weights</span><span class="p">[</span><span class="n">replica</span><span class="p">]</span>
+                <span class="p">)</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">savez_compressed</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"tmmc_weights/</span><span class="si">{</span><span class="n">replica</span><span class="si">}</span><span class="s2">_del_weights.npz"</span><span class="p">,</span> <span class="o">*</span><span class="n">del_weights</span><span class="p">[</span><span class="n">replica</span><span class="p">]</span>
+                <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">insertion_weights</span> <span class="o">=</span> <span class="n">ins_weights</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">deletion_weights</span> <span class="o">=</span> <span class="n">del_weights</span>
@@ -842,21 +847,23 @@
         <span class="n">ins_weights</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
         <span class="n">del_weights</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
         <span class="n">fugacities_Pa</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Computes the Macrostate Probability Distribution (MPD or Π) for a given set of fugacities.</span>
 
-<span class="sd">        At equilibrium, the system obeys the principle of detailed balance, meaning the </span>
+<span class="sd">        At equilibrium, the system obeys the principle of detailed balance, meaning the</span>
 <span class="sd">        probability flux between adjacent macrostates is equal:</span>
-<span class="sd">            Π(N) * P(N → N + 1) = Π(N + 1) * P(N + 1 → N)</span>
+<span class="sd">        </span>
+<span class="sd">        Π(N) * P(N → N + 1) = Π(N + 1) * P(N + 1 → N)</span>
 
-<span class="sd">        By rearranging this equality, the true physical MPD (Π) can be constructed </span>
+<span class="sd">        By rearranging this equality, the true physical MPD (Π) can be constructed</span>
 <span class="sd">        iteratively from the transition probabilities (P):</span>
-<span class="sd">            ln Π(N + 1) = ln Π(N) + ln( P(N → N + 1) / P(N + 1 → N) )</span>
+<span class="sd">        </span>
+<span class="sd">        ln Π(N + 1) = ln Π(N) + ln( P(N → N + 1) / P(N + 1 → N) )</span>
 
-<span class="sd">        This function calculates those transition probabilities using the unbiased </span>
-<span class="sd">        acceptance weights scaled by fugacity, and applies a Log-Sum-Exp (LSE) trick </span>
+<span class="sd">        This function calculates those transition probabilities using the unbiased</span>
+<span class="sd">        acceptance weights scaled by fugacity, and applies a Log-Sum-Exp (LSE) trick</span>
 <span class="sd">        during normalization to guarantee numerical stability.</span>
 
 <span class="sd">        Parameters</span>
@@ -885,7 +892,7 @@
         <span class="n">probs_minus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_states</span><span class="p">,</span> <span class="n">n_press</span><span class="p">))</span>
 
         <span class="c1"># Calculate transition probabilities P(N -&gt; N+1) and P(N -&gt; N-1)</span>
-        <span class="k">for</span> <span class="n">n_mol</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_states</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="s2">"Computing MPD (Π)"</span><span class="p">,</span> <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="n">show_progress</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">n_mol</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n_states</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="s2">"Computing MPD (Π)"</span><span class="p">,</span> <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="n">show_progress</span><span class="p">):</span>
 
             <span class="c1"># Broadcast: (n_samples, 1) * (1, n_press) -&gt; (n_samples, n_press)</span>
             <span class="c1"># P_ins(N -&gt; N+1) = min(1, w_ins(N) * fugacity)</span>
@@ -915,24 +922,24 @@
         <span class="k">return</span> <span class="n">pi</span></div>
 
 
-
 <div class="viewcode-block" id="TMMC.compute_uptake_from_mpd">
 <a class="viewcode-back" href="../../input_description/tmmc.html#flames.tmmc.TMMC.compute_uptake_from_mpd">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">compute_uptake_from_mpd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pi</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Calculates the expected number of molecules (uptake) from the Macrostate </span>
+<span class="sd">        Calculates the expected number of molecules (uptake) from the Macrostate</span>
 <span class="sd">        Probability Distribution (MPD).</span>
 
-<span class="sd">        The MPD (Π) acts as the centerpiece of the ensemble thus the ensemble </span>
+<span class="sd">        The MPD (Π) acts as the centerpiece of the ensemble thus the ensemble</span>
 <span class="sd">        average of any physical property A can be derived directly from it via</span>
 <span class="sd">        histogram reweighting:</span>
 
-<span class="sd">            ⟨A⟩ = [ Σ_N A(N) * Π(N) ] / [ Σ_N Π(N) ]</span>
+<span class="sd">        ⟨A⟩ = [ Σ_N A(N) * Π(N) ] / [ Σ_N Π(N) ]</span>
 
-<span class="sd">        For the adsorption isotherm (uptake), the physical property A(N) is simply </span>
-<span class="sd">        the number of molecules N. Since Π is already normalized (Σ_N Π(N) = 1), </span>
+<span class="sd">        For the adsorption isotherm (uptake), the physical property A(N) is simply</span>
+<span class="sd">        the number of molecules N. Since Π is already normalized (Σ_N Π(N) = 1),</span>
 <span class="sd">        the formula simplifies to the expected value:</span>
-<span class="sd">            ⟨N⟩ = Σ_N (N * Π(N))</span>
+
+<span class="sd">        ⟨N⟩ = Σ_N (N * Π(N))</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -942,17 +949,16 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        uptakes : np.ndarray</span>
-<span class="sd">            1D array of expected number of molecules (uptake) for each fugacity. </span>
+<span class="sd">            1D array of expected number of molecules (uptake) for each fugacity.</span>
 <span class="sd">            Shape: (n_press,).</span>
 <span class="sd">        """</span>
         <span class="n">n_states</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">n_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_states</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
-        
+
         <span class="c1"># ⟨N⟩ = Σ (N * Π)</span>
         <span class="n">uptakes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">n_grid</span> <span class="o">*</span> <span class="n">pi</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        
-        <span class="k">return</span> <span class="n">uptakes</span></div>
 
+        <span class="k">return</span> <span class="n">uptakes</span></div>
 
 
 <div class="viewcode-block" id="TMMC.compute_isotherm_replica">
@@ -962,12 +968,12 @@
         <span class="n">ins_weights</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
         <span class="n">del_weights</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
         <span class="n">fugacities_Pa</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Computes uptakes and macrostate probability distributions (pi) for a given </span>
+<span class="sd">        Computes uptakes and macrostate probability distributions (pi) for a given</span>
 <span class="sd">        set of fugacities using pre-computed insertion and deletion weights.</span>
-<span class="sd">        </span>
+
 <span class="sd">        This is a convenience wrapper combining `compute_mpd` and `compute_uptake_from_mpd`.</span>
 <span class="sd">        """</span>
         <span class="c1"># 1. Compute the Macrostate Probability Distribution</span>
@@ -975,7 +981,7 @@
             <span class="n">ins_weights</span><span class="o">=</span><span class="n">ins_weights</span><span class="p">,</span>
             <span class="n">del_weights</span><span class="o">=</span><span class="n">del_weights</span><span class="p">,</span>
             <span class="n">fugacities_Pa</span><span class="o">=</span><span class="n">fugacities_Pa</span><span class="p">,</span>
-            <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span>
+            <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="c1"># 2. Derive the macroscopic uptake from the MPD</span>
@@ -985,15 +991,11 @@
         <span class="k">return</span> <span class="n">uptakes</span><span class="p">,</span> <span class="n">pi</span><span class="o">.</span><span class="n">T</span></div>
 
 
-        
 <div class="viewcode-block" id="TMMC.compute_isotherm">
 <a class="viewcode-back" href="../../input_description/tmmc.html#flames.tmmc.TMMC.compute_isotherm">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">compute_isotherm</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">fugacities_Pa</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-            <span class="n">uptake_units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"nmol"</span><span class="p">,</span>
-            <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">fugacities_Pa</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">uptake_units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"nmol"</span><span class="p">,</span> <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Computes uptakes and macrostate probability distributions (pi) for a list of fugacities.</span>
 
@@ -1017,10 +1019,14 @@
 <span class="sd">        """</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">insertion_weights</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">deletion_weights</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Insertion and deletion weights must be loaded before computing the isotherm. Please run `load_tmmc_weights` first."</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"Insertion and deletion weights must be loaded before computing the isotherm. Please run `load_tmmc_weights` first."</span>
+            <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">uptake_units</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv_factors</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Invalid uptake_units '</span><span class="si">{</span><span class="n">uptake_units</span><span class="si">}</span><span class="s2">'. Valid options are: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv_factors</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Invalid uptake_units '</span><span class="si">{</span><span class="n">uptake_units</span><span class="si">}</span><span class="s2">'. Valid options are: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv_factors</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">"</span>
+            <span class="p">)</span>
 
         <span class="n">uptakes_list</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">pi_list</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1030,8 +1036,9 @@
                 <span class="n">ins_weights</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">insertion_weights</span><span class="p">[</span><span class="n">replica</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span>
                 <span class="n">del_weights</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">deletion_weights</span><span class="p">[</span><span class="n">replica</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span>
                 <span class="n">fugacities_Pa</span><span class="o">=</span><span class="n">fugacities_Pa</span><span class="p">,</span>
-                <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">)</span>
-            
+                <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">,</span>
+            <span class="p">)</span>
+
             <span class="n">uptakes_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">uptakes</span><span class="p">)</span>
             <span class="n">pi_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pi</span><span class="p">)</span>
 
@@ -1054,9 +1061,9 @@
 <a class="viewcode-back" href="../../input_description/tmmc.html#flames.tmmc.TMMC.run_tmmc">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run_tmmc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">N_per_frame</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">trajectory_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Run the transition matrix Monte Carlo simulation for N iterations in </span>
+<span class="sd">        Run the transition matrix Monte Carlo simulation for N iterations in</span>
 <span class="sd">        a given trajectory.</span>
-<span class="sd">        </span>
+
 <span class="sd">        The trajectory is read from a file and the simulation is performed on</span>
 <span class="sd">        each frame of the trajectory for N iterations.</span>
 
@@ -1071,7 +1078,7 @@
 <span class="sd">        trajectory_path : str</span>
 <span class="sd">            The path to the trajectory file where the simulation will be executed.</span>
 <span class="sd">        """</span>
-        
+
         <span class="n">step_time_start</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">print_tmmc_run_header</span><span class="p">()</span>
@@ -1088,35 +1095,44 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">set_state</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
 
             <span class="n">ads_indices_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_adsorbates_index</span><span class="p">(</span><span class="n">tag</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tag</span><span class="p">)</span>
-    
-            <span class="k">for</span> <span class="n">ads_idx</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">ads_indices_list</span><span class="p">,</span> <span class="n">disable</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="s2">"TMMC Deletions on frame  </span><span class="si">{:05d}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">frame_number</span><span class="p">)):</span>
-    
+
+            <span class="k">for</span> <span class="n">ads_idx</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span>
+                <span class="n">ads_indices_list</span><span class="p">,</span>
+                <span class="n">disable</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">"TMMC Deletions on frame  </span><span class="si">{</span><span class="n">frame_number</span><span class="si">:</span><span class="s2">05d</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+            <span class="p">):</span>
+
                 <span class="n">del_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">try_virtual_deletion</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tag</span><span class="p">,</span> <span class="n">ads_index</span><span class="o">=</span><span class="n">ads_idx</span><span class="p">)</span>
                 <span class="n">del_energy_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">del_energy</span><span class="p">)</span>
-    
-            <span class="n">del_energy_list</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">max_deltaE</span> <span class="o">*</span> <span class="mi">100</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">del_energy_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">del_energy_list</span>
-    
+
+            <span class="n">del_energy_list</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">max_deltaE</span> <span class="o">*</span> <span class="mi">100</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">del_energy_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">del_energy_list</span>
+            <span class="p">)</span>
+
             <span class="c1"># Perform N virtual insertions of the adsorbate</span>
-            <span class="k">for</span> <span class="n">iteration</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">N_per_frame</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">disable</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="s2">"TMMC Insertions on frame </span><span class="si">{:05d}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">frame_number</span><span class="p">)):</span>
-    
+            <span class="k">for</span> <span class="n">iteration</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span>
+                <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">N_per_frame</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+                <span class="n">disable</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">"TMMC Insertions on frame </span><span class="si">{</span><span class="n">frame_number</span><span class="si">:</span><span class="s2">05d</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+            <span class="p">):</span>
+
                 <span class="n">ins_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">try_virtual_insertion</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tag</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">total_ins_energy_list</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ins_energy</span><span class="p">)</span>
                 <span class="n">ins_energies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ins_energy</span>
-    
+
                 <span class="n">del_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rnd_generator</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">del_energy_list</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">total_del_energy_list</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">del_energy</span><span class="p">)</span>
                 <span class="n">del_energies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">del_energy</span>
-    
-    
+
                 <span class="bp">self</span><span class="o">.</span><span class="n">volume_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">get_volume</span><span class="p">())</span>
-            
+
                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">print_tmmc_step_info</span><span class="p">(</span>
                     <span class="n">step</span><span class="o">=</span><span class="p">(</span><span class="n">iteration</span> <span class="o">+</span> <span class="n">frame_number</span> <span class="o">*</span> <span class="n">N_per_frame</span><span class="p">),</span>
                     <span class="n">del_energy</span><span class="o">=</span><span class="n">del_energies</span><span class="p">,</span>
                     <span class="n">ins_energy</span><span class="o">=</span><span class="n">ins_energies</span><span class="p">,</span>
                     <span class="n">step_time</span><span class="o">=</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">step_time_start</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">(),</span>
                 <span class="p">)</span>
-    
+
                 <span class="c1"># Save the current state and trajectory</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_save_state</span><span class="p">()</span></div>
 </div>

@@ -548,11 +548,13 @@ class TMMC(BaseSimulator):
 
         At equilibrium, the system obeys the principle of detailed balance, meaning the
         probability flux between adjacent macrostates is equal:
-            Π(N) * P(N → N + 1) = Π(N + 1) * P(N + 1 → N)
+        
+        Π(N) * P(N → N + 1) = Π(N + 1) * P(N + 1 → N)
 
         By rearranging this equality, the true physical MPD (Π) can be constructed
         iteratively from the transition probabilities (P):
-            ln Π(N + 1) = ln Π(N) + ln( P(N → N + 1) / P(N + 1 → N) )
+        
+        ln Π(N + 1) = ln Π(N) + ln( P(N → N + 1) / P(N + 1 → N) )
 
         This function calculates those transition probabilities using the unbiased
         acceptance weights scaled by fugacity, and applies a Log-Sum-Exp (LSE) trick
@@ -622,12 +624,13 @@ class TMMC(BaseSimulator):
         average of any physical property A can be derived directly from it via
         histogram reweighting:
 
-            ⟨A⟩ = [ Σ_N A(N) * Π(N) ] / [ Σ_N Π(N) ]
+        ⟨A⟩ = [ Σ_N A(N) * Π(N) ] / [ Σ_N Π(N) ]
 
         For the adsorption isotherm (uptake), the physical property A(N) is simply
         the number of molecules N. Since Π is already normalized (Σ_N Π(N) = 1),
         the formula simplifies to the expected value:
-            ⟨N⟩ = Σ_N (N * Π(N))
+
+        ⟨N⟩ = Σ_N (N * Π(N))
 
         Parameters
         ----------
