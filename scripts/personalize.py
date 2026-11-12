@@ -6,8 +6,8 @@ This script is interactive and will prompt you for various inputs.
 """
 
 import sys
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator, List, Tuple
 
 import click
 from click_help_colors import HelpColorsCommand
@@ -157,7 +157,7 @@ def iterfiles(dir: Path) -> Generator[Path, None, None]:
             yield path
 
 
-def personalize_file(path: Path, dry_run: bool, replacements: List[Tuple[str, str]]):
+def personalize_file(path: Path, dry_run: bool, replacements: list[tuple[str, str]]):
     with path.open(mode="r+t", encoding="utf-8") as file:
         filedata = file.read()
 
