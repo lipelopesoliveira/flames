@@ -162,8 +162,7 @@ class BaseSimulator:
         os.makedirs(os.path.join(self.out_folder, "Movies"), exist_ok=True)
 
         if output_to_file:
-            with open(os.path.join(self.out_folder, "Output.out"), "a") as f:
-                self.out_file = f
+                self.out_file = open(os.path.join(self.out_folder, "Output.out"), "a")
         else:
             self.out_file = None
 
