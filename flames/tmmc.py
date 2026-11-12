@@ -327,7 +327,6 @@ class TMMC(BaseSimulator):
         if adsorbate is None:
             raise ValueError(f"Adsorbate with tag {adsorbate_tag} not found.")
 
-
         atoms_trial = random_mol_insertion(
             self.current_system, adsorbate.structure, self.rnd_generator
         )
@@ -400,7 +399,9 @@ class TMMC(BaseSimulator):
 
         return deltaE
 
-    def check_tmmc_files_exist(self, file_path: str, max_loading: int, replicas: list | range = range(1, 5)) -> None:
+    def check_tmmc_files_exist(
+        self, file_path: str, max_loading: int, replicas: list | range = range(1, 5)
+    ) -> None:
         """
         Check if the required TMMC simulation data files exist for the specified replicas and loading.
 
@@ -421,7 +422,9 @@ class TMMC(BaseSimulator):
         for replica in replicas:
             prefix = f"{file_path}_{replica}"
             if not os.path.exists(prefix):
-                raise FileNotFoundError(f"Directory {prefix} does not exist. Please check the path and replica index.")
+                raise FileNotFoundError(
+                    f"Directory {prefix} does not exist. Please check the path and replica index."
+                )
             not_found_files = []
 
             for n_mol in range(0, max_loading + 1):
@@ -433,15 +436,18 @@ class TMMC(BaseSimulator):
                     if not os.path.exists(file):
                         not_found_files.append(file)
             if len(not_found_files) > 0:
-                raise FileNotFoundError(f"The following required files are missing for replica {replica}:\n" + '\n'.join(not_found_files))
-    
+                raise FileNotFoundError(
+                    f"The following required files are missing for replica {replica}:\n"
+                    + "\n".join(not_found_files)
+                )
+
     def load_tmmc_weights(
-            self,
-            file_path: str,
-            max_loading: int,
-            replicas: list | range = range(1, 5),
-            show_progress: bool = True
-            ) -> tuple[dict[int, list[np.ndarray]], dict[int, list[np.ndarray]]]:
+        self,
+        file_path: str,
+        max_loading: int,
+        replicas: list | range = range(1, 5),
+        show_progress: bool = True,
+    ) -> tuple[dict[int, list[np.ndarray]], dict[int, list[np.ndarray]]]:
         """
         Loads TMMC simulation data and pre-computes the fugacity-independent Boltzmann weights
         for a given temperature, returning them separated by replica.
@@ -458,7 +464,7 @@ class TMMC(BaseSimulator):
             List or range of replica indices to load. Default is range(1, 5).
         show_progress : bool, optional
             If True, shows a progress bar during the loading of weights. Default is True.
-        
+
         Returns
         -------
         ins_weights: dict[int, list[np.ndarray]]
@@ -473,7 +479,7 @@ class TMMC(BaseSimulator):
         """
 
         # Checks if the weights directory exists
-        #self.check_tmmc_files_exist(file_path, max_loading, replicas)
+        # self.check_tmmc_files_exist(file_path, max_loading, replicas)
 
         ins_weights = {replica: [] for replica in replicas}
         del_weights = {replica: [] for replica in replicas}
@@ -484,20 +490,20 @@ class TMMC(BaseSimulator):
             # Read the saved wheighs if exists
             ins_file = f"{prefix}_ins_weights.npz"
             del_file = f"{prefix}_del_weights.npz"
-    
+
             if os.path.exists(ins_file) and os.path.exists(del_file):
                 print(f"Loading precomputed weights for replica {replica} from disk...")
                 ins_data = np.load(ins_file)
                 del_data = np.load(del_file)
-                ins_weights[replica] = [ins_data[f'arr_{i}'] for i in range(len(ins_data.files))]
-                del_weights[replica] = [del_data[f'arr_{i}'] for i in range(len(del_data.files))]
+                ins_weights[replica] = [ins_data[f"arr_{i}"] for i in range(len(ins_data.files))]
+                del_weights[replica] = [del_data[f"arr_{i}"] for i in range(len(del_data.files))]
 
             else:
                 prefix = f"{file_path}_{replica}"
                 for n_mol in tqdm(
-                    range(0, max_loading + 1), 
-                    desc=f"Loading weights (Replica {replica})", 
-                    disable=not show_progress
+                    range(0, max_loading + 1),
+                    desc=f"Loading weights (Replica {replica})",
+                    disable=not show_progress,
                 ):
                     # Load and mask insertion energies
                     rep_ins_energies = np.load(f"{prefix}/ins_energy_H2O_{n_mol:04d}.npy")
@@ -509,22 +515,22 @@ class TMMC(BaseSimulator):
                     volumes = np.load(f"{prefix}/volume_{n_mol:04d}.npy")
 
                     # Precompute fugacity-independent part of insertion acceptance
-                    w_ins = (
-                        (volumes * self.beta / (n_mol + 1))
-                        * np.exp(-self.beta * rep_ins_energies)
+                    w_ins = (volumes * self.beta / (n_mol + 1)) * np.exp(
+                        -self.beta * rep_ins_energies
                     )
                     ins_weights[replica].append(w_ins)
-                    
+
                     # Precompute fugacity-independent part of deletion acceptance
-                    w_del = (
-                        (n_mol / (volumes * self.beta))
-                        * np.exp(-self.beta * rep_del_energies)
-                    )
+                    w_del = (n_mol / (volumes * self.beta)) * np.exp(-self.beta * rep_del_energies)
                     del_weights[replica].append(w_del)
 
                 # Save weights to disk for future use as compressed numpy arrays
-                np.savez_compressed(f"tmmc_weights/{replica}_ins_weights.npz", *ins_weights[replica])
-                np.savez_compressed(f"tmmc_weights/{replica}_del_weights.npz", *del_weights[replica])
+                np.savez_compressed(
+                    f"tmmc_weights/{replica}_ins_weights.npz", *ins_weights[replica]
+                )
+                np.savez_compressed(
+                    f"tmmc_weights/{replica}_del_weights.npz", *del_weights[replica]
+                )
 
         self.insertion_weights = ins_weights
         self.deletion_weights = del_weights
@@ -536,21 +542,21 @@ class TMMC(BaseSimulator):
         ins_weights: list[np.ndarray],
         del_weights: list[np.ndarray],
         fugacities_Pa: np.ndarray,
-        show_progress: bool = True
+        show_progress: bool = True,
     ) -> np.ndarray:
         """
         Computes the Macrostate Probability Distribution (MPD or Π) for a given set of fugacities.
 
-        At equilibrium, the system obeys the principle of detailed balance, meaning the 
+        At equilibrium, the system obeys the principle of detailed balance, meaning the
         probability flux between adjacent macrostates is equal:
             Π(N) * P(N → N + 1) = Π(N + 1) * P(N + 1 → N)
 
-        By rearranging this equality, the true physical MPD (Π) can be constructed 
+        By rearranging this equality, the true physical MPD (Π) can be constructed
         iteratively from the transition probabilities (P):
             ln Π(N + 1) = ln Π(N) + ln( P(N → N + 1) / P(N + 1 → N) )
 
-        This function calculates those transition probabilities using the unbiased 
-        acceptance weights scaled by fugacity, and applies a Log-Sum-Exp (LSE) trick 
+        This function calculates those transition probabilities using the unbiased
+        acceptance weights scaled by fugacity, and applies a Log-Sum-Exp (LSE) trick
         during normalization to guarantee numerical stability.
 
         Parameters
@@ -608,20 +614,19 @@ class TMMC(BaseSimulator):
 
         return pi
 
-
     def compute_uptake_from_mpd(self, pi: np.ndarray) -> np.ndarray:
         """
-        Calculates the expected number of molecules (uptake) from the Macrostate 
+        Calculates the expected number of molecules (uptake) from the Macrostate
         Probability Distribution (MPD).
 
-        The MPD (Π) acts as the centerpiece of the ensemble thus the ensemble 
+        The MPD (Π) acts as the centerpiece of the ensemble thus the ensemble
         average of any physical property A can be derived directly from it via
         histogram reweighting:
 
             ⟨A⟩ = [ Σ_N A(N) * Π(N) ] / [ Σ_N Π(N) ]
 
-        For the adsorption isotherm (uptake), the physical property A(N) is simply 
-        the number of molecules N. Since Π is already normalized (Σ_N Π(N) = 1), 
+        For the adsorption isotherm (uptake), the physical property A(N) is simply
+        the number of molecules N. Since Π is already normalized (Σ_N Π(N) = 1),
         the formula simplifies to the expected value:
             ⟨N⟩ = Σ_N (N * Π(N))
 
@@ -633,29 +638,28 @@ class TMMC(BaseSimulator):
         Returns
         -------
         uptakes : np.ndarray
-            1D array of expected number of molecules (uptake) for each fugacity. 
+            1D array of expected number of molecules (uptake) for each fugacity.
             Shape: (n_press,).
         """
         n_states = pi.shape[0]
         n_grid = np.arange(n_states)[:, None]
-        
+
         # ⟨N⟩ = Σ (N * Π)
         uptakes = np.sum(n_grid * pi, axis=0)
-        
-        return uptakes
 
+        return uptakes
 
     def compute_isotherm_replica(
         self,
         ins_weights: list[np.ndarray],
         del_weights: list[np.ndarray],
         fugacities_Pa: np.ndarray,
-        show_progress: bool = True
+        show_progress: bool = True,
     ) -> tuple[np.ndarray, np.ndarray]:
         """
-        Computes uptakes and macrostate probability distributions (pi) for a given 
+        Computes uptakes and macrostate probability distributions (pi) for a given
         set of fugacities using pre-computed insertion and deletion weights.
-        
+
         This is a convenience wrapper combining `compute_mpd` and `compute_uptake_from_mpd`.
         """
         # 1. Compute the Macrostate Probability Distribution
@@ -663,7 +667,7 @@ class TMMC(BaseSimulator):
             ins_weights=ins_weights,
             del_weights=del_weights,
             fugacities_Pa=fugacities_Pa,
-            show_progress=show_progress
+            show_progress=show_progress,
         )
 
         # 2. Derive the macroscopic uptake from the MPD
@@ -672,13 +676,9 @@ class TMMC(BaseSimulator):
         # Transpose pi so shape is (n_press, max_loading + 1) to match original API expectation
         return uptakes, pi.T
 
-        
     def compute_isotherm(
-            self,
-            fugacities_Pa: np.ndarray,
-            uptake_units: str = "nmol",
-            show_progress: bool = True
-        ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        self, fugacities_Pa: np.ndarray, uptake_units: str = "nmol", show_progress: bool = True
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Computes uptakes and macrostate probability distributions (pi) for a list of fugacities.
 
@@ -702,10 +702,14 @@ class TMMC(BaseSimulator):
         """
 
         if not self.insertion_weights or not self.deletion_weights:
-            raise ValueError("Insertion and deletion weights must be loaded before computing the isotherm. Please run `load_tmmc_weights` first.")
+            raise ValueError(
+                "Insertion and deletion weights must be loaded before computing the isotherm. Please run `load_tmmc_weights` first."
+            )
 
         if uptake_units not in self.conv_factors:
-            raise ValueError(f"Invalid uptake_units '{uptake_units}'. Valid options are: {list(self.conv_factors.keys())}")
+            raise ValueError(
+                f"Invalid uptake_units '{uptake_units}'. Valid options are: {list(self.conv_factors.keys())}"
+            )
 
         uptakes_list = []
         pi_list = []
@@ -715,8 +719,9 @@ class TMMC(BaseSimulator):
                 ins_weights=self.insertion_weights[replica + 1],
                 del_weights=self.deletion_weights[replica + 1],
                 fugacities_Pa=fugacities_Pa,
-                show_progress=show_progress)
-            
+                show_progress=show_progress,
+            )
+
             uptakes_list.append(uptakes)
             pi_list.append(pi)
 
@@ -736,9 +741,9 @@ class TMMC(BaseSimulator):
 
     def run_tmmc(self, N_per_frame: int, trajectory_path: str) -> None:
         """
-        Run the transition matrix Monte Carlo simulation for N iterations in 
+        Run the transition matrix Monte Carlo simulation for N iterations in
         a given trajectory.
-        
+
         The trajectory is read from a file and the simulation is performed on
         each frame of the trajectory for N iterations.
 
@@ -753,7 +758,7 @@ class TMMC(BaseSimulator):
         trajectory_path : str
             The path to the trajectory file where the simulation will be executed.
         """
-        
+
         step_time_start = datetime.datetime.now()
 
         self.logger.print_tmmc_run_header()
@@ -770,34 +775,43 @@ class TMMC(BaseSimulator):
             self.set_state(frame)  # type: ignore
 
             ads_indices_list = self.get_adsorbates_index(tag=self.adsorbates[0].tag)
-    
-            for ads_idx in tqdm(ads_indices_list, disable=(self.out_file is None), desc="TMMC Deletions on frame  {:05d}".format(frame_number)):
-    
+
+            for ads_idx in tqdm(
+                ads_indices_list,
+                disable=(self.out_file is None),
+                desc="TMMC Deletions on frame  {:05d}".format(frame_number),
+            ):
+
                 del_energy = self.try_virtual_deletion(self.adsorbates[0].tag, ads_index=ads_idx)
                 del_energy_list.append(del_energy)
-    
-            del_energy_list = [self.max_deltaE * 100] if len(del_energy_list) == 0 else del_energy_list
-    
+
+            del_energy_list = (
+                [self.max_deltaE * 100] if len(del_energy_list) == 0 else del_energy_list
+            )
+
             # Perform N virtual insertions of the adsorbate
-            for iteration in tqdm(range(1, N_per_frame + 1), disable=(self.out_file is None), desc="TMMC Insertions on frame {:05d}".format(frame_number)):
-    
+            for iteration in tqdm(
+                range(1, N_per_frame + 1),
+                disable=(self.out_file is None),
+                desc="TMMC Insertions on frame {:05d}".format(frame_number),
+            ):
+
                 ins_energy = self.try_virtual_insertion(self.adsorbates[0].tag)
                 self.total_ins_energy_list[self.adsorbates[0].name].append(ins_energy)
                 ins_energies[self.adsorbates[0].name] = ins_energy
-    
+
                 del_energy = self.rnd_generator.choice(del_energy_list)
                 self.total_del_energy_list[self.adsorbates[0].name].append(del_energy)
                 del_energies[self.adsorbates[0].name] = del_energy
-    
-    
+
                 self.volume_list.append(self.current_system.get_volume())
-            
+
                 self.logger.print_tmmc_step_info(
                     step=(iteration + frame_number * N_per_frame),
                     del_energy=del_energies,
                     ins_energy=ins_energies,
                     step_time=(datetime.datetime.now() - step_time_start).total_seconds(),
                 )
-    
+
                 # Save the current state and trajectory
                 self._save_state()

@@ -254,8 +254,8 @@ Accepted: {rnd_number < acc}
 """)
 
     def print_optimization_start(self, target: str) -> None:
-            """Prints a header for framework or adsorbate optimization."""
-            self._print(f"""
+        """Prints a header for framework or adsorbate optimization."""
+        self._print(f"""
     ===========================================================================
     Start optimizing {target} structure...
     ===========================================================================
@@ -314,8 +314,6 @@ Starting GCMC simulation
                 step_time,
             )
         )
-
-    
 
     def print_load_state_info(self, n_atoms, average_ads_energy) -> None:
         """Prints information about the loading state."""
@@ -446,9 +444,9 @@ class TMMCLogger(BaseLogger):
     """
 
     def _get_move_pct(self, move_name: str) -> float:
-            moves = self.sim.n_movements[move_name]
-            return np.average(moves) * 100 if len(moves) > 0 else 0.0
-    
+        moves = self.sim.n_movements[move_name]
+        return np.average(moves) * 100 if len(moves) > 0 else 0.0
+
     def print_tmmc_run_header(self) -> None:
         """Prints the header for the main TMMC loop."""
         header = """
@@ -486,26 +484,26 @@ Starting GCMC simulation
         self._print(header)
 
     def print_gcmc_step_info(self, step, average_ads_energy, step_time, adsorbate_name) -> None:
-    
-            line_str = "{:^11}|{:^13}|{:>9.2f} |{:>13.4f} |{:>11.4f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:9.2f}"
-    
-            self._print(
-                line_str.format(
-                    step,
-                    sum(self.sim.uptake_list[-1]),
-                    sum(self.sim.uptake_list[-1]) * self.sim.conv_factors["mol/kg"][adsorbate_name],
-                    self.sim.current_total_energy,
-                    average_ads_energy,
-                    self._get_move_pct("insertion"),
-                    self._get_move_pct("deletion"),
-                    self._get_move_pct("translation"),
-                    self._get_move_pct("rotation"),
-                    self._get_move_pct("reinsertion"),
-                    self._get_move_pct("identity_swap"),
-                    step_time,
-                )
+
+        line_str = "{:^11}|{:^13}|{:>9.2f} |{:>13.4f} |{:>11.4f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:7.2f} |{:9.2f}"
+
+        self._print(
+            line_str.format(
+                step,
+                sum(self.sim.uptake_list[-1]),
+                sum(self.sim.uptake_list[-1]) * self.sim.conv_factors["mol/kg"][adsorbate_name],
+                self.sim.current_total_energy,
+                average_ads_energy,
+                self._get_move_pct("insertion"),
+                self._get_move_pct("deletion"),
+                self._get_move_pct("translation"),
+                self._get_move_pct("rotation"),
+                self._get_move_pct("reinsertion"),
+                self._get_move_pct("identity_swap"),
+                step_time,
             )
-    
+        )
+
     def print_tmmc_step_info(self, step, del_energy: dict, ins_energy: dict, step_time) -> None:
         """Prints info on one TMMC step, iterating through all adsorbates."""
         line_str = "{:^11}| {:^9} |{:^11}|{:>13.4f} |{:>13.4f} |{:>13.4f} |{:7.2f}"
@@ -589,7 +587,6 @@ Simulation duration: {datetime.datetime.now() - self.sim.start_time}
             print(f"{len(self.warnings)} Warnings during the simulation:")
             for warning in self.warnings:
                 self._print(f"WARNING: {warning}")
-
 
 
 class WidomLogger(BaseLogger):

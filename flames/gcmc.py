@@ -173,7 +173,7 @@ class GCMC(BaseSimulator):
         random_seed: int | None = None,
         cutoff_radius: float = 6.0,
         automatic_supercell: bool = True,
-        void_fraction: float  = 0.0,
+        void_fraction: float = 0.0,
     ) -> None:
         """
         Initialize the Grand Canonical Monte Carlo (GCMC) simulation.
@@ -1340,7 +1340,7 @@ class GCMC(BaseSimulator):
 
         if len(self.adsorbates) < 2:
             return False
-    
+
         adsorbate1_tag = adsorbate_tag
         adsorbate2_tag = self.rnd_generator.choice(
             [ads.tag for ads in self.adsorbates if ads.tag != adsorbate1_tag]
@@ -1556,7 +1556,7 @@ class GCMC(BaseSimulator):
 
             self.current_system = atoms_trial.copy()  # type: ignore
             self.current_total_energy = atoms_trial.get_potential_energy()  # type: ignore
-            self.V = atoms_trial.get_volume() / (units.m**3) # type: ignore
+            self.V = atoms_trial.get_volume() / (units.m**3)  # type: ignore
 
             n_adsorbate_atoms = sum(
                 [len(ads.structure) * self.n_adsorbates[ads.name] for ads in self.adsorbates]

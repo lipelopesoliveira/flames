@@ -135,8 +135,8 @@ class Adsorbate:
         """
         if not isinstance(value, Atoms):
             raise ValueError("Structure must be an ASE Atoms object")
-        
-        self._structure = value           
+
+        self._structure = value
 
     @property
     def move_weights(self) -> MoveWeights:
