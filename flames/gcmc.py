@@ -1324,9 +1324,10 @@ class GCMC(BaseSimulator):
 
     def try_identity_swap(self, adsorbate_tag: int) -> bool:
         """
-        Try to swap the identity of two adsorbate molecules in the system.
-        This method randomly selects two adsorbate molecules and attempts to swap their
-        identities.
+        Try to swap the identity of an adsorbate A for B in the system.
+        This method randomly selects an adsorbate type B, and replaces
+        a randomly selected adsorbate A with B, placint it at the same
+        center of mass position.
 
         Parameters
         ----------
@@ -1344,9 +1345,9 @@ class GCMC(BaseSimulator):
             return False
 
         adsorbate1_tag = adsorbate_tag
-        adsorbate2_tag = self.rnd_generator.choice(
+        adsorbate2_tag = int(self.rnd_generator.choice(
             [ads.tag for ads in self.adsorbates if ads.tag != adsorbate1_tag]
-        )
+        ))
 
         ads1_name = next((ads.name for ads in self.adsorbates if ads.tag == adsorbate1_tag))
         ads2_name = next((ads.name for ads in self.adsorbates if ads.tag == adsorbate2_tag))
