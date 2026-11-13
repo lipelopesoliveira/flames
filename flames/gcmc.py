@@ -12,6 +12,7 @@ from ase.calculators import calculator
 from ase.io import Trajectory, read
 from ase.md.velocitydistribution import MaxwellBoltzmannDistribution
 from tqdm import tqdm
+import warnings
 
 from flames import VERSION
 from flames.adsorbate import Adsorbate
@@ -1339,6 +1340,7 @@ class GCMC(BaseSimulator):
         """
 
         if len(self.adsorbates) < 2:
+            warnings.warn("Identity swap requires at least two different adsorbates in the system. ")
             return False
 
         adsorbate1_tag = adsorbate_tag
@@ -1346,8 +1348,8 @@ class GCMC(BaseSimulator):
             [ads.tag for ads in self.adsorbates if ads.tag != adsorbate1_tag]
         )
 
-        ads1_name = next((ads.name for ads in self.adsorbates if ads.tag == adsorbate1_tag), "None")
-        ads2_name = next((ads.name for ads in self.adsorbates if ads.tag == adsorbate2_tag), "None")
+        ads1_name = next((ads.name for ads in self.adsorbates if ads.tag == adsorbate1_tag))
+        ads2_name = next((ads.name for ads in self.adsorbates if ads.tag == adsorbate2_tag))
 
         # Check if both adsorbate tags are present in the system
         ads_tags = list(set(self.current_system.get_tags()))
@@ -1435,6 +1437,7 @@ class GCMC(BaseSimulator):
         tmp_traj = Trajectory(os.path.join(self.out_folder, "nvemd_temp.traj"), "w")
 
         atoms_trial = self.md(
+            atoms=atoms_trial,
             nsteps=n_teps,
             time_step=0.5,
             ensemble="NVE",
@@ -1442,6 +1445,7 @@ class GCMC(BaseSimulator):
             update_state=False,
             movie_interval=1,
             trajectory_file=tmp_traj,
+            **kwargs
         )
 
         tmp_traj.close()  # type: ignore
@@ -1486,6 +1490,7 @@ class GCMC(BaseSimulator):
         tmp_traj = Trajectory(os.path.join(self.out_folder, "nvtmd_temp.traj"), "w")
 
         atoms_trial = self.md(
+            atoms=self.current_system.copy(),  # type: ignore
             nsteps=n_teps,
             time_step=0.5,
             ensemble="NVT",
@@ -1493,6 +1498,7 @@ class GCMC(BaseSimulator):
             update_state=False,
             movie_interval=1,
             trajectory_file=tmp_traj,
+            **kwargs
         )
 
         tmp_traj.close()  # type: ignore
@@ -1537,6 +1543,7 @@ class GCMC(BaseSimulator):
         tmp_traj = Trajectory(os.path.join(self.out_folder, "nptmd_temp.traj"), "w")
 
         atoms_trial = self.md(
+            atoms=self.current_system.copy(),  # type: ignore
             nsteps=n_teps,
             time_step=0.5,
             ensemble="NPT",
@@ -1544,6 +1551,7 @@ class GCMC(BaseSimulator):
             update_state=False,
             movie_interval=1,
             trajectory_file=tmp_traj,
+            **kwargs
         )
 
         tmp_traj.close()  # type: ignore
