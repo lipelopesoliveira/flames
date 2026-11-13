@@ -1450,12 +1450,15 @@ class GCMC(BaseSimulator):
 
         tmp_traj.close()  # type: ignore
 
+        new_kinetic_energy = atoms_trial.get_kinetic_energy()  # type: ignore
+        new_potential_energy = atoms_trial.get_potential_energy()  # type: ignore
+
         if self._nvemd_acceptance(
-            deltaU=atoms_trial.get_potential_energy() - potential_energy,  # type: ignore
-            deltaK=atoms_trial.get_kinetic_energy() - kinetic_energy,  # type: ignore
+            deltaU=new_potential_energy - potential_energy,  # type: ignore
+            deltaK=new_kinetic_energy - kinetic_energy,  # type: ignore
         ):  # type: ignore
-            self.current_system = atoms_trial.copy()  # type: ignore
-            self.current_total_energy = atoms_trial.get_potential_energy()  # type: ignore
+            self.current_system = atoms_trial  # type: ignore
+            self.current_total_energy = new_potential_energy  # type: ignore
 
             n_adsorbate_atoms = sum(
                 [len(ads.structure) * self.n_adsorbates[ads.name] for ads in self.adsorbates]
@@ -1503,9 +1506,11 @@ class GCMC(BaseSimulator):
 
         tmp_traj.close()  # type: ignore
 
-        if self._nvtmd_acceptance(deltaE=atoms_trial.get_potential_energy() - self.current_total_energy):  # type: ignore
-            self.current_system = atoms_trial.copy()  # type: ignore
-            self.current_total_energy = atoms_trial.get_potential_energy()  # type: ignore
+        new_potential_energy = atoms_trial.get_potential_energy()  # type: ignore
+
+        if self._nvtmd_acceptance(deltaE=new_potential_energy - self.current_total_energy):  # type: ignore
+            self.current_system = atoms_trial  # type: ignore
+            self.current_total_energy = new_potential_energy  # type: ignore
 
             n_adsorbate_atoms = sum(
                 [len(ads.structure) * self.n_adsorbates[ads.name] for ads in self.adsorbates]
@@ -1556,14 +1561,16 @@ class GCMC(BaseSimulator):
 
         tmp_traj.close()  # type: ignore
 
+        new_potential_energy = atoms_trial.get_potential_energy()  # type: ignore
+
         if self._nptmd_acceptance(
-            deltaE=atoms_trial.get_potential_energy() - self.current_total_energy,  # type: ignore
+            deltaE=new_potential_energy - self.current_total_energy,  # type: ignore
             v_old=self.current_system.get_volume(),
             v_new=atoms_trial.get_volume(),  # type: ignore
         ):  # type: ignore
 
-            self.current_system = atoms_trial.copy()  # type: ignore
-            self.current_total_energy = atoms_trial.get_potential_energy()  # type: ignore
+            self.current_system = atoms_trial  # type: ignore
+            self.current_total_energy = new_potential_energy  # type: ignore
             self.V = atoms_trial.get_volume()  # type: ignore
 
             n_adsorbate_atoms = sum(
