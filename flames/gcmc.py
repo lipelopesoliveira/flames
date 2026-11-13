@@ -214,7 +214,7 @@ class GCMC(BaseSimulator):
         # Parameters for storing the main results during the simulation.
         # Simulation starts with zero adsorbates and the framework energy as the total energy.
         self.n_adsorbates: dict[str, int] = {adsorbate.name: 0 for adsorbate in self.adsorbates}
-        self.uptake_list: list[int] = [0] 
+        self.uptake_list: list[list[int]] = [[0] * len(self.adsorbates)]
         self.total_energy_list: list[float] = [self.framework_energy]
         self.total_ads_list: list[float] = [0]
 
