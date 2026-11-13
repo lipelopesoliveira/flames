@@ -17,44 +17,15 @@ installation
 overview
 ```
 
-```{toctree}
+```{toctree} 
 :maxdepth: 2
 :hidden:
-:caption: Tutorials: Basic
+:caption: Tutorials
 
-tutorials/basic/widom
-tutorials/basic/gcmc
-tutorials/basic/restart
-tutorials/basic/isotherm
-tutorials/basic/multiple_ads
-```
-
-```{toctree}
-:maxdepth: 2
-:hidden:
-:caption: Tutorials: Intermediate
-
-tutorials/intermediate/hybrid_gcmc_md
-
-```
-
-```{toctree}
-:maxdepth: 2
-:hidden:
-:caption: Tutorials: Calculators
-
-tutorials/calculators/lennard_jones
-tutorials/calculators/ewald
-
-```
-
-```{toctree}
-:maxdepth: 2
-:hidden:
-:caption: Tutorials: Advanced
-
-tutorials/advanced/hybrid_gcmc_md_mixed_calc
-tutorials/advanced/hybrid_tmmc_md
+tutorials/basic/index
+tutorials/intermediate/index
+tutorials/advanced/index
+tutorials/calculators/index
 ```
 
 ```{toctree}

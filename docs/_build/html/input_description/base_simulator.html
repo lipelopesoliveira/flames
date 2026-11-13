@@ -202,27 +202,30 @@
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing FLAMES</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Basic</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/basic/widom.html">Widom insertion</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/basic/gcmc.html">GCMC Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/basic/restart.html">Restarting Simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/basic/isotherm.html">GCMC Adsorption Isotherm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/basic/multiple_ads.html">Multi-component GCMC Simulation</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../tutorials/basic/index.html">Basic</a><input aria-label="Toggle navigation of Basic" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/basic/widom.html">Widom insertion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/basic/gcmc.html">GCMC Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/basic/restart.html">Restarting Simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/basic/isotherm.html">GCMC Adsorption Isotherm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/basic/multiple_ads.html">Multi-component GCMC Simulation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Intermediate</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/intermediate/hybrid_gcmc_md.html">Hybrid GCMC/MD Simulation</a></li>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../tutorials/intermediate/index.html">Intermediate</a><input aria-label="Toggle navigation of Intermediate" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/intermediate/hybrid_gcmc_md.html">Hybrid GCMC/MD Simulation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Calculators</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/calculators/lennard_jones.html">Lennard-Jones Potential</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/calculators/ewald.html">Ewald Sum for Electrostatic Interactions</a></li>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../tutorials/advanced/index.html">Advanced</a><input aria-label="Toggle navigation of Advanced" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/advanced/hybrid_gcmc_md_mixed_calc.html">Mixed calculators for GCMC/MD simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/advanced/hybrid_tmmc_md.html">Hybrid TMMC/MD Simulation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Advanced</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/advanced/hybrid_gcmc_md_mixed_calc.html">Mixed calculators for GCMC/MD simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/advanced/hybrid_tmmc_md.html">Hybrid TMMC/MD Simulation</a></li>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../tutorials/calculators/index.html">Calculators</a><input aria-label="Toggle navigation of Calculators" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/calculators/lennard_jones.html">Lennard-Jones Potential</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/calculators/ewald.html">Ewald Sum for Electrostatic Interactions</a></li>
+</ul>
+</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Theoretical Background</span></p>
 <ul>
@@ -284,7 +287,7 @@
 <p>The <code class="docutils literal notranslate"><span class="pre">BaseSimulator</span></code> class serves as the foundational interface for handling simulation logic. It separates the specific implementation details from the general logic required for Atomic Simulation Environment (ASE) based workflows.</p>
 <dl class="py class">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flames.base_simulator.</span></span><span class="sig-name descname"><span class="pre">BaseSimulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framework_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adsorbates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pressure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vdw_radii</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framework_energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adsorbate_energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vdw_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_deltaE</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.555</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_frequency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_rejected</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_to_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fugacity_coeff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">void_fraction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">automatic_supercell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/base_simulator.html#BaseSimulator"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flames.base_simulator.</span></span><span class="sig-name descname"><span class="pre">BaseSimulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framework_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adsorbates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pressure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vdw_radii</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framework_energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adsorbate_energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vdw_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_deltaE</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.555</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_frequency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_rejected</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_to_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fugacity_coeff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">void_fraction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">automatic_supercell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/base_simulator.html#BaseSimulator"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>This class handles all base parameters for the simulations.
 Separates the basic logic used in the simulations from the specific implementation details.</p>
 <dl class="field-list simple">
@@ -318,6 +321,23 @@ Only used if <code class="docutils literal notranslate"><span class="pre">critic
 </ul>
 </dd>
 </dl>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">adsorbate_by_tag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tag</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/base_simulator.html#BaseSimulator.adsorbate_by_tag"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Get the adsorbate object corresponding to a given tag.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>tag</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – The tag of the adsorbate.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The adsorbate object corresponding to the given tag.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Adsorbate</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">get_framework_mass</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/base_simulator.html#BaseSimulator.get_framework_mass"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
@@ -620,6 +640,20 @@ Can be Berendsen, NoseHoover or MTKNPT (default is “MTKNPT”).</p></li>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">conv_factors</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em></dt>
+<dd><p>Get the conversion factors for different units.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dictionary containing conversion factors for different units.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)">float</a>]]</p>
 </dd>
 </dl>
 </dd></dl>

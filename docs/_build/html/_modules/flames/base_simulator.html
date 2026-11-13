@@ -201,27 +201,30 @@
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing FLAMES</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../overview.html">Overview</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Basic</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/widom.html">Widom insertion</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/gcmc.html">GCMC Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/restart.html">Restarting Simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/isotherm.html">GCMC Adsorption Isotherm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/multiple_ads.html">Multi-component GCMC Simulation</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/basic/index.html">Basic</a><input aria-label="Toggle navigation of Basic" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/basic/widom.html">Widom insertion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/basic/gcmc.html">GCMC Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/basic/restart.html">Restarting Simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/basic/isotherm.html">GCMC Adsorption Isotherm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/basic/multiple_ads.html">Multi-component GCMC Simulation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Intermediate</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/intermediate/hybrid_gcmc_md.html">Hybrid GCMC/MD Simulation</a></li>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/intermediate/index.html">Intermediate</a><input aria-label="Toggle navigation of Intermediate" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/intermediate/hybrid_gcmc_md.html">Hybrid GCMC/MD Simulation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Calculators</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/calculators/lennard_jones.html">Lennard-Jones Potential</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/calculators/ewald.html">Ewald Sum for Electrostatic Interactions</a></li>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/advanced/index.html">Advanced</a><input aria-label="Toggle navigation of Advanced" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/hybrid_gcmc_md_mixed_calc.html">Mixed calculators for GCMC/MD simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/hybrid_tmmc_md.html">Hybrid TMMC/MD Simulation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Advanced</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/advanced/hybrid_gcmc_md_mixed_calc.html">Mixed calculators for GCMC/MD simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/advanced/hybrid_tmmc_md.html">Hybrid TMMC/MD Simulation</a></li>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/calculators/index.html">Calculators</a><input aria-label="Toggle navigation of Calculators" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/calculators/lennard_jones.html">Lennard-Jones Potential</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/calculators/ewald.html">Ewald Sum for Electrostatic Interactions</a></li>
+</ul>
+</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Theoretical Background</span></p>
 <ul>
@@ -416,7 +419,7 @@
         <span class="n">output_to_file</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">output_folder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">fugacity_coeff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">fugacity_coeff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">void_fraction</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="n">random_seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">cutoff_radius</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">6.0</span><span class="p">,</span>
@@ -439,8 +442,7 @@
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="s2">"Movies"</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">output_to_file</span><span class="p">:</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="s2">"Output.out"</span><span class="p">),</span> <span class="s2">"a"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">out_file</span> <span class="o">=</span> <span class="n">f</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">out_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="s2">"Output.out"</span><span class="p">),</span> <span class="s2">"a"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">out_file</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -487,22 +489,44 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">T</span> <span class="o">=</span> <span class="n">temperature</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">=</span> <span class="n">pressure</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">fugacity_coeff</span> <span class="o">=</span> <span class="n">fugacity_coeff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fugacity_coeff</span> <span class="o">=</span> <span class="n">fugacity_coeff</span> <span class="k">if</span> <span class="n">fugacity_coeff</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mf">1.0</span>
 
-        <span class="c1"># Fugacity from Pa (J/m^3) to eV / m^3</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fugacity</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fugacity_coeff</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">J</span><span class="p">)</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">eV</span>
+        <span class="c1"># Fugacity from Pa (J/m^3) to eV / Angs^3</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fugacity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fugacity_coeff</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">Pascal</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">kB</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>  <span class="c1"># Boltzmann weight, 1 / [eV/K * K]</span>
-
-        <span class="n">atm2pa</span> <span class="o">=</span> <span class="mi">101325</span>
-        <span class="n">mol2cm3</span> <span class="o">=</span> <span class="n">units</span><span class="o">.</span><span class="n">kB</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">J</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">mol</span> <span class="o">*</span> <span class="mf">273.15</span> <span class="o">/</span> <span class="n">atm2pa</span>
 
         <span class="c1"># Get the ideal supercell. This will be updated by the set_framework method</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ideal_supercell</span> <span class="o">=</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_get_ideal_supercell</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">automatic_supercell</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
         <span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv_factors</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vdw</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vdw_radii</span><span class="p">)</span> <span class="o">*</span> <span class="n">vdw_factor</span>
+        <span class="p">)</span>  <span class="c1"># Adjust van der Waals radii to avoid overlap</span>
+
+        <span class="c1"># Replace any NaN value by 1.5 on self.vdw to avoid potential problems</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vdw</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vdw</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">1.5</span>
+
+        <span class="c1"># Use an max deltaE to avoid errors on the model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_deltaE</span> <span class="o">=</span> <span class="n">max_deltaE</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">conv_factors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Get the conversion factors for different units.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict[str, dict[str, float]]</span>
+<span class="sd">            A dictionary containing conversion factors for different units.</span>
+<span class="sd">        """</span>
+
+        <span class="c1"># Constants for unit conversions</span>
+        <span class="n">atm2pa</span> <span class="o">=</span> <span class="mi">101325</span>
+        <span class="n">mol2cm3</span> <span class="o">=</span> <span class="n">units</span><span class="o">.</span><span class="n">kB</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">J</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">mol</span> <span class="o">*</span> <span class="mf">273.15</span> <span class="o">/</span> <span class="n">atm2pa</span>
+        
+        <span class="n">conv_factors</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">"nmol"</span><span class="p">:</span> <span class="p">{</span>
                 <span class="n">adsorbate</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ideal_supercell</span><span class="p">)</span> <span class="k">for</span> <span class="n">adsorbate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span>
             <span class="p">},</span>
@@ -533,17 +557,9 @@
                 <span class="k">for</span> <span class="n">adsorbate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span>
             <span class="p">},</span>
         <span class="p">}</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">vdw</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vdw_radii</span><span class="p">)</span> <span class="o">*</span> <span class="n">vdw_factor</span>
-        <span class="p">)</span>  <span class="c1"># Adjust van der Waals radii to avoid overlap</span>
-
-        <span class="c1"># Replace any NaN value by 1.5 on self.vdw to avoid potential problems</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">vdw</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vdw</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">1.5</span>
-
-        <span class="c1"># Use an max deltaE to avoid errors on the model</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">max_deltaE</span> <span class="o">=</span> <span class="n">max_deltaE</span>
-
+        
+        <span class="k">return</span> <span class="n">conv_factors</span>
+    
     <span class="k">def</span><span class="w"> </span><span class="nf">_save_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actual_iteration</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Save the trajectory of the simulation to a trajectory file if</span>
@@ -614,7 +630,7 @@
 <span class="sd">        framework_energy : float or None, optional</span>
 <span class="sd">            The energy of the framework in eV. If None, the energy will be calculated using the provided model.</span>
 <span class="sd">        """</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">framework</span> <span class="o">=</span> <span class="n">framework_atoms</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">framework</span> <span class="o">=</span> <span class="n">framework_atoms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">set_tags</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">))</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">ideal_supercell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_ideal_supercell</span><span class="p">()</span>
@@ -629,13 +645,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">perpendicular_cell</span> <span class="o">=</span> <span class="n">get_perpendicular_lengths</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">get_cell</span><span class="p">())</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
-        <span class="k">if</span> <span class="n">framework_energy</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">framework_energy</span> <span class="o">=</span> <span class="n">framework_energy</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ideal_supercell</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">framework_energy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">framework_energy</span> <span class="o">=</span> <span class="n">framework_energy</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ideal_supercell</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">framework_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">n_atoms_framework</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">framework_energy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">())</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">)</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">m</span><span class="o">**</span><span class="mi">3</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_atoms_framework</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">V</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">framework_mass</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_framework_mass</span><span class="p">()</span>
 
         <span class="c1"># Get the framework density in g/cm^3</span>
@@ -729,6 +745,29 @@
 
         <span class="c1"># self.n_atoms_framework -= self.n_adsorbate_atoms * n_adsorbates</span>
         <span class="c1"># self.n_adsorbates = n_adsorbates</span>
+
+<div class="viewcode-block" id="BaseSimulator.adsorbate_by_tag">
+<a class="viewcode-back" href="../../input_description/base_simulator.html#flames.base_simulator.BaseSimulator.adsorbate_by_tag">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">adsorbate_by_tag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Adsorbate</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Get the adsorbate object corresponding to a given tag.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        tag : int</span>
+<span class="sd">            The tag of the adsorbate.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Adsorbate</span>
+<span class="sd">            The adsorbate object corresponding to the given tag.</span>
+<span class="sd">        """</span>
+        <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ads</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">tag</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">ads</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No adsorbate found with tag </span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="BaseSimulator.set_state">
 <a class="viewcode-back" href="../../input_description/base_simulator.html#flames.base_simulator.BaseSimulator.set_state">[docs]</a>

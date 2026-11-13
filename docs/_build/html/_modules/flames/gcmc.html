@@ -201,27 +201,30 @@
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing FLAMES</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../overview.html">Overview</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Basic</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/widom.html">Widom insertion</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/gcmc.html">GCMC Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/restart.html">Restarting Simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/isotherm.html">GCMC Adsorption Isotherm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/multiple_ads.html">Multi-component GCMC Simulation</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/basic/index.html">Basic</a><input aria-label="Toggle navigation of Basic" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/basic/widom.html">Widom insertion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/basic/gcmc.html">GCMC Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/basic/restart.html">Restarting Simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/basic/isotherm.html">GCMC Adsorption Isotherm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/basic/multiple_ads.html">Multi-component GCMC Simulation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Intermediate</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/intermediate/hybrid_gcmc_md.html">Hybrid GCMC/MD Simulation</a></li>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/intermediate/index.html">Intermediate</a><input aria-label="Toggle navigation of Intermediate" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/intermediate/hybrid_gcmc_md.html">Hybrid GCMC/MD Simulation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Calculators</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/calculators/lennard_jones.html">Lennard-Jones Potential</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/calculators/ewald.html">Ewald Sum for Electrostatic Interactions</a></li>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/advanced/index.html">Advanced</a><input aria-label="Toggle navigation of Advanced" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/hybrid_gcmc_md_mixed_calc.html">Mixed calculators for GCMC/MD simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/hybrid_tmmc_md.html">Hybrid TMMC/MD Simulation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Advanced</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/advanced/hybrid_gcmc_md_mixed_calc.html">Mixed calculators for GCMC/MD simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/advanced/hybrid_tmmc_md.html">Hybrid TMMC/MD Simulation</a></li>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/calculators/index.html">Calculators</a><input aria-label="Toggle navigation of Calculators" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/calculators/lennard_jones.html">Lennard-Jones Potential</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/calculators/ewald.html">Ewald Sum for Electrostatic Interactions</a></li>
+</ul>
+</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Theoretical Background</span></p>
 <ul>
@@ -278,6 +281,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">ase</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -487,10 +491,11 @@
         <span class="c1"># Parameters for calculateing the Peng-Robinson equation of state</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">excess_nmol</span> <span class="o">=</span> <span class="p">{</span><span class="n">adsorbate</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">adsorbate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">}</span>
 
-        <span class="c1"># Parameters for storing the main results during the simulation</span>
+        <span class="c1"># Parameters for storing the main results during the simulation.</span>
+        <span class="c1"># Simulation starts with zero adsorbates and the framework energy as the total energy.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">adsorbate</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">adsorbate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">uptake_list</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">total_energy_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uptake_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_energy_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">framework_energy</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">total_ads_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">max_translation</span> <span class="o">=</span> <span class="n">max_translation</span>
@@ -719,7 +724,7 @@
                 <span class="n">inserted_adsorbates</span> <span class="o">+=</span> <span class="mi">1</span>
 
         <span class="k">if</span> <span class="n">n_attempts</span> <span class="o">==</span> <span class="n">max_attempts</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Warning</span><span class="p">(</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">"Maximum number of attempts (</span><span class="si">{</span><span class="n">max_attempts</span><span class="si">}</span><span class="s2">) reached. "</span>
                 <span class="o">+</span> <span class="sa">f</span><span class="s2">"Could not insert all </span><span class="si">{</span><span class="n">n_adsorbates</span><span class="si">}</span><span class="s2"> adsorbates without overlap. "</span>
                 <span class="o">+</span> <span class="sa">f</span><span class="s2">"Max inserted adsorbates: </span><span class="si">{</span><span class="n">inserted_adsorbates</span><span class="si">}</span><span class="s2">."</span>
@@ -984,11 +989,12 @@
 
         <span class="n">exp_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">*</span> <span class="n">deltaE</span><span class="p">)</span>
 
-        <span class="n">ads_name</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">ads</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span> <span class="k">if</span> <span class="n">ads</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">adsorbate_tag</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">ads_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_by_tag</span><span class="p">(</span><span class="n">adsorbate_tag</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
 
         <span class="n">n_ads</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbates</span><span class="p">[</span><span class="n">ads_name</span><span class="p">]</span> <span class="k">if</span> <span class="n">ads_name</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">mol_fraction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_by_tag</span><span class="p">(</span><span class="n">adsorbate_tag</span><span class="p">)</span><span class="o">.</span><span class="n">mol_fraction</span>
 
-        <span class="n">pre_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">V</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fugacity</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_ads</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">pre_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">V</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fugacity</span> <span class="o">*</span> <span class="n">mol_fraction</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_ads</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
 
         <span class="n">acc</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">pre_factor</span> <span class="o">*</span> <span class="n">exp_value</span><span class="p">)</span>
 
@@ -1019,15 +1025,15 @@
 <span class="sd">            Energy difference between the new and old configuration in eV.</span>
 <span class="sd">        adsorbate_tag : int</span>
 <span class="sd">            Tag identifying the adsorbate molecule.</span>
-<span class="sd">            Current number of adsorbate molecules in the system.</span>
 <span class="sd">        """</span>
 
         <span class="n">exp_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">*</span> <span class="n">deltaE</span><span class="p">)</span>
 
-        <span class="n">ads_name</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">ads</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span> <span class="k">if</span> <span class="n">ads</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">adsorbate_tag</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">n_ads</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbates</span><span class="p">[</span><span class="n">ads_name</span><span class="p">]</span> <span class="k">if</span> <span class="n">ads_name</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">ads_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_by_tag</span><span class="p">(</span><span class="n">adsorbate_tag</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">n_ads</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbates</span><span class="p">[</span><span class="n">ads_name</span><span class="p">]</span>
+        <span class="n">mol_fraction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_by_tag</span><span class="p">(</span><span class="n">adsorbate_tag</span><span class="p">)</span><span class="o">.</span><span class="n">mol_fraction</span>
 
-        <span class="n">pre_factor</span> <span class="o">=</span> <span class="n">n_ads</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fugacity</span><span class="p">)</span>
+        <span class="n">pre_factor</span> <span class="o">=</span> <span class="n">n_ads</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fugacity</span> <span class="o">*</span> <span class="n">mol_fraction</span><span class="p">)</span>
 
         <span class="n">acc</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">pre_factor</span> <span class="o">*</span> <span class="n">exp_value</span><span class="p">)</span>
 
@@ -1063,7 +1069,7 @@
         <span class="n">exp_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">*</span> <span class="n">deltaE</span><span class="p">)</span>
         <span class="n">acc</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">exp_value</span><span class="p">)</span>
 
-        <span class="n">ads_name</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">ads</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span> <span class="k">if</span> <span class="n">ads</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">adsorbate_tag</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">ads_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_by_tag</span><span class="p">(</span><span class="n">adsorbate_tag</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
 
         <span class="n">rnd_number</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rnd_generator</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
 
@@ -1094,16 +1100,18 @@
 <span class="sd">            Tags identifying the adsorbate molecules. Default is None.</span>
 <span class="sd">        """</span>
 
-        <span class="n">ads_names</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="nb">next</span><span class="p">((</span><span class="n">ads</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span> <span class="k">if</span> <span class="n">ads</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">tag</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">adsorbate_tags</span>
-        <span class="p">]</span>
+        <span class="n">ads_a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_by_tag</span><span class="p">(</span><span class="n">adsorbate_tags</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">ads_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_by_tag</span><span class="p">(</span><span class="n">adsorbate_tags</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 
-        <span class="n">N_a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbates</span><span class="p">[</span><span class="n">ads_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="k">if</span> <span class="n">ads_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">else</span> <span class="mi">0</span>
-        <span class="n">N_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbates</span><span class="p">[</span><span class="n">ads_names</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="k">if</span> <span class="n">ads_names</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">N_a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbates</span><span class="p">[</span><span class="n">ads_a</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+        <span class="n">N_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbates</span><span class="p">[</span><span class="n">ads_b</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
 
-        <span class="n">f_a</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">ads</span><span class="o">.</span><span class="n">eos</span><span class="o">.</span><span class="n">get_fugacity_coefficient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">P</span><span class="p">)</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span> <span class="k">if</span> <span class="n">ads</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">ads_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="mf">1.0</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
-        <span class="n">f_b</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">ads</span><span class="o">.</span><span class="n">eos</span><span class="o">.</span><span class="n">get_fugacity_coefficient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">P</span><span class="p">)</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span> <span class="k">if</span> <span class="n">ads</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">ads_names</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="mf">1.0</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+        <span class="n">f_a</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">ads_a</span><span class="o">.</span><span class="n">eos</span><span class="o">.</span><span class="n">get_fugacity_coefficient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">P</span><span class="p">)</span> <span class="o">*</span> <span class="n">ads_a</span><span class="o">.</span><span class="n">mol_fraction</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fugacity</span>
+        <span class="p">)</span>
+        <span class="n">f_b</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">ads_b</span><span class="o">.</span><span class="n">eos</span><span class="o">.</span><span class="n">get_fugacity_coefficient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">P</span><span class="p">)</span> <span class="o">*</span> <span class="n">ads_b</span><span class="o">.</span><span class="n">mol_fraction</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fugacity</span>
+        <span class="p">)</span>
 
         <span class="n">exp_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">*</span> <span class="n">deltaE</span><span class="p">)</span>
         <span class="n">pre_factor</span> <span class="o">=</span> <span class="p">(</span><span class="n">N_a</span> <span class="o">/</span> <span class="p">(</span><span class="n">N_b</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="n">f_b</span> <span class="o">/</span> <span class="n">f_a</span><span class="p">)</span>
@@ -1118,7 +1126,7 @@
                 <span class="n">prefactor</span><span class="o">=</span><span class="n">pre_factor</span><span class="p">,</span>
                 <span class="n">acc</span><span class="o">=</span><span class="n">acc</span><span class="p">,</span>
                 <span class="n">rnd_number</span><span class="o">=</span><span class="n">rnd_number</span><span class="p">,</span>
-                <span class="n">adsorbate_name</span><span class="o">=</span><span class="n">ads_names</span><span class="p">,</span>
+                <span class="n">adsorbate_name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">ads_a</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">ads_b</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="c1"># Apply Metropolis acceptance/rejection rule</span>
@@ -1235,7 +1243,11 @@
 
         <span class="n">total_n_ads</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbates</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
 
-        <span class="n">detaH</span> <span class="o">=</span> <span class="n">deltaE</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">*</span> <span class="p">(</span><span class="n">v_new</span> <span class="o">-</span> <span class="n">v_old</span><span class="p">)</span> <span class="o">-</span> <span class="n">total_n_ads</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">v_new</span> <span class="o">/</span> <span class="n">v_old</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span>
+        <span class="n">detaH</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">deltaE</span>
+            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">fugacity</span> <span class="o">*</span> <span class="p">(</span><span class="n">v_new</span> <span class="o">-</span> <span class="n">v_old</span><span class="p">)</span>
+            <span class="o">-</span> <span class="n">total_n_ads</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">v_new</span> <span class="o">/</span> <span class="n">v_old</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span>
+        <span class="p">)</span>
 
         <span class="n">exp_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">*</span> <span class="n">detaH</span><span class="p">)</span>
         <span class="n">acc</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">exp_value</span><span class="p">)</span>
@@ -1638,9 +1650,10 @@
 <a class="viewcode-back" href="../../input_description/gcmc.html#flames.gcmc.GCMC.try_identity_swap">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">try_identity_swap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">adsorbate_tag</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Try to swap the identity of two adsorbate molecules in the system.</span>
-<span class="sd">        This method randomly selects two adsorbate molecules and attempts to swap their</span>
-<span class="sd">        identities.</span>
+<span class="sd">        Try to swap the identity of an adsorbate A for B in the system.</span>
+<span class="sd">        This method randomly selects an adsorbate type B, and replaces</span>
+<span class="sd">        a randomly selected adsorbate A with B, placint it at the same</span>
+<span class="sd">        center of mass position.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1654,15 +1667,20 @@
 <span class="sd">        """</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">"Identity swap requires at least two different adsorbates in the system. "</span>
+            <span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span>
 
         <span class="n">adsorbate1_tag</span> <span class="o">=</span> <span class="n">adsorbate_tag</span>
-        <span class="n">adsorbate2_tag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rnd_generator</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
-            <span class="p">[</span><span class="n">ads</span><span class="o">.</span><span class="n">tag</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span> <span class="k">if</span> <span class="n">ads</span><span class="o">.</span><span class="n">tag</span> <span class="o">!=</span> <span class="n">adsorbate1_tag</span><span class="p">]</span>
+        <span class="n">adsorbate2_tag</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rnd_generator</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">ads</span><span class="o">.</span><span class="n">tag</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span> <span class="k">if</span> <span class="n">ads</span><span class="o">.</span><span class="n">tag</span> <span class="o">!=</span> <span class="n">adsorbate1_tag</span><span class="p">]</span>
+            <span class="p">)</span>
         <span class="p">)</span>
 
-        <span class="n">ads1_name</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">ads</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span> <span class="k">if</span> <span class="n">ads</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">adsorbate1_tag</span><span class="p">),</span> <span class="s2">"None"</span><span class="p">)</span>
-        <span class="n">ads2_name</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">ads</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span> <span class="k">if</span> <span class="n">ads</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">adsorbate2_tag</span><span class="p">),</span> <span class="s2">"None"</span><span class="p">)</span>
+        <span class="n">ads1_name</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">ads</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span> <span class="k">if</span> <span class="n">ads</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">adsorbate1_tag</span><span class="p">))</span>
+        <span class="n">ads2_name</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">ads</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span> <span class="k">if</span> <span class="n">ads</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">adsorbate2_tag</span><span class="p">))</span>
 
         <span class="c1"># Check if both adsorbate tags are present in the system</span>
         <span class="n">ads_tags</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">get_tags</span><span class="p">()))</span>
@@ -1727,13 +1745,13 @@
 
 <div class="viewcode-block" id="GCMC.try_nve_md">
 <a class="viewcode-back" href="../../input_description/gcmc.html#flames.gcmc.GCMC.try_nve_md">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">try_nve_md</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_teps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">try_nve_md</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Try to perform a NVE-MD move of the system using the Nose-Hoover thermostat.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        n_teps : int</span>
+<span class="sd">        n_steps : int</span>
 <span class="sd">            Number of time steps to run the NVE-MD simulation.</span>
 
 <span class="sd">        Returns</span>
@@ -1753,23 +1771,28 @@
         <span class="n">tmp_traj</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="s2">"nvemd_temp.traj"</span><span class="p">),</span> <span class="s2">"w"</span><span class="p">)</span>
 
         <span class="n">atoms_trial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">md</span><span class="p">(</span>
-            <span class="n">nsteps</span><span class="o">=</span><span class="n">n_teps</span><span class="p">,</span>
+            <span class="n">atoms</span><span class="o">=</span><span class="n">atoms_trial</span><span class="p">,</span>
+            <span class="n">nsteps</span><span class="o">=</span><span class="n">n_steps</span><span class="p">,</span>
             <span class="n">time_step</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
             <span class="n">ensemble</span><span class="o">=</span><span class="s2">"NVE"</span><span class="p">,</span>
             <span class="n">thermostat</span><span class="o">=</span><span class="s2">"VelocityVerlet"</span><span class="p">,</span>
             <span class="n">update_state</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">movie_interval</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
             <span class="n">trajectory_file</span><span class="o">=</span><span class="n">tmp_traj</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="n">tmp_traj</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
 
+        <span class="n">new_kinetic_energy</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="o">.</span><span class="n">get_kinetic_energy</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+        <span class="n">new_potential_energy</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nvemd_acceptance</span><span class="p">(</span>
-            <span class="n">deltaU</span><span class="o">=</span><span class="n">atoms_trial</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span> <span class="o">-</span> <span class="n">potential_energy</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
-            <span class="n">deltaK</span><span class="o">=</span><span class="n">atoms_trial</span><span class="o">.</span><span class="n">get_kinetic_energy</span><span class="p">()</span> <span class="o">-</span> <span class="n">kinetic_energy</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
+            <span class="n">deltaU</span><span class="o">=</span><span class="n">new_potential_energy</span> <span class="o">-</span> <span class="n">potential_energy</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
+            <span class="n">deltaK</span><span class="o">=</span><span class="n">new_kinetic_energy</span> <span class="o">-</span> <span class="n">kinetic_energy</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
         <span class="p">):</span>  <span class="c1"># type: ignore</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span> <span class="o">=</span> <span class="n">atoms_trial</span>  <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span> <span class="o">=</span> <span class="n">new_potential_energy</span>  <span class="c1"># type: ignore</span>
 
             <span class="n">n_adsorbate_atoms</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
                 <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">ads</span><span class="o">.</span><span class="n">structure</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbates</span><span class="p">[</span><span class="n">ads</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">]</span>
@@ -1790,13 +1813,13 @@
 
 <div class="viewcode-block" id="GCMC.try_nvt_md">
 <a class="viewcode-back" href="../../input_description/gcmc.html#flames.gcmc.GCMC.try_nvt_md">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">try_nvt_md</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_teps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">try_nvt_md</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Try to perform a NVT-MD move of the system using the Nose-Hoover thermostat.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        n_teps : int</span>
+<span class="sd">        n_steps : int</span>
 <span class="sd">            Number of time steps to run the NVT-MD simulation.</span>
 
 <span class="sd">        Returns</span>
@@ -1807,20 +1830,24 @@
         <span class="n">tmp_traj</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="s2">"nvtmd_temp.traj"</span><span class="p">),</span> <span class="s2">"w"</span><span class="p">)</span>
 
         <span class="n">atoms_trial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">md</span><span class="p">(</span>
-            <span class="n">nsteps</span><span class="o">=</span><span class="n">n_teps</span><span class="p">,</span>
+            <span class="n">atoms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>  <span class="c1"># type: ignore</span>
+            <span class="n">nsteps</span><span class="o">=</span><span class="n">n_steps</span><span class="p">,</span>
             <span class="n">time_step</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
             <span class="n">ensemble</span><span class="o">=</span><span class="s2">"NVT"</span><span class="p">,</span>
             <span class="n">thermostat</span><span class="o">=</span><span class="s2">"NoseHoover"</span><span class="p">,</span>
             <span class="n">update_state</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">movie_interval</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
             <span class="n">trajectory_file</span><span class="o">=</span><span class="n">tmp_traj</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="n">tmp_traj</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nvtmd_acceptance</span><span class="p">(</span><span class="n">deltaE</span><span class="o">=</span><span class="n">atoms_trial</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span><span class="p">):</span>  <span class="c1"># type: ignore</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+        <span class="n">new_potential_energy</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nvtmd_acceptance</span><span class="p">(</span><span class="n">deltaE</span><span class="o">=</span><span class="n">new_potential_energy</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span><span class="p">):</span>  <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span> <span class="o">=</span> <span class="n">atoms_trial</span>  <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span> <span class="o">=</span> <span class="n">new_potential_energy</span>  <span class="c1"># type: ignore</span>
 
             <span class="n">n_adsorbate_atoms</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
                 <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">ads</span><span class="o">.</span><span class="n">structure</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbates</span><span class="p">[</span><span class="n">ads</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">]</span>
@@ -1841,13 +1868,13 @@
 
 <div class="viewcode-block" id="GCMC.try_npt_md">
 <a class="viewcode-back" href="../../input_description/gcmc.html#flames.gcmc.GCMC.try_npt_md">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">try_npt_md</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_teps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">try_npt_md</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Try to perform a NPT-MD move of the system using the MTK thermostat.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        n_teps : int</span>
+<span class="sd">        n_steps : int</span>
 <span class="sd">            Number of time steps to run the NPT-MD simulation.</span>
 
 <span class="sd">        Returns</span>
@@ -1856,31 +1883,35 @@
 <span class="sd">            True if the NPT-MD move was accepted, False otherwise.</span>
 <span class="sd">        """</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Attempting NPT-MD move with </span><span class="si">{</span><span class="n">n_teps</span><span class="si">}</span><span class="s2"> time steps..."</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Attempting NPT-MD move with </span><span class="si">{</span><span class="n">n_steps</span><span class="si">}</span><span class="s2"> time steps..."</span><span class="p">)</span>
 
         <span class="n">tmp_traj</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="s2">"nptmd_temp.traj"</span><span class="p">),</span> <span class="s2">"w"</span><span class="p">)</span>
 
         <span class="n">atoms_trial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">md</span><span class="p">(</span>
-            <span class="n">nsteps</span><span class="o">=</span><span class="n">n_teps</span><span class="p">,</span>
+            <span class="n">atoms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>  <span class="c1"># type: ignore</span>
+            <span class="n">nsteps</span><span class="o">=</span><span class="n">n_steps</span><span class="p">,</span>
             <span class="n">time_step</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
             <span class="n">ensemble</span><span class="o">=</span><span class="s2">"NPT"</span><span class="p">,</span>
             <span class="n">thermostat</span><span class="o">=</span><span class="s2">"MTK"</span><span class="p">,</span>
             <span class="n">update_state</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">movie_interval</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
             <span class="n">trajectory_file</span><span class="o">=</span><span class="n">tmp_traj</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="n">tmp_traj</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
 
+        <span class="n">new_potential_energy</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nptmd_acceptance</span><span class="p">(</span>
-            <span class="n">deltaE</span><span class="o">=</span><span class="n">atoms_trial</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
+            <span class="n">deltaE</span><span class="o">=</span><span class="n">new_potential_energy</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
             <span class="n">v_old</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">get_volume</span><span class="p">(),</span>
             <span class="n">v_new</span><span class="o">=</span><span class="n">atoms_trial</span><span class="o">.</span><span class="n">get_volume</span><span class="p">(),</span>  <span class="c1"># type: ignore</span>
         <span class="p">):</span>  <span class="c1"># type: ignore</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">V</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">m</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span> <span class="o">=</span> <span class="n">atoms_trial</span>  <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span> <span class="o">=</span> <span class="n">new_potential_energy</span>  <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">V</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
 
             <span class="n">n_adsorbate_atoms</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
                 <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">ads</span><span class="o">.</span><span class="n">structure</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbates</span><span class="p">[</span><span class="n">ads</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">]</span>

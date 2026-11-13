@@ -202,27 +202,30 @@
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing FLAMES</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Basic</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/basic/widom.html">Widom insertion</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/basic/gcmc.html">GCMC Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/basic/restart.html">Restarting Simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/basic/isotherm.html">GCMC Adsorption Isotherm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/basic/multiple_ads.html">Multi-component GCMC Simulation</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../tutorials/basic/index.html">Basic</a><input aria-label="Toggle navigation of Basic" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/basic/widom.html">Widom insertion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/basic/gcmc.html">GCMC Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/basic/restart.html">Restarting Simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/basic/isotherm.html">GCMC Adsorption Isotherm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/basic/multiple_ads.html">Multi-component GCMC Simulation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Intermediate</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/intermediate/hybrid_gcmc_md.html">Hybrid GCMC/MD Simulation</a></li>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../tutorials/intermediate/index.html">Intermediate</a><input aria-label="Toggle navigation of Intermediate" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/intermediate/hybrid_gcmc_md.html">Hybrid GCMC/MD Simulation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Calculators</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/calculators/lennard_jones.html">Lennard-Jones Potential</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/calculators/ewald.html">Ewald Sum for Electrostatic Interactions</a></li>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../tutorials/advanced/index.html">Advanced</a><input aria-label="Toggle navigation of Advanced" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/advanced/hybrid_gcmc_md_mixed_calc.html">Mixed calculators for GCMC/MD simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/advanced/hybrid_tmmc_md.html">Hybrid TMMC/MD Simulation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Advanced</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/advanced/hybrid_gcmc_md_mixed_calc.html">Mixed calculators for GCMC/MD simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/advanced/hybrid_tmmc_md.html">Hybrid TMMC/MD Simulation</a></li>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../tutorials/calculators/index.html">Calculators</a><input aria-label="Toggle navigation of Calculators" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/calculators/lennard_jones.html">Lennard-Jones Potential</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/calculators/ewald.html">Ewald Sum for Electrostatic Interactions</a></li>
+</ul>
+</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Theoretical Background</span></p>
 <ul>
@@ -315,6 +318,23 @@ This is used to avoid overflow due to problematic calculations. Default is <code
 </ul>
 </dd>
 </dl>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">adsorbate_by_tag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tag</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Get the adsorbate object corresponding to a given tag.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>tag</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – The tag of the adsorbate.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The adsorbate object corresponding to the given tag.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Adsorbate</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">get_framework_mass</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
@@ -703,6 +723,20 @@ based on the acceptance criteria.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">conv_factors</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em></dt>
+<dd><p>Get the conversion factors for different units.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dictionary containing conversion factors for different units.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)">float</a>]]</p>
 </dd>
 </dl>
 </dd></dl>
