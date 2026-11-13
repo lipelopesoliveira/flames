@@ -432,7 +432,7 @@ class GCMC(BaseSimulator):
                 inserted_adsorbates += 1
 
         if n_attempts == max_attempts:
-            raise Warning(
+            raise Exception(
                 f"Maximum number of attempts ({max_attempts}) reached. "
                 + f"Could not insert all {n_adsorbates} adsorbates without overlap. "
                 + f"Max inserted adsorbates: {inserted_adsorbates}."
