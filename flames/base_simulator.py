@@ -443,6 +443,26 @@ class BaseSimulator:
         # self.n_atoms_framework -= self.n_adsorbate_atoms * n_adsorbates
         # self.n_adsorbates = n_adsorbates
 
+    def adsorbate_by_tag(self, tag: int) -> Adsorbate:
+        """
+        Get the adsorbate object corresponding to a given tag.
+
+        Parameters
+        ----------
+        tag : int
+            The tag of the adsorbate.
+
+        Returns
+        -------
+        Adsorbate
+            The adsorbate object corresponding to the given tag.
+        """
+        for ads in self.adsorbates:
+            if ads.tag == tag:
+                return ads
+
+        raise ValueError(f"No adsorbate found with tag {tag}.")
+
     def set_state(self, state: ase.Atoms) -> None:
         """
         Set the current state of the simulation.
