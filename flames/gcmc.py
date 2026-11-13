@@ -3,6 +3,7 @@ from __future__ import annotations
 import datetime
 import json
 import os
+import warnings
 
 import ase
 import numpy as np
@@ -12,7 +13,6 @@ from ase.calculators import calculator
 from ase.io import Trajectory, read
 from ase.md.velocitydistribution import MaxwellBoltzmannDistribution
 from tqdm import tqdm
-import warnings
 
 from flames import VERSION
 from flames.adsorbate import Adsorbate
@@ -805,8 +805,12 @@ class GCMC(BaseSimulator):
         N_a = self.n_adsorbates[ads_a.name]
         N_b = self.n_adsorbates[ads_b.name]
 
-        f_a = ads_a.eos.get_fugacity_coefficient(self.T, self.P) * ads_a.mol_fraction * self.fugacity
-        f_b = ads_b.eos.get_fugacity_coefficient(self.T, self.P) * ads_b.mol_fraction * self.fugacity
+        f_a = (
+            ads_a.eos.get_fugacity_coefficient(self.T, self.P) * ads_a.mol_fraction * self.fugacity
+        )
+        f_b = (
+            ads_b.eos.get_fugacity_coefficient(self.T, self.P) * ads_b.mol_fraction * self.fugacity
+        )
 
         exp_value = np.exp(-self.beta * deltaE)
         pre_factor = (N_a / (N_b + 1)) * (f_b / f_a)
@@ -938,7 +942,11 @@ class GCMC(BaseSimulator):
 
         total_n_ads = sum(self.n_adsorbates.values())
 
-        detaH = deltaE + self.fugacity * (v_new - v_old) - total_n_ads * np.log(v_new / v_old) / self.beta
+        detaH = (
+            deltaE
+            + self.fugacity * (v_new - v_old)
+            - total_n_ads * np.log(v_new / v_old) / self.beta
+        )
 
         exp_value = np.exp(-self.beta * detaH)
         acc = min(1, exp_value)
@@ -1341,13 +1349,17 @@ class GCMC(BaseSimulator):
         """
 
         if len(self.adsorbates) < 2:
-            warnings.warn("Identity swap requires at least two different adsorbates in the system. ")
+            warnings.warn(
+                "Identity swap requires at least two different adsorbates in the system. "
+            )
             return False
 
         adsorbate1_tag = adsorbate_tag
-        adsorbate2_tag = int(self.rnd_generator.choice(
-            [ads.tag for ads in self.adsorbates if ads.tag != adsorbate1_tag]
-        ))
+        adsorbate2_tag = int(
+            self.rnd_generator.choice(
+                [ads.tag for ads in self.adsorbates if ads.tag != adsorbate1_tag]
+            )
+        )
 
         ads1_name = next((ads.name for ads in self.adsorbates if ads.tag == adsorbate1_tag))
         ads2_name = next((ads.name for ads in self.adsorbates if ads.tag == adsorbate2_tag))
@@ -1446,7 +1458,7 @@ class GCMC(BaseSimulator):
             update_state=False,
             movie_interval=1,
             trajectory_file=tmp_traj,
-            **kwargs
+            **kwargs,
         )
 
         tmp_traj.close()  # type: ignore
@@ -1502,7 +1514,7 @@ class GCMC(BaseSimulator):
             update_state=False,
             movie_interval=1,
             trajectory_file=tmp_traj,
-            **kwargs
+            **kwargs,
         )
 
         tmp_traj.close()  # type: ignore
@@ -1557,7 +1569,7 @@ class GCMC(BaseSimulator):
             update_state=False,
             movie_interval=1,
             trajectory_file=tmp_traj,
-            **kwargs
+            **kwargs,
         )
 
         tmp_traj.close()  # type: ignore
