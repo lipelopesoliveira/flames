@@ -216,15 +216,37 @@ class BaseSimulator:
 
         self.beta = 1 / (units.kB * self.T)  # Boltzmann weight, 1 / [eV/K * K]
 
-        atm2pa = 101325
-        mol2cm3 = units.kB / units.J * units.mol * 273.15 / atm2pa
-
         # Get the ideal supercell. This will be updated by the set_framework method
         self.ideal_supercell = (
             self._get_ideal_supercell() if self.automatic_supercell else np.array([1, 1, 1])
         )
 
-        self.conv_factors = {
+        self.vdw: np.ndarray = (
+            np.array(vdw_radii) * vdw_factor
+        )  # Adjust van der Waals radii to avoid overlap
+
+        # Replace any NaN value by 1.5 on self.vdw to avoid potential problems
+        self.vdw[np.isnan(self.vdw)] = 1.5
+
+        # Use an max deltaE to avoid errors on the model
+        self.max_deltaE = max_deltaE
+
+    @property
+    def conv_factors(self) -> dict[str, dict[str, float]]:
+        """
+        Get the conversion factors for different units.
+
+        Returns
+        -------
+        dict[str, dict[str, float]]
+            A dictionary containing conversion factors for different units.
+        """
+
+        # Constants for unit conversions
+        atm2pa = 101325
+        mol2cm3 = units.kB / units.J * units.mol * 273.15 / atm2pa
+        
+        conv_factors = {
             "nmol": {
                 adsorbate.name: 1 / np.prod(self.ideal_supercell) for adsorbate in self.adsorbates
             },
@@ -255,17 +277,9 @@ class BaseSimulator:
                 for adsorbate in self.adsorbates
             },
         }
-
-        self.vdw: np.ndarray = (
-            np.array(vdw_radii) * vdw_factor
-        )  # Adjust van der Waals radii to avoid overlap
-
-        # Replace any NaN value by 1.5 on self.vdw to avoid potential problems
-        self.vdw[np.isnan(self.vdw)] = 1.5
-
-        # Use an max deltaE to avoid errors on the model
-        self.max_deltaE = max_deltaE
-
+        
+        return conv_factors
+    
     def _save_trajectory(self, actual_iteration: int) -> None:
         """
         Save the trajectory of the simulation to a trajectory file if
