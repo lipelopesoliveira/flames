@@ -687,10 +687,10 @@ class GCMC(BaseSimulator):
 
         exp_value = np.exp(-self.beta * deltaE)
 
-        ads_name = next((ads.name for ads in self.adsorbates if ads.tag == adsorbate_tag), None)
+        ads_name = self.adsorbate_by_tag(adsorbate_tag).name
 
         n_ads = self.n_adsorbates[ads_name] if ads_name else 0
-        mol_fraction = next((ads.mol_fraction for ads in self.adsorbates if ads.name == ads_name), 1.0)
+        mol_fraction = self.adsorbate_by_tag(adsorbate_tag).mol_fraction
 
         pre_factor = self.V * self.beta * self.fugacity * mol_fraction / (n_ads + 1)
 
@@ -723,14 +723,13 @@ class GCMC(BaseSimulator):
             Energy difference between the new and old configuration in eV.
         adsorbate_tag : int
             Tag identifying the adsorbate molecule.
-            Current number of adsorbate molecules in the system.
         """
 
         exp_value = np.exp(-self.beta * deltaE)
 
-        ads_name = next((ads.name for ads in self.adsorbates if ads.tag == adsorbate_tag), None)
-        n_ads = self.n_adsorbates[ads_name] if ads_name else 0
-        mol_fraction = next((ads.mol_fraction for ads in self.adsorbates if ads.name == ads_name), 1.0)
+        ads_name = self.adsorbate_by_tag(adsorbate_tag).name
+        n_ads = self.n_adsorbates[ads_name]
+        mol_fraction = self.adsorbate_by_tag(adsorbate_tag).mol_fraction
 
         pre_factor = n_ads / (self.V * self.beta * self.fugacity * mol_fraction)
 
@@ -768,7 +767,7 @@ class GCMC(BaseSimulator):
         exp_value = np.exp(-self.beta * deltaE)
         acc = min(1, exp_value)
 
-        ads_name = next((ads.name for ads in self.adsorbates if ads.tag == adsorbate_tag), None)
+        ads_name = self.adsorbate_by_tag(adsorbate_tag).name
 
         rnd_number = self.rnd_generator.random()
 
@@ -799,14 +798,14 @@ class GCMC(BaseSimulator):
             Tags identifying the adsorbate molecules. Default is None.
         """
 
-        ads_a = next((ads for ads in self.adsorbates if ads.tag == adsorbate_tags[0]))
-        ads_b = next((ads for ads in self.adsorbates if ads.tag == adsorbate_tags[1]))
+        ads_a = self.adsorbate_by_tag(adsorbate_tags[0])
+        ads_b = self.adsorbate_by_tag(adsorbate_tags[1])
 
         N_a = self.n_adsorbates[ads_a.name]
         N_b = self.n_adsorbates[ads_b.name]
 
-        f_a = ads_a.eos.get_fugacity_coefficient(self.T, self.P) * ads_a.mol_fraction
-        f_b = ads_b.eos.get_fugacity_coefficient(self.T, self.P) * ads_b.mol_fraction
+        f_a = ads_a.eos.get_fugacity_coefficient(self.T, self.P) * ads_a.mol_fraction * self.fugacity
+        f_b = ads_b.eos.get_fugacity_coefficient(self.T, self.P) * ads_b.mol_fraction * self.fugacity
 
         exp_value = np.exp(-self.beta * deltaE)
         pre_factor = (N_a / (N_b + 1)) * (f_b / f_a)
@@ -821,7 +820,7 @@ class GCMC(BaseSimulator):
                 prefactor=pre_factor,
                 acc=acc,
                 rnd_number=rnd_number,
-                adsorbate_name=ads_names,
+                adsorbate_name=f"{ads_a.name} -> {ads_b.name}",
             )
 
         # Apply Metropolis acceptance/rejection rule
