@@ -211,10 +211,11 @@ class GCMC(BaseSimulator):
         # Parameters for calculateing the Peng-Robinson equation of state
         self.excess_nmol = {adsorbate.name: 0.0 for adsorbate in self.adsorbates}
 
-        # Parameters for storing the main results during the simulation
+        # Parameters for storing the main results during the simulation.
+        # Simulation starts with zero adsorbates and the framework energy as the total energy.
         self.n_adsorbates: dict[str, int] = {adsorbate.name: 0 for adsorbate in self.adsorbates}
-        self.uptake_list: np.ndarray = np.zeros((1, len(self.adsorbates)), dtype=int)
-        self.total_energy_list: list[float] = [0]
+        self.uptake_list: list[int] = [0] 
+        self.total_energy_list: list[float] = [self.framework_energy]
         self.total_ads_list: list[float] = [0]
 
         self.max_translation = max_translation
