@@ -689,8 +689,9 @@ class GCMC(BaseSimulator):
         ads_name = next((ads.name for ads in self.adsorbates if ads.tag == adsorbate_tag), None)
 
         n_ads = self.n_adsorbates[ads_name] if ads_name else 0
+        mol_fraction = next((ads.mol_fraction for ads in self.adsorbates if ads.name == ads_name), 1.0)
 
-        pre_factor = self.V * self.beta * self.fugacity / (n_ads + 1)
+        pre_factor = self.V * self.beta * self.fugacity * mol_fraction / (n_ads + 1)
 
         acc = min(1, pre_factor * exp_value)
 
@@ -728,8 +729,9 @@ class GCMC(BaseSimulator):
 
         ads_name = next((ads.name for ads in self.adsorbates if ads.tag == adsorbate_tag), None)
         n_ads = self.n_adsorbates[ads_name] if ads_name else 0
+        mol_fraction = next((ads.mol_fraction for ads in self.adsorbates if ads.name == ads_name), 1.0)
 
-        pre_factor = n_ads / (self.V * self.beta * self.fugacity)
+        pre_factor = n_ads / (self.V * self.beta * self.fugacity * mol_fraction)
 
         acc = min(1, pre_factor * exp_value)
 
@@ -1556,7 +1558,7 @@ class GCMC(BaseSimulator):
 
             self.current_system = atoms_trial.copy()  # type: ignore
             self.current_total_energy = atoms_trial.get_potential_energy()  # type: ignore
-            self.V = atoms_trial.get_volume() / (units.m**3)  # type: ignore
+            self.V = atoms_trial.get_volume()  # type: ignore
 
             n_adsorbate_atoms = sum(
                 [len(ads.structure) * self.n_adsorbates[ads.name] for ads in self.adsorbates]

@@ -99,8 +99,8 @@ Beta (1/kT):            {self.sim.beta:.3f} eV^-1
 Simulation Parameters:
 Temperature: {self.sim.T} K
 Pressure: {self.sim.P / 1e5:.5f} bar
-Fugacity: {self.sim.fugacity / units.J:.3f} Pa
-Fugacity: {self.sim.fugacity:.5e} eV/m^3
+Fugacity: {self.sim.fugacity / units.Pascal:.3f} Pa
+Fugacity: {self.sim.fugacity:.5e} eV/Å^3
 (1/kB.T) * V * f = {self.sim.V * self.sim.beta * self.sim.fugacity} [-]
 
 ===========================================================================
@@ -110,7 +110,7 @@ Framework: {self.sim.framework.get_chemical_formula()}
 Framework: {self.sim.n_atoms_framework} atoms,
 Framework mass: {np.sum(self.sim.framework.get_masses())} g/mol, {self.sim.framework_mass} kg
 Framework energy: {self.sim.framework_energy} eV
-Framework volume: {self.sim.V} m^3
+Framework volume: {self.sim.V} Å^3
 Framework density: {self.sim.framework_density * 1e3} kg/m^3, {self.sim.framework_density} g/cm^3
 Framework cell:
     {self.sim.cell[0, 0]:12.7f} {self.sim.cell[0, 1]:12.7f} {self.sim.cell[0, 2]:12.7f}

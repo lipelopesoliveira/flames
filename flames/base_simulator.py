@@ -139,7 +139,7 @@ class BaseSimulator:
         output_to_file: bool = True,
         output_folder: str | None = None,
         debug: bool = False,
-        fugacity_coeff: float = 1.0,
+        fugacity_coeff: float | None = None,
         void_fraction: float = 1.0,
         random_seed: int | None = None,
         cutoff_radius: float = 6.0,
@@ -209,10 +209,10 @@ class BaseSimulator:
         self.T = temperature
         self.P = pressure
 
-        self.fugacity_coeff = fugacity_coeff
+        self.fugacity_coeff = fugacity_coeff if fugacity_coeff is not None else 1.0
 
-        # Fugacity from Pa (J/m^3) to eV / m^3
-        self.fugacity = (self.P * self.fugacity_coeff * units.J) / units.eV
+        # Fugacity from Pa (J/m^3) to eV / Angs^3
+        self.fugacity = self.P * self.fugacity_coeff * units.Pascal
 
         self.beta = 1 / (units.kB * self.T)  # Boltzmann weight, 1 / [eV/K * K]
 
@@ -352,7 +352,7 @@ class BaseSimulator:
             self.framework_energy = self.framework.get_potential_energy()
         self.n_atoms_framework = len(self.framework)
 
-        self.V = np.linalg.det(self.cell) / units.m**3
+        self.V = np.linalg.det(self.cell)
         self.framework_mass = self.get_framework_mass()
 
         # Get the framework density in g/cm^3
