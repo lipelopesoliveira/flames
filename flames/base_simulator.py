@@ -162,7 +162,7 @@ class BaseSimulator:
         os.makedirs(os.path.join(self.out_folder, "Movies"), exist_ok=True)
 
         if output_to_file:
-                self.out_file = open(os.path.join(self.out_folder, "Output.out"), "a")
+            self.out_file = open(os.path.join(self.out_folder, "Output.out"), "a")
         else:
             self.out_file = None
 
@@ -331,7 +331,7 @@ class BaseSimulator:
         framework_energy : float or None, optional
             The energy of the framework in eV. If None, the energy will be calculated using the provided model.
         """
-        self.framework = framework_atoms
+        self.framework = framework_atoms.copy()
         self.framework.set_tags(np.zeros(len(self.framework), dtype=int))
 
         self.ideal_supercell = self._get_ideal_supercell()
@@ -346,13 +346,13 @@ class BaseSimulator:
         self.perpendicular_cell = get_perpendicular_lengths(self.framework.get_cell()) * np.eye(3)
 
         self.framework.calc = self.model
-        if framework_energy:
-            self.framework_energy = framework_energy * np.prod(self.ideal_supercell)
+        if framework_energy is not None:
+            self.framework_energy = framework_energy * float(np.prod(self.ideal_supercell))
         else:
-            self.framework_energy = self.framework.get_potential_energy()
-        self.n_atoms_framework = len(self.framework)
+            self.framework_energy = float(self.framework.get_potential_energy())
 
-        self.V = np.linalg.det(self.cell)
+        self.n_atoms_framework = len(self.framework)
+        self.V = self.framework.get_volume()
         self.framework_mass = self.get_framework_mass()
 
         # Get the framework density in g/cm^3
