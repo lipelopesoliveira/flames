@@ -938,7 +938,7 @@ class GCMC(BaseSimulator):
 
         total_n_ads = sum(self.n_adsorbates.values())
 
-        detaH = deltaE + self.P * (v_new - v_old) - total_n_ads * np.log(v_new / v_old) / self.beta
+        detaH = deltaE + self.fugacity * (v_new - v_old) - total_n_ads * np.log(v_new / v_old) / self.beta
 
         exp_value = np.exp(-self.beta * detaH)
         acc = min(1, exp_value)
@@ -1411,13 +1411,13 @@ class GCMC(BaseSimulator):
         self._save_rejected(atoms_trial)
         return False
 
-    def try_nve_md(self, n_teps: int = 50, **kwargs) -> bool:
+    def try_nve_md(self, n_steps: int = 50, **kwargs) -> bool:
         """
         Try to perform a NVE-MD move of the system using the Nose-Hoover thermostat.
 
         Parameters
         ----------
-        n_teps : int
+        n_steps : int
             Number of time steps to run the NVE-MD simulation.
 
         Returns
@@ -1438,7 +1438,7 @@ class GCMC(BaseSimulator):
 
         atoms_trial = self.md(
             atoms=atoms_trial,
-            nsteps=n_teps,
+            nsteps=n_steps,
             time_step=0.5,
             ensemble="NVE",
             thermostat="VelocityVerlet",
@@ -1473,13 +1473,13 @@ class GCMC(BaseSimulator):
         self._save_rejected(atoms_trial)  # type: ignore
         return False
 
-    def try_nvt_md(self, n_teps: int = 500, **kwargs) -> bool:
+    def try_nvt_md(self, n_steps: int = 500, **kwargs) -> bool:
         """
         Try to perform a NVT-MD move of the system using the Nose-Hoover thermostat.
 
         Parameters
         ----------
-        n_teps : int
+        n_steps : int
             Number of time steps to run the NVT-MD simulation.
 
         Returns
@@ -1491,7 +1491,7 @@ class GCMC(BaseSimulator):
 
         atoms_trial = self.md(
             atoms=self.current_system.copy(),  # type: ignore
-            nsteps=n_teps,
+            nsteps=n_steps,
             time_step=0.5,
             ensemble="NVT",
             thermostat="NoseHoover",
@@ -1523,13 +1523,13 @@ class GCMC(BaseSimulator):
         self._save_rejected(atoms_trial)  # type: ignore
         return False
 
-    def try_npt_md(self, n_teps: int = 500, **kwargs) -> bool:
+    def try_npt_md(self, n_steps: int = 500, **kwargs) -> bool:
         """
         Try to perform a NPT-MD move of the system using the MTK thermostat.
 
         Parameters
         ----------
-        n_teps : int
+        n_steps : int
             Number of time steps to run the NPT-MD simulation.
 
         Returns
@@ -1538,13 +1538,13 @@ class GCMC(BaseSimulator):
             True if the NPT-MD move was accepted, False otherwise.
         """
 
-        print(f"Attempting NPT-MD move with {n_teps} time steps...")
+        print(f"Attempting NPT-MD move with {n_steps} time steps...")
 
         tmp_traj = Trajectory(os.path.join(self.out_folder, "nptmd_temp.traj"), "w")
 
         atoms_trial = self.md(
             atoms=self.current_system.copy(),  # type: ignore
-            nsteps=n_teps,
+            nsteps=n_steps,
             time_step=0.5,
             ensemble="NPT",
             thermostat="MTK",
