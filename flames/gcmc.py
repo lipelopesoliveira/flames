@@ -798,16 +798,14 @@ class GCMC(BaseSimulator):
             Tags identifying the adsorbate molecules. Default is None.
         """
 
-        ads_names = [
-            next((ads.name for ads in self.adsorbates if ads.tag == tag), None)
-            for tag in adsorbate_tags
-        ]
+        ads_a = next((ads for ads in self.adsorbates if ads.tag == adsorbate_tags[0]))
+        ads_b = next((ads for ads in self.adsorbates if ads.tag == adsorbate_tags[1]))
 
-        N_a = self.n_adsorbates[ads_names[0]] if ads_names[0] else 0
-        N_b = self.n_adsorbates[ads_names[1]] if ads_names[1] else 0
+        N_a = self.n_adsorbates[ads_a.name]
+        N_b = self.n_adsorbates[ads_b.name]
 
-        f_a = next((ads.eos.get_fugacity_coefficient(self.T, self.P) for ads in self.adsorbates if ads.name == ads_names[0]), 1.0)  # type: ignore
-        f_b = next((ads.eos.get_fugacity_coefficient(self.T, self.P) for ads in self.adsorbates if ads.name == ads_names[1]), 1.0)  # type: ignore
+        f_a = ads_a.eos.get_fugacity_coefficient(self.T, self.P) * ads_a.mol_fraction
+        f_b = ads_b.eos.get_fugacity_coefficient(self.T, self.P) * ads_b.mol_fraction
 
         exp_value = np.exp(-self.beta * deltaE)
         pre_factor = (N_a / (N_b + 1)) * (f_b / f_a)
