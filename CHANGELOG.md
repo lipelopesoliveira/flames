@@ -5,6 +5,7 @@
 ### New Features 🎉
 
 - Added new MD-based GCMC movements (NVE, NPT, MVT) as possible moves that are subjected to acceptance/rejection criteria in the `GCMC` class. This allows for the integration of Molecular Dynamics (MD) simulations into the Markov chain Monte Carlo (MCMC) framework, enabling the exploration of the system's phase space through both Monte Carlo and Molecular Dynamics methods.
+- New `LennardJones` and `EwaldSum` calculators based on JIT for improved performance in calculating Lennard-Jones and electrostatic interactions, respectively. These calculators provide faster energy calculations during simulations, enhancing the overall efficiency of the code.
 
 ### Enhanced ✨
 
