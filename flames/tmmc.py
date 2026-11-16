@@ -100,8 +100,6 @@ class TMMC(BaseSimulator):
         vdw_factor: float = 0.6,
         framework_energy: float | None = None,
         adsorbate_energy: float | None = None,
-        max_translation: float = 1.5,
-        max_rotation: float = np.radians(90),
         max_deltaE: float = 1.555,
         save_frequency: int = 100,
         output_to_file: bool = True,
@@ -145,10 +143,6 @@ class TMMC(BaseSimulator):
         # Tracking number of adsorbates per species
         self.n_adsorbates: dict[str, int] = {adsorbate.name: 0 for adsorbate in self.adsorbates}
 
-        self.uptake_list: np.ndarray = np.zeros((1, len(self.adsorbates)), dtype=int)
-        self.total_energy_list: list[float] = [0]
-        self.total_ads_list: list[float] = [0]
-
         # Parameters for storing the main results during the simulation (partitioned by adsorbate)
         self.total_ins_energy_list: dict[str, list[float]] = {
             ads.name: [] for ads in self.adsorbates
@@ -156,11 +150,10 @@ class TMMC(BaseSimulator):
         self.total_del_energy_list: dict[str, list[float]] = {
             ads.name: [] for ads in self.adsorbates
         }
+        self.total_energy_list: dict[str, list[list[float]]] = {
+            ads.name: [] for ads in self.adsorbates
+        }
         self.volume_list: list[float] = []
-        self._del_indices: dict = {}
-
-        self.max_translation = max_translation
-        self.max_rotation = max_rotation
 
         # Base iteration for restarting the simulation. This is for tracking the iteration count only
         self._base_iteration: int = 0
@@ -298,13 +291,17 @@ class TMMC(BaseSimulator):
                 os.path.join(self.out_folder, f"del_energy_{ads.name}_{macrostate_str}.npy"),
                 np.array(self.total_del_energy_list[ads.name]),
             )
+            np.save(
+                os.path.join(self.out_folder, f"total_energy_{ads.name}_{macrostate_str}.npy"),
+                np.array(self.total_energy_list[ads.name]),
+            )
 
         np.save(
             os.path.join(self.out_folder, f"volume_{macrostate_str}.npy"),
             np.array(self.volume_list),
         )
 
-    def try_virtual_insertion(self, adsorbate_tag: int) -> float:
+    def try_virtual_insertion(self, adsorbate_tag: int) -> tuple[float, float]:
         """
         Try to insert a new adsorbate molecule into the framework.
         This method randomly places the adsorbate in the framework and checks for van der Waals overlap.
@@ -320,6 +317,8 @@ class TMMC(BaseSimulator):
         -------
         deltaE: float
             Insertion energy.
+        e_new: float
+            New total energy.
         """
         adsorbate = next((ads for ads in self.adsorbates if ads.tag == adsorbate_tag), None)
 
@@ -337,7 +336,7 @@ class TMMC(BaseSimulator):
             vdw_radii=self.vdw,
         )
         if overlaped:
-            return self.max_deltaE * 100
+            return self.max_deltaE * 100, self.current_total_energy
 
         atoms_trial.calc = self.model
         e_new = atoms_trial.get_potential_energy()
@@ -354,9 +353,11 @@ class TMMC(BaseSimulator):
         atoms_trial.info["inserted_length"] = len(adsorbate.structure)
         self._current_ins_atoms = atoms_trial
 
-        return deltaE
+        return deltaE, e_new
 
-    def try_virtual_deletion(self, adsorbate_tag: int, ads_index: list | None = None) -> float:
+    def try_virtual_deletion(
+        self, adsorbate_tag: int, ads_index: list | None = None
+    ) -> tuple[float, float]:
         """
         Try to delete an adsorbate molecule from the framework.
         This method randomly selects an adsorbate molecule and attempts deletion.
@@ -370,6 +371,8 @@ class TMMC(BaseSimulator):
         -------
         deltaE
             Deletion energy.
+        e_new
+            New total energy.
         """
         ads_name = next((ads.name for ads in self.adsorbates if ads.tag == adsorbate_tag), None)
 
@@ -377,7 +380,7 @@ class TMMC(BaseSimulator):
             raise ValueError(f"Adsorbate with tag {adsorbate_tag} not found.")
 
         if self.n_adsorbates[ads_name] == 0:
-            return self.max_deltaE * 100
+            return self.max_deltaE * 100, self.current_total_energy
 
         # Randomly select an adsorbate molecule of this specific tag to delete if ads_index is not provided
         if not ads_index:
@@ -391,12 +394,12 @@ class TMMC(BaseSimulator):
         atoms_trial.calc = self.model  # type: ignore
 
         # Delete the selected adsorbate atoms from the trial structure
-        del atoms_trial[ads_indices[0] : ads_indices[-1] + 1]
+        del atoms_trial[ads_indices[0] : ads_indices[-1] + 1]  # type: ignore
 
         e_new = atoms_trial.get_potential_energy()  # type: ignore
         deltaE = e_new + self.adsorbate_energy[ads_name] - self.current_total_energy
 
-        return deltaE
+        return deltaE, e_new
 
     def check_tmmc_files_exist(
         self, file_path: str, max_loading: int, replicas: list | range = range(1, 5)
@@ -765,30 +768,38 @@ class TMMC(BaseSimulator):
 
         self.logger.print_tmmc_run_header()
 
-        ins_energies = {}
-        del_energies = {}
-
         trajectory = TrajectoryReader(trajectory_path)
 
-        del_energy_list = []
-
+        # Iterate over each frame in the trajectory and perform N virtual insertions and deletions
         for frame_number, frame in enumerate(trajectory):
 
             self.set_state(frame)  # type: ignore
 
             ads_indices_list = self.get_adsorbates_index(tag=self.adsorbates[0].tag)
 
+            # Pre-compute the deletion energies for all adsorbates in the current frame
+            del_energy_temp_list = []
+            total_energy_temp_list = []
+
             for ads_idx in tqdm(
                 ads_indices_list,
                 disable=(self.out_file is None),
                 desc=f"TMMC Deletions on frame  {frame_number:05d}",
             ):
+                del_energy, e_new = self.try_virtual_deletion(
+                    self.adsorbates[0].tag, ads_index=ads_idx
+                )
+                del_energy_temp_list.append(del_energy)
+                total_energy_temp_list.append(e_new)
 
-                del_energy = self.try_virtual_deletion(self.adsorbates[0].tag, ads_index=ads_idx)
-                del_energy_list.append(del_energy)
-
-            del_energy_list = (
-                [self.max_deltaE * 100] if len(del_energy_list) == 0 else del_energy_list
+            # If there are no adsorbates in the current frame, set a default deletion energy to avoid empty lists
+            del_energy_temp_list = (
+                [self.max_deltaE * 100] if len(del_energy_temp_list) == 0 else del_energy_temp_list
+            )
+            total_energy_temp_list = (
+                [self.current_total_energy]
+                if len(total_energy_temp_list) == 0
+                else total_energy_temp_list
             )
 
             # Perform N virtual insertions of the adsorbate
@@ -797,23 +808,28 @@ class TMMC(BaseSimulator):
                 disable=(self.out_file is None),
                 desc=f"TMMC Insertions on frame {frame_number:05d}",
             ):
-
-                ins_energy = self.try_virtual_insertion(self.adsorbates[0].tag)
+                # Perform a virtual insertion of the adsorbate and record the insertion energy
+                ins_energy, e_new_ins = self.try_virtual_insertion(self.adsorbates[0].tag)
                 self.total_ins_energy_list[self.adsorbates[0].name].append(ins_energy)
-                ins_energies[self.adsorbates[0].name] = ins_energy
 
-                del_energy = self.rnd_generator.choice(del_energy_list)
+                # Perform a virtual deletion of a randomly selected adsorbate and record the deletion energy
+                del_energy_index = self.rnd_generator.choice(range(len(del_energy_temp_list)))
+                del_energy = del_energy_temp_list[del_energy_index]
+                e_new_del = total_energy_temp_list[del_energy_index]
+
                 self.total_del_energy_list[self.adsorbates[0].name].append(del_energy)
-                del_energies[self.adsorbates[0].name] = del_energy
+                self.total_energy_list[self.adsorbates[0].name].append([e_new_ins, e_new_del])
 
+                # Record the volume of the current system for this iteration
                 self.volume_list.append(self.current_system.get_volume())
-
-                self.logger.print_tmmc_step_info(
-                    step=(iteration + frame_number * N_per_frame),
-                    del_energy=del_energies,
-                    ins_energy=ins_energies,
-                    step_time=(datetime.datetime.now() - step_time_start).total_seconds(),
-                )
 
                 # Save the current state and trajectory
                 self._save_state()
+
+                # Print the current step information to the output file
+                self.logger.print_tmmc_step_info(
+                    step=(iteration + frame_number * N_per_frame),
+                    del_energy={self.adsorbates[0].name: del_energy},
+                    ins_energy={self.adsorbates[0].name: ins_energy},
+                    step_time=(datetime.datetime.now() - step_time_start).total_seconds(),
+                )
