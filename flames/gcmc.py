@@ -1361,8 +1361,8 @@ class GCMC(BaseSimulator):
             )
         )
 
-        ads1_name = next((ads.name for ads in self.adsorbates if ads.tag == adsorbate1_tag))
-        ads2_name = next((ads.name for ads in self.adsorbates if ads.tag == adsorbate2_tag))
+        ads1_name = next(ads.name for ads in self.adsorbates if ads.tag == adsorbate1_tag)
+        ads2_name = next(ads.name for ads in self.adsorbates if ads.tag == adsorbate2_tag)
 
         # Check if both adsorbate tags are present in the system
         ads_tags = list(set(self.current_system.get_tags()))
