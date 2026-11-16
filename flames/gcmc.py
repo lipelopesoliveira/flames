@@ -17,6 +17,7 @@ from tqdm import tqdm
 from flames import VERSION
 from flames.adsorbate import Adsorbate
 from flames.base_simulator import BaseSimulator
+from flames.exceptions import MaxInsertionTriesError
 from flames.logger import GCMCLogger
 from flames.operations import (
     check_overlap_vesin,
@@ -433,10 +434,10 @@ class GCMC(BaseSimulator):
                 inserted_adsorbates += 1
 
         if n_attempts == max_attempts:
-            raise Exception(
-                f"Maximum number of attempts ({max_attempts}) reached. "
-                + f"Could not insert all {n_adsorbates} adsorbates without overlap. "
-                + f"Max inserted adsorbates: {inserted_adsorbates}."
+            raise MaxInsertionTriesError(
+                max_insertion_tries=max_attempts,
+                n_adsorbates=n_adsorbates,
+                inserted_adsorbates=inserted_adsorbates,
             )
 
         # Update the current system and total energy
