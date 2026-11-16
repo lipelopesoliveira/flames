@@ -1,21 +1,21 @@
 #!/usr/bin/env python
 
+import json
 import os
 
 # Hide UserWarning and RuntimeWarning messages
 import warnings
 
 import ase
-import json
 import numpy as np
+from ase.calculators import mixing
 from ase.data import vdw_radii
 from ase.io import read
-from ase.calculators import mixing
 
 from flames.adsorbate import Adsorbate
-from flames.gcmc import GCMC
 from flames.calculators.ewald_new import CustomEwald
 from flames.calculators.lennard_jones_new import CustomLennardJones
+from flames.gcmc import GCMC
 
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
@@ -31,7 +31,13 @@ framework.info = {}
 adsorbate_1 = Adsorbate(
     name="CO2",
     structure="co2_labels.xyz",
-    move_weights={'insertion': 1.0, 'deletion': 1.0, 'translation': 1.0, 'rotation': 1.0, 'identity_swap': 1.0,},
+    move_weights={
+        "insertion": 1.0,
+        "deletion": 1.0,
+        "translation": 1.0,
+        "rotation": 1.0,
+        "identity_swap": 1.0,
+    },
     eos={"criticalTemperature": 304.1282, "criticalPressure": 7377300.0, "acentricFactor": 0.22394},
     mol_fraction=0.7,
 )
@@ -39,7 +45,13 @@ adsorbate_1 = Adsorbate(
 adsorbate_2 = Adsorbate(
     name="H2O",
     structure="H2O_labels.xyz",
-    move_weights={'insertion': 1.0, 'deletion': 1.0, 'translation': 1.0, 'rotation': 1.0, 'identity_swap': 1.0,},
+    move_weights={
+        "insertion": 1.0,
+        "deletion": 1.0,
+        "translation": 1.0,
+        "rotation": 1.0,
+        "identity_swap": 1.0,
+    },
     eos={"criticalTemperature": 628.0, "criticalPressure": 14100000.0, "acentricFactor": 0.5293},
     mol_fraction=0.3,
 )
@@ -73,7 +85,7 @@ gcmc = GCMC(
     adsorbates=[adsorbate_1, adsorbate_2],
     temperature=Temperature,
     pressure=pressure,
-    device='cpu',
+    device="cpu",
     vdw_radii=vdw_radii,
     vdw_factor=0.6,
     save_frequency=1,
