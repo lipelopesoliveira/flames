@@ -774,6 +774,7 @@ class TMMC(BaseSimulator):
         for frame_number, frame in enumerate(trajectory):
 
             self.set_state(frame)  # type: ignore
+            frame_volume = self.current_system.get_volume()
 
             ads_indices_list = self.get_adsorbates_index(tag=self.adsorbates[0].tag)
 
@@ -793,14 +794,9 @@ class TMMC(BaseSimulator):
                 total_energy_temp_list.append(e_new)
 
             # If there are no adsorbates in the current frame, set a default deletion energy to avoid empty lists
-            del_energy_temp_list = (
-                [self.max_deltaE * 100] if len(del_energy_temp_list) == 0 else del_energy_temp_list
-            )
-            total_energy_temp_list = (
-                [self.current_total_energy]
-                if len(total_energy_temp_list) == 0
-                else total_energy_temp_list
-            )
+            if not del_energy_temp_list:
+                del_energy_temp_list = [self.max_deltaE * 100]
+                total_energy_temp_list = [self.current_total_energy]
 
             # Perform N virtual insertions of the adsorbate
             for iteration in tqdm(
@@ -821,7 +817,7 @@ class TMMC(BaseSimulator):
                 self.total_energy_list[self.adsorbates[0].name].append([e_new_ins, e_new_del])
 
                 # Record the volume of the current system for this iteration
-                self.volume_list.append(self.current_system.get_volume())
+                self.volume_list.append(frame_volume)
 
                 # Save the current state and trajectory
                 self._save_state()
