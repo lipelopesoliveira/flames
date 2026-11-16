@@ -245,7 +245,7 @@ class BaseSimulator:
         # Constants for unit conversions
         atm2pa = 101325
         mol2cm3 = units.kB / units.J * units.mol * 273.15 / atm2pa
-        
+
         conv_factors = {
             "nmol": {
                 adsorbate.name: 1 / np.prod(self.ideal_supercell) for adsorbate in self.adsorbates
@@ -277,9 +277,9 @@ class BaseSimulator:
                 for adsorbate in self.adsorbates
             },
         }
-        
+
         return conv_factors
-    
+
     def _save_trajectory(self, actual_iteration: int) -> None:
         """
         Save the trajectory of the simulation to a trajectory file if
