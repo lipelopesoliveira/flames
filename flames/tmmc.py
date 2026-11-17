@@ -486,6 +486,8 @@ class TMMC(BaseSimulator):
         ins_weights = {replica: [] for replica in replicas}
         del_weights = {replica: [] for replica in replicas}
 
+        os.makedirs("tmmc_weights", exist_ok=True)
+
         for replica in replicas:
             prefix = f"tmmc_weights/{replica}"
 
