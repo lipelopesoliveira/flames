@@ -734,7 +734,7 @@ class TMMC(BaseSimulator):
         uptakes_average = np.mean(uptakes_list, axis=0)
 
         # Calculates the standard error of the mean (SEM) for the uptake across replicas
-        uptakes_sd = np.std(uptakes_list, axis=0) / np.sqrt(len(self.insertion_weights))
+        uptakes_sd = np.std(uptakes_list, axis=0, ddof=1) / np.sqrt(len(self.insertion_weights))
 
         # Convert uptake to the specified units
         uptakes_average *= self.conv_factors[uptake_units][self.adsorbates[0].name]
