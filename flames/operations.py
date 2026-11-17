@@ -262,7 +262,6 @@ def random_mol_insertion(
 
     new_framework = framework.copy()
     new_framework += tmp_molecule
-    new_framework.wrap()
 
     return new_framework
 
