@@ -510,10 +510,14 @@ class TMMC(BaseSimulator):
                     disable=not show_progress,
                 ):
                     # Load and mask insertion energies
-                    rep_ins_energies = np.load(f"{prefix}/ins_energy_{self.adsorbates[0].name}_{n_mol:04d}.npy")
+                    rep_ins_energies = np.load(
+                        f"{prefix}/ins_energy_{self.adsorbates[0].name}_{n_mol:04d}.npy"
+                    )
 
                     # Load and mask deletion energies
-                    rep_del_energies = np.load(f"{prefix}/del_energy_{self.adsorbates[0].name}_{n_mol:04d}.npy")
+                    rep_del_energies = np.load(
+                        f"{prefix}/del_energy_{self.adsorbates[0].name}_{n_mol:04d}.npy"
+                    )
 
                     # Load volumes
                     volumes = np.load(f"{prefix}/volume_{n_mol:04d}.npy")

@@ -224,6 +224,7 @@ def random_position_cell(
 
     return unwrap_pos + translation_vector
 
+
 def random_mol_insertion(
     framework: ase.Atoms, molecule: ase.Atoms, rnd_generator: np.random.Generator
 ) -> ase.Atoms:
