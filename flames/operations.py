@@ -217,19 +217,16 @@ def random_position_cell(
 
     unwrap_pos = unwrap_positions(positions=original_position, cell=lattice_vectors)
 
-    # Ensure original_position is a numpy array at the origin
-    # Note: This line might not be necessary depending on your use case.
-    # It centers the input `original_position` array before applying the translation.
-    original_position = np.array(unwrap_pos) - np.average(unwrap_pos, axis=0)
+    # It centers the `unwrap_pos` array before applying the translation.
+    centered_pos = np.array(unwrap_pos) - np.average(unwrap_pos, axis=0)
 
-    # 2. Use the 'rnd_generator' to generate random numbers
+    # Use the 'rnd_generator' to generate random numbers
     random_fractions = rnd_generator.random(3)
 
     # Convert fractional coordinates to a Cartesian vector
     translation_vector = random_fractions @ lattice_vectors
 
-    return unwrap_pos + translation_vector
-
+    return centered_pos + translation_vector
 
 def random_mol_insertion(
     framework: ase.Atoms, molecule: ase.Atoms, rnd_generator: np.random.Generator
