@@ -75,24 +75,23 @@ def random_rotation(
         np.ndarray:
             A 3D vector or array of vectors representing the rotated position(s).
     """
-    # 1. Unwap the molecule positions to perform the rotation correctly
+    # Unwap the molecule positions to perform the rotation correctly
     unrwap_pos = unwrap_positions(positions=original_position, cell=cell)
 
-    # 2. Calculate the geometric center (centroid) of the points.
+    # Calculate the geometric center (centroid) of the points.
     center = np.mean(unrwap_pos, axis=0)
 
-    # 3. Translate the points so their center is at the origin (0, 0, 0).
+    # Translate the points so their center is at the origin (0, 0, 0).
     # Rotation is always performed around the origin.
     centered_points = np.array(unrwap_pos) - center
 
-    # 4. Generate a uniform random rotation in 3D space.
-    #    Pass the provided generator to the 'random_state' parameter.
+    # Generate a uniform random rotation in 3D space using the random generator.
     random_rot = Rotation.random(rng=rnd_generator)
 
-    # 5. Apply the random rotation to the centered points.
+    # Apply the random rotation to the centered points.
     rotated_centered_points = random_rot.apply(centered_points)
 
-    # 6. Translate the rotated points back to their original center.
+    # Translate the rotated points back to their original center.
     rotated_points = rotated_centered_points + center
 
     return rotated_points
@@ -214,21 +213,21 @@ def random_position_cell(
         np.ndarray:
             A 3D random position inside the unit cell.
     """
-
+    # Unwrap the atomic positions to perform the translation correctly
     unwrap_pos = unwrap_positions(positions=original_position, cell=lattice_vectors)
 
-    # Ensure original_position is a numpy array at the origin
-    # Note: This line might not be necessary depending on your use case.
-    # It centers the input `original_position` array before applying the translation.
-    original_position = np.array(unwrap_pos) - np.average(unwrap_pos, axis=0)
+    # Center the positions at the origin, so the translation is applied
+    # to the center of the molecule, not to its original position.
+    center = np.mean(unwrap_pos, axis=0)
+    centered_pos = unwrap_pos - center
 
-    # 2. Use the 'rnd_generator' to generate random numbers
+    # Use the 'rnd_generator' to generate random numbers
     random_fractions = rnd_generator.random(3)
 
     # Convert fractional coordinates to a Cartesian vector
     translation_vector = random_fractions @ lattice_vectors
 
-    return unwrap_pos + translation_vector
+    return centered_pos + translation_vector
 
 
 def random_mol_insertion(
