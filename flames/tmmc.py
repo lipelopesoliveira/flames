@@ -449,6 +449,7 @@ class TMMC(BaseSimulator):
         max_loading: int,
         replicas: list | range = range(1, 5),
         show_progress: bool = True,
+        folder_name: str = "tmmc_weights",
     ) -> tuple[dict[int, list[np.ndarray]], dict[int, list[np.ndarray]]]:
         """
         Loads TMMC simulation data and pre-computes the fugacity-independent Boltzmann weights
@@ -466,6 +467,8 @@ class TMMC(BaseSimulator):
             List or range of replica indices to load. Default is range(1, 5).
         show_progress : bool, optional
             If True, shows a progress bar during the loading of weights. Default is True.
+        folder_name : str, optional
+            Name of the folder to save the pre-computed weights. Default is "tmmc_weights".
 
         Returns
         -------
@@ -486,10 +489,10 @@ class TMMC(BaseSimulator):
         ins_weights = {replica: [] for replica in replicas}
         del_weights = {replica: [] for replica in replicas}
 
-        os.makedirs("tmmc_weights", exist_ok=True)
+        os.makedirs(folder_name, exist_ok=True)
 
         for replica in replicas:
-            prefix = f"tmmc_weights/{replica}"
+            prefix = f"{folder_name}/{replica}"
 
             # Read the saved wheighs if exists
             ins_file = f"{prefix}_{self.T}_ins_weights.npz"
@@ -534,10 +537,10 @@ class TMMC(BaseSimulator):
 
                 # Save weights to disk for future use as compressed numpy arrays
                 np.savez_compressed(
-                    f"tmmc_weights/{replica}_{self.T}_ins_weights.npz", *ins_weights[replica]
+                    f"{folder_name}/{replica}_{self.T}_ins_weights.npz", *ins_weights[replica]
                 )
                 np.savez_compressed(
-                    f"tmmc_weights/{replica}_{self.T}_del_weights.npz", *del_weights[replica]
+                    f"{folder_name}/{replica}_{self.T}_del_weights.npz", *del_weights[replica]
                 )
 
         self.insertion_weights = ins_weights
