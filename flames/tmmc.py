@@ -492,8 +492,8 @@ class TMMC(BaseSimulator):
             prefix = f"tmmc_weights/{replica}"
 
             # Read the saved wheighs if exists
-            ins_file = f"{prefix}_ins_weights.npz"
-            del_file = f"{prefix}_del_weights.npz"
+            ins_file = f"{prefix}_{self.T}_ins_weights.npz"
+            del_file = f"{prefix}_{self.T}_del_weights.npz"
 
             if os.path.exists(ins_file) and os.path.exists(del_file):
                 print(f"Loading precomputed weights for replica {replica} from disk...")
@@ -534,10 +534,10 @@ class TMMC(BaseSimulator):
 
                 # Save weights to disk for future use as compressed numpy arrays
                 np.savez_compressed(
-                    f"tmmc_weights/{replica}_ins_weights.npz", *ins_weights[replica]
+                    f"tmmc_weights/{replica}_{self.T}_ins_weights.npz", *ins_weights[replica]
                 )
                 np.savez_compressed(
-                    f"tmmc_weights/{replica}_del_weights.npz", *del_weights[replica]
+                    f"tmmc_weights/{replica}_{self.T}_del_weights.npz", *del_weights[replica]
                 )
 
         self.insertion_weights = ins_weights
