@@ -772,8 +772,6 @@ class TMMC(BaseSimulator):
             The path to the trajectory file where the simulation will be executed.
         """
 
-        step_time_start = datetime.datetime.now()
-
         self.logger.print_tmmc_run_header()
 
         trajectory = TrajectoryReader(trajectory_path)
@@ -812,6 +810,9 @@ class TMMC(BaseSimulator):
                 disable=(self.out_file is None),
                 desc=f"TMMC Insertions on frame {frame_number:05d}",
             ):
+
+                step_time_start = datetime.datetime.now()
+                
                 # Perform a virtual insertion of the adsorbate and record the insertion energy
                 ins_energy, e_new_ins = self.try_virtual_insertion(self.adsorbates[0].tag)
                 self.total_ins_energy_list[self.adsorbates[0].name].append(ins_energy)
