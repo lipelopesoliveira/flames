@@ -29,10 +29,15 @@ class TMMC(BaseSimulator):
     This class implements TMMC deletion/insertion moves, recording the
     deletion/insertion energies of the adsorbate.
 
-    :param model:
+    :param calculator:
         The calculator to use for energy calculations. Can be any ASE-compatible calculator.
         The output of the calculator should be in eV.
-    :type model: ase.calculators.calculator.Calculator
+    :type calculator: ase.calculators.calculator.Calculator
+
+    :param adsorbate_calculator:
+            The calculator to use for adsorbate energy calculations. Can be any ASE-compatible calculator.
+            The output of the calculator should be in eV.
+        :type adsorbate_calculator: ase.calculators.calculator.Calculator | None
 
     :param framework_atoms:
         The framework structure as an ASE Atoms object.
@@ -90,13 +95,14 @@ class TMMC(BaseSimulator):
 
     def __init__(
         self,
-        model: calculator.Calculator,
+        calculator: calculator.Calculator,
         framework_atoms: ase.Atoms,
         adsorbates: Adsorbate | list[Adsorbate],
         temperature: float,
         pressure: float,
         device: str,
         vdw_radii: np.ndarray,
+        adsorbate_calculator: calculator.Calculator | None = None,
         vdw_factor: float = 0.6,
         framework_energy: float | None = None,
         adsorbate_energy: float | None = None,
@@ -114,7 +120,8 @@ class TMMC(BaseSimulator):
         """
 
         super().__init__(
-            model=model,
+            calculator=calculator,
+            adsorbate_calculator=adsorbate_calculator,
             framework_atoms=framework_atoms,
             adsorbates=adsorbates,
             temperature=temperature,
@@ -271,7 +278,7 @@ class TMMC(BaseSimulator):
             The ASE Atoms object representing the new state of the system.
         """
         self.current_system = deepcopy(state)
-        self.current_system.calc = self.model
+        self.current_system.calc = self.calculator
         self.current_total_energy = self.current_system.get_potential_energy()
         self.n_adsorbates = self.get_number_of_adsorbates(system=state)
 
@@ -338,7 +345,7 @@ class TMMC(BaseSimulator):
         if overlaped:
             return self.max_deltaE * 100, self.current_total_energy
 
-        atoms_trial.calc = self.model
+        atoms_trial.calc = self.calculator
         e_new = atoms_trial.get_potential_energy()
 
         deltaE = e_new - self.current_total_energy - self.adsorbate_energy[adsorbate.name]
@@ -386,10 +393,10 @@ class TMMC(BaseSimulator):
             ads_indices = ads_index
 
         atoms_trial = self.current_system.copy()
-        atoms_trial.calc = self.model  # type: ignore
+        atoms_trial.calc = self.calculator  # type: ignore
 
         to_delete = atoms_trial[ads_indices[0] : ads_indices[-1] + 1]  # type: ignore
-        to_delete.calc = self.model  # type: ignore
+        to_delete.calc = self.calculator  # type: ignore
         to_delete_energy = to_delete.get_potential_energy()  # type: ignore
 
         # Delete the selected adsorbate atoms from the trial structure

@@ -36,10 +36,15 @@ class GCMC(BaseSimulator):
 
     Currently, it supports any ASE-compatible calculator for energy calculations.
 
-    :param model:
+    :param calculator:
         The calculator to use for energy calculations. Can be any ASE-compatible calculator.
         The output of the calculator should be in eV.
-    :type model: ase.calculators.calculator.Calculator
+    :type calculator: ase.calculators.calculator.Calculator
+
+    :param adsorbate_calculator:
+            The calculator to use for adsorbate energy calculations. Can be any ASE-compatible calculator.
+            The output of the calculator should be in eV.
+    :type adsorbate_calculator: ase.calculators.calculator.Calculator | None
 
     :param framework_atoms:
         The framework structure as an ASE Atoms object.
@@ -153,13 +158,14 @@ class GCMC(BaseSimulator):
 
     def __init__(
         self,
-        model: calculator.Calculator,
+        calculator: calculator.Calculator,
         framework_atoms: ase.Atoms,
         adsorbates: Adsorbate | list[Adsorbate],
         temperature: float,
         pressure: float,
         device: str,
         vdw_radii: np.ndarray,
+        adsorbate_calculator: calculator.Calculator | None = None,
         vdw_factor: float = 0.6,
         framework_energy: float | None = None,
         adsorbate_energy: float | None = None,
@@ -182,7 +188,8 @@ class GCMC(BaseSimulator):
         """
 
         super().__init__(
-            model=model,
+            calculator=calculator,
+            adsorbate_calculator=adsorbate_calculator,
             framework_atoms=framework_atoms,
             adsorbates=adsorbates,
             temperature=temperature,
@@ -411,16 +418,16 @@ class GCMC(BaseSimulator):
         """
         temp_system = self.current_system.copy()
 
-        adsorvate = next((ads for ads in self.adsorbates if ads.name == ads_name), None)
+        adsorbate = next((ads for ads in self.adsorbates if ads.name == ads_name), None)
 
-        if adsorvate is None:
+        if adsorbate is None:
             raise ValueError(f"Adsorbate with name '{ads_name}' not found in the adsorbates list.")
 
         n_attempts = 0
         inserted_adsorbates = 0
         while inserted_adsorbates < n_adsorbates and n_attempts < max_attempts:
             n_attempts += 1
-            atoms_trial = random_mol_insertion(temp_system, adsorvate.structure, self.rnd_generator)
+            atoms_trial = random_mol_insertion(temp_system, adsorbate.structure, self.rnd_generator)
 
             overlaped = check_overlap_vesin(
                 atoms=atoms_trial,
@@ -441,7 +448,7 @@ class GCMC(BaseSimulator):
             )
 
         # Update the current system and total energy
-        temp_system.calc = self.model
+        temp_system.calc = self.calculator
         self.current_system = temp_system.copy()
         self.current_total_energy = temp_system.get_potential_energy()
         self.n_adsorbates[ads_name] += inserted_adsorbates
@@ -1037,7 +1044,7 @@ class GCMC(BaseSimulator):
             return False
 
         # Energy calculation
-        atoms_trial.calc = self.model
+        atoms_trial.calc = self.calculator
         e_new = atoms_trial.get_potential_energy()
 
         deltaE = (
@@ -1094,7 +1101,7 @@ class GCMC(BaseSimulator):
 
         # Create a trial system for the deletion
         atoms_trial = self.current_system.copy()
-        atoms_trial.calc = self.model  # type: ignore
+        atoms_trial.calc = self.calculator  # type: ignore
 
         # Delete the adsorbate atoms from the trial structure
         del atoms_trial[ads_indices[0] : ads_indices[-1] + 1]
@@ -1170,7 +1177,7 @@ class GCMC(BaseSimulator):
         if overlaped:
             return False
 
-        temp.calc = self.model  # type: ignore
+        temp.calc = self.calculator  # type: ignore
         e_new = temp.get_potential_energy()
 
         deltaE = e_new - self.current_total_energy
@@ -1241,7 +1248,7 @@ class GCMC(BaseSimulator):
         if overlaped:
             return False
 
-        atoms_trial.calc = self.model  # type: ignore
+        atoms_trial.calc = self.calculator  # type: ignore
         e_trial = atoms_trial.get_potential_energy()  # type: ignore
 
         deltaE = e_trial - self.current_total_energy
@@ -1311,7 +1318,7 @@ class GCMC(BaseSimulator):
         if overlaped:
             return False
 
-        atoms_trial.calc = self.model  # type: ignore
+        atoms_trial.calc = self.calculator  # type: ignore
         e_trial = atoms_trial.get_potential_energy()  # type: ignore
 
         deltaE = e_trial - self.current_total_energy
@@ -1376,7 +1383,7 @@ class GCMC(BaseSimulator):
         )
 
         atoms_trial = self.current_system.copy()
-        atoms_trial.calc = self.model  # type: ignore
+        atoms_trial.calc = self.calculator  # type: ignore
 
         cm_position = atoms_trial[ads1_indices[0] : ads1_indices[-1] + 1].get_center_of_mass()
 
@@ -1400,7 +1407,7 @@ class GCMC(BaseSimulator):
         if overlaped:
             return False
 
-        atoms_trial.calc = self.model  # type: ignore
+        atoms_trial.calc = self.calculator  # type: ignore
         e_trial = atoms_trial.get_potential_energy()  # type: ignore
 
         deltaE = (
@@ -1441,7 +1448,7 @@ class GCMC(BaseSimulator):
         """
 
         atoms_trial = self.current_system.copy()  # type: ignore
-        atoms_trial.calc = self.model  # type: ignore
+        atoms_trial.calc = self.calculator  # type: ignore
 
         MaxwellBoltzmannDistribution(atoms_trial, temperature_K=self.T, force_temp=True)
 
