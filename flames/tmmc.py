@@ -348,11 +348,6 @@ class TMMC(BaseSimulator):
                 f"WARNING: Energy difference {deltaE:.4f} eV exceeds the maximum allowed {self.max_deltaE:.4f} eV."
             )
 
-        atoms_trial.info["ins_energy"] = deltaE
-        atoms_trial.info["n_adsorbates"] = self.n_adsorbates
-        atoms_trial.info["inserted_length"] = len(adsorbate.structure)
-        self._current_ins_atoms = atoms_trial
-
         return deltaE, e_new
 
     def try_virtual_deletion(
@@ -393,11 +388,15 @@ class TMMC(BaseSimulator):
         atoms_trial = self.current_system.copy()
         atoms_trial.calc = self.model  # type: ignore
 
+        to_delete = atoms_trial[ads_indices[0] : ads_indices[-1] + 1]  # type: ignore
+        to_delete.calc = self.model  # type: ignore
+        to_delete_energy = to_delete.get_potential_energy()  # type: ignore
+
         # Delete the selected adsorbate atoms from the trial structure
         del atoms_trial[ads_indices[0] : ads_indices[-1] + 1]  # type: ignore
 
         e_new = atoms_trial.get_potential_energy()  # type: ignore
-        deltaE = e_new + self.adsorbate_energy[ads_name] - self.current_total_energy
+        deltaE = e_new + to_delete_energy - self.current_total_energy
 
         return deltaE, e_new
 
