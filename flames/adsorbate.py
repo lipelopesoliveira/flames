@@ -32,6 +32,7 @@ class Adsorbate:
         move_weights: MoveWeights | dict[str, float] | None = None,
         eos: BaseEOS | dict[str, float] | None = None,
         tag: int = 0,
+        rnd_generator: np.random.Generator | None = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -48,15 +49,14 @@ class Adsorbate:
             **kwargs (Any): Additional keyword arguments passed to `ase.io.read`.
         """
         self._name = name
-
         self._mol_fraction = mol_fraction
-
         self._tag = tag
+        self._rnd_generator = (
+            rnd_generator if rnd_generator is not None else np.random.default_rng()
+        )
 
-        if isinstance(structure, str):
-            self._structure: Atoms = ase.io.read(structure, **kwargs)  # type: ignore
-        else:
-            self._structure = structure
+        self._structure: list[Atoms] = []  # Initialize as an empty list; will be set properly below
+        self.structure = structure  # This will handle the structure assignment and validation
 
         self._molar_mass = molar_mass if molar_mass is not None else self.get_molar_mass()
 
@@ -119,24 +119,37 @@ class Adsorbate:
     @property
     def structure(self) -> Atoms:
         """Atoms: The structure of the adsorbate."""
-        return self._structure
+
+        # Return one randomly selected structure if multiple are present
+        index = self._rnd_generator.integers(0, len(self._structure))
+        return self._structure[index]
 
     @structure.setter
-    def structure(self, value: Atoms) -> None:
+    def structure(self, value: str | Atoms | list[Atoms]) -> None:
         """
         Sets the structure of the adsorbate, ensuring it is stored as a list of Atoms.
 
         Args:
-            value (str | Atoms | list[Atoms] | None): The structure to set. Strings are
+            value (str | Atoms | list[Atoms]): The structure to set. Strings are
                 interpreted as file paths and read using ASE's default read behavior.
 
         Raises:
             TypeError: If the input is not a recognized structure type or valid file.
         """
-        if not isinstance(value, Atoms):
-            raise TypeError("Structure must be an ASE Atoms object")
 
-        self._structure = value
+        if type(value) not in [str, Atoms, list]:
+            raise TypeError(
+                "Structure must be a string (file path), an ASE Atoms object, or a list of ASE Atoms objects."
+            )
+
+        if isinstance(value, str):
+            self._structure = ase.io.read(value, index=":")  # type: ignore
+        elif isinstance(value, list):
+            if not all(isinstance(atom, Atoms) for atom in value):
+                raise TypeError("All elements in the list must be ASE Atoms objects.")
+            self._structure = value
+        elif isinstance(value, Atoms):
+            self._structure = [value]
 
     @property
     def move_weights(self) -> MoveWeights:
@@ -197,6 +210,21 @@ class Adsorbate:
                 "EOS must be a BaseEOS or PengRobinsonEOS object, a dictionary of EOS parameters, or None."
             )
 
+    @property
+    def rnd_generator(self) -> np.random.Generator:
+        """np.random.Generator: The random number generator used for stochastic processes."""
+        return self._rnd_generator
+
+    @rnd_generator.setter
+    def rnd_generator(self, value: np.random.Generator) -> None:
+        """
+        Sets the random number generator for the adsorbate.
+
+        Args:
+            value (np.random.Generator): A NumPy random number generator instance.
+        """
+        self._rnd_generator = value
+
     def get_molar_mass(self) -> float:
         """
         Calculates the molar mass of the adsorbate based on its structure.
@@ -207,10 +235,7 @@ class Adsorbate:
         Raises:
             TypeError: If the structure is not set or is empty.
         """
-        if self.structure:
-            return self.structure.get_masses().sum()  # type: ignore
-        else:
-            raise TypeError("Structure is not set. Cannot calculate molar mass.")
+        return self.structure.get_masses().sum()  # type: ignore
 
     def pick_random_move(self, generator: np.random.Generator | None = None) -> str:
         """
