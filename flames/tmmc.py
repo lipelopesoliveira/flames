@@ -812,7 +812,7 @@ class TMMC(BaseSimulator):
             ):
 
                 step_time_start = datetime.datetime.now()
-                
+
                 # Perform a virtual insertion of the adsorbate and record the insertion energy
                 ins_energy, e_new_ins = self.try_virtual_insertion(self.adsorbates[0].tag)
                 self.total_ins_energy_list[self.adsorbates[0].name].append(ins_energy)
