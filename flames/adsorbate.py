@@ -113,8 +113,8 @@ class Adsorbate:
     @tag.setter
     def tag(self, value: int) -> None:
         self._tag = value
-        if self.structure is not None:
-            self.structure.set_tags(np.ones(len(self.structure), dtype=int) * value)  # type: ignore
+        for structure in self._structure:
+            structure.set_tags(np.ones(len(structure), dtype=int) * value)  # type: ignore
 
     @property
     def structure(self) -> Atoms:
