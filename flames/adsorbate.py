@@ -65,7 +65,7 @@ class Adsorbate:
         self.move_weights = move_weights if move_weights is not None else {}
 
         # Route through setter to handle EOS initialization
-        self._eos = None
+        self._eos = BaseEOS(molar_mass=self.molar_mass)
         self.eos = eos
 
     def __repr__(self) -> str:
