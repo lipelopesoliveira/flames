@@ -51,7 +51,7 @@ def test_base_simulator_initialization_single_adsorbates(co2_path, mof_path, lj_
 
     # Initialize BaseSimulator with a single adsorbate
     simulator = BaseSimulator(
-        model=lj_calculator,
+        calculator=lj_calculator,
         framework_atoms=read(str(mof_path)),
         adsorbates=co2_adsorbate,
         temperature=300.0,
@@ -82,7 +82,7 @@ def test_base_simulator_initialization_multiple_adsorbates(
 
     # Initialize BaseSimulator with a single adsorbate
     simulator = BaseSimulator(
-        model=lj_calculator,
+        calculator=lj_calculator,
         framework_atoms=read(str(mof_path)),
         adsorbates=[h2o_adsorbate, co2_adsorbate],
         temperature=300.0,

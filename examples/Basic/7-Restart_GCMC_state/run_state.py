@@ -1,6 +1,8 @@
-#!/usr/bin/env python
-
 import json
+import os
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
 
 import ase
 from ase.data import vdw_radii
@@ -31,7 +33,7 @@ adsorbate = Adsorbate(
 )
 
 gcmc = GCMC(
-    model=calc,
+    calculator=calc,
     framework_atoms=framework,
     adsorbates=adsorbate,
     temperature=298.15,

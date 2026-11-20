@@ -57,3 +57,28 @@ class InsertionDeletionError(Exception):
 
     def __str__(self) -> str:
         return self.message
+
+
+class MaxInsertionTriesError(Exception):
+    """Exception raised when the maximum number of insertion tries is exceeded.
+
+    Attributes
+    ----------
+    max_insertion_tries : int
+        The maximum number of insertion tries allowed.
+    n_adsorbates : int
+        The number of adsorbates to be inserted.
+    inserted_adsorbates : int
+        The number of adsorbates that were successfully inserted.
+    """
+
+    def __init__(self, max_insertion_tries: int, n_adsorbates: int, inserted_adsorbates: int):
+        self.message = (
+            f"Error: Maximum number of insertion attempts ({max_insertion_tries}) exceeded.\n"
+            f"Could not insert all {n_adsorbates} adsorbates without overlap. "
+            f"Max inserted adsorbates: {inserted_adsorbates}."
+        )
+        super().__init__(self.message)
+
+    def __str__(self) -> str:
+        return self.message

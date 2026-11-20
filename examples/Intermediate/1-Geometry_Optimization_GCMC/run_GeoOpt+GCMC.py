@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import os
 import sys
 
@@ -98,7 +96,7 @@ print(
 )
 
 gcmc = GCMC(
-    model=model,
+    calculator=model,
     framework_atoms=frameworkOpt,
     adsorbates=adsorbate_opt,
     temperature=Temperature,

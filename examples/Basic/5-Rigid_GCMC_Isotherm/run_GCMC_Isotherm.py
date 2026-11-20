@@ -1,6 +1,7 @@
-#!/usr/bin/env python
-
 import os
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
 
 # Hide UserWarning and RuntimeWarning messages
 import warnings
@@ -61,7 +62,7 @@ for i, pressure in enumerate(pressure_list):
     )
 
     gcmc = GCMC(
-        model=model,
+        calculator=model,
         framework_atoms=framework,
         adsorbates=adsorbate,
         temperature=Temperature,

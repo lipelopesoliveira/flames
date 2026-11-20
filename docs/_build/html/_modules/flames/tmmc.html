@@ -201,27 +201,30 @@
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing FLAMES</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../overview.html">Overview</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Basic</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/widom.html">Widom insertion</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/gcmc.html">GCMC Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/restart.html">Restarting Simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/isotherm.html">GCMC Adsorption Isotherm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/multiple_ads.html">Multi-component GCMC Simulation</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/basic/index.html">Basic</a><input aria-label="Toggle navigation of Basic" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/basic/widom.html">Widom insertion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/basic/gcmc.html">GCMC Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/basic/restart.html">Restarting Simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/basic/isotherm.html">GCMC Adsorption Isotherm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/basic/multiple_ads.html">Multi-component GCMC Simulation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Intermediate</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/intermediate/hybrid_gcmc_md.html">Hybrid GCMC/MD Simulation</a></li>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/intermediate/index.html">Intermediate</a><input aria-label="Toggle navigation of Intermediate" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/intermediate/hybrid_gcmc_md.html">Hybrid GCMC/MD Simulation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Calculators</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/calculators/lennard_jones.html">Lennard-Jones Potential</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/calculators/ewald.html">Ewald Sum for Electrostatic Interactions</a></li>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/advanced/index.html">Advanced</a><input aria-label="Toggle navigation of Advanced" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/hybrid_gcmc_md_mixed_calc.html">Mixed calculators for GCMC/MD simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/hybrid_tmmc_md.html">Hybrid TMMC/MD Simulation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Advanced</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/advanced/hybrid_gcmc_md_mixed_calc.html">Mixed calculators for GCMC/MD simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/advanced/hybrid_tmmc_md.html">Hybrid TMMC/MD Simulation</a></li>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/calculators/index.html">Calculators</a><input aria-label="Toggle navigation of Calculators" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/calculators/lennard_jones.html">Lennard-Jones Potential</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/calculators/ewald.html">Ewald Sum for Electrostatic Interactions</a></li>
+</ul>
+</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Theoretical Background</span></p>
 <ul>
@@ -306,10 +309,15 @@
 <span class="sd">    This class implements TMMC deletion/insertion moves, recording the</span>
 <span class="sd">    deletion/insertion energies of the adsorbate.</span>
 
-<span class="sd">    :param model:</span>
+<span class="sd">    :param calculator:</span>
 <span class="sd">        The calculator to use for energy calculations. Can be any ASE-compatible calculator.</span>
 <span class="sd">        The output of the calculator should be in eV.</span>
-<span class="sd">    :type model: ase.calculators.calculator.Calculator</span>
+<span class="sd">    :type calculator: ase.calculators.calculator.Calculator</span>
+
+<span class="sd">    :param adsorbate_calculator:</span>
+<span class="sd">            The calculator to use for adsorbate energy calculations. Can be any ASE-compatible calculator.</span>
+<span class="sd">            The output of the calculator should be in eV.</span>
+<span class="sd">    :type adsorbate_calculator: ase.calculators.calculator.Calculator | None</span>
 
 <span class="sd">    :param framework_atoms:</span>
 <span class="sd">        The framework structure as an ASE Atoms object.</span>
@@ -367,18 +375,17 @@
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">model</span><span class="p">:</span> <span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span><span class="p">,</span>
+        <span class="n">calculator</span><span class="p">:</span> <span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span><span class="p">,</span>
         <span class="n">framework_atoms</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">,</span>
         <span class="n">adsorbates</span><span class="p">:</span> <span class="n">Adsorbate</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Adsorbate</span><span class="p">],</span>
         <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">pressure</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">device</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">vdw_radii</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">adsorbate_calculator</span><span class="p">:</span> <span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">vdw_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.6</span><span class="p">,</span>
         <span class="n">framework_energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">adsorbate_energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">max_translation</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span>
-        <span class="n">max_rotation</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">90</span><span class="p">),</span>
         <span class="n">max_deltaE</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.555</span><span class="p">,</span>
         <span class="n">save_frequency</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
         <span class="n">output_to_file</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -393,7 +400,8 @@
 <span class="sd">        """</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+            <span class="n">calculator</span><span class="o">=</span><span class="n">calculator</span><span class="p">,</span>
+            <span class="n">adsorbate_calculator</span><span class="o">=</span><span class="n">adsorbate_calculator</span><span class="p">,</span>
             <span class="n">framework_atoms</span><span class="o">=</span><span class="n">framework_atoms</span><span class="p">,</span>
             <span class="n">adsorbates</span><span class="o">=</span><span class="n">adsorbates</span><span class="p">,</span>
             <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">,</span>
@@ -422,10 +430,6 @@
         <span class="c1"># Tracking number of adsorbates per species</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">adsorbate</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">adsorbate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">}</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">uptake_list</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">total_energy_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">total_ads_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
         <span class="c1"># Parameters for storing the main results during the simulation (partitioned by adsorbate)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">total_ins_energy_list</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">ads</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span>
@@ -433,11 +437,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">total_del_energy_list</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">ads</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span>
         <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_energy_list</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">ads</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span>
+        <span class="p">}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">volume_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_del_indices</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">max_translation</span> <span class="o">=</span> <span class="n">max_translation</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">max_rotation</span> <span class="o">=</span> <span class="n">max_rotation</span>
 
         <span class="c1"># Base iteration for restarting the simulation. This is for tracking the iteration count only</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_base_iteration</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
@@ -569,7 +572,7 @@
 <span class="sd">            The ASE Atoms object representing the new state of the system.</span>
 <span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_number_of_adsorbates</span><span class="p">(</span><span class="n">system</span><span class="o">=</span><span class="n">state</span><span class="p">)</span></div>
 
@@ -590,6 +593,10 @@
                 <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"del_energy_</span><span class="si">{</span><span class="n">ads</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">macrostate_str</span><span class="si">}</span><span class="s2">.npy"</span><span class="p">),</span>
                 <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">total_del_energy_list</span><span class="p">[</span><span class="n">ads</span><span class="o">.</span><span class="n">name</span><span class="p">]),</span>
             <span class="p">)</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"total_energy_</span><span class="si">{</span><span class="n">ads</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">macrostate_str</span><span class="si">}</span><span class="s2">.npy"</span><span class="p">),</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">total_energy_list</span><span class="p">[</span><span class="n">ads</span><span class="o">.</span><span class="n">name</span><span class="p">]),</span>
+            <span class="p">)</span>
 
         <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
             <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"volume_</span><span class="si">{</span><span class="n">macrostate_str</span><span class="si">}</span><span class="s2">.npy"</span><span class="p">),</span>
@@ -598,7 +605,7 @@
 
 <div class="viewcode-block" id="TMMC.try_virtual_insertion">
 <a class="viewcode-back" href="../../input_description/tmmc.html#flames.tmmc.TMMC.try_virtual_insertion">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">try_virtual_insertion</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">adsorbate_tag</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">try_virtual_insertion</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">adsorbate_tag</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Try to insert a new adsorbate molecule into the framework.</span>
 <span class="sd">        This method randomly places the adsorbate in the framework and checks for van der Waals overlap.</span>
@@ -614,6 +621,8 @@
 <span class="sd">        -------</span>
 <span class="sd">        deltaE: float</span>
 <span class="sd">            Insertion energy.</span>
+<span class="sd">        e_new: float</span>
+<span class="sd">            New total energy.</span>
 <span class="sd">        """</span>
         <span class="n">adsorbate</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">ads</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span> <span class="k">if</span> <span class="n">ads</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">adsorbate_tag</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
 
@@ -631,9 +640,9 @@
             <span class="n">vdw_radii</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vdw</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">if</span> <span class="n">overlaped</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_deltaE</span> <span class="o">*</span> <span class="mi">100</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_deltaE</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span>
 
-        <span class="n">atoms_trial</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+        <span class="n">atoms_trial</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span>
         <span class="n">e_new</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>
 
         <span class="n">deltaE</span> <span class="o">=</span> <span class="n">e_new</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_energy</span><span class="p">[</span><span class="n">adsorbate</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
@@ -643,17 +652,14 @@
                 <span class="sa">f</span><span class="s2">"WARNING: Energy difference </span><span class="si">{</span><span class="n">deltaE</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> eV exceeds the maximum allowed </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">max_deltaE</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> eV."</span>
             <span class="p">)</span>
 
-        <span class="n">atoms_trial</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">"ins_energy"</span><span class="p">]</span> <span class="o">=</span> <span class="n">deltaE</span>
-        <span class="n">atoms_trial</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">"n_adsorbates"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbates</span>
-        <span class="n">atoms_trial</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">"inserted_length"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">adsorbate</span><span class="o">.</span><span class="n">structure</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_current_ins_atoms</span> <span class="o">=</span> <span class="n">atoms_trial</span>
-
-        <span class="k">return</span> <span class="n">deltaE</span></div>
+        <span class="k">return</span> <span class="n">deltaE</span><span class="p">,</span> <span class="n">e_new</span></div>
 
 
 <div class="viewcode-block" id="TMMC.try_virtual_deletion">
 <a class="viewcode-back" href="../../input_description/tmmc.html#flames.tmmc.TMMC.try_virtual_deletion">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">try_virtual_deletion</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">adsorbate_tag</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ads_index</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">try_virtual_deletion</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">adsorbate_tag</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ads_index</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Try to delete an adsorbate molecule from the framework.</span>
 <span class="sd">        This method randomly selects an adsorbate molecule and attempts deletion.</span>
@@ -667,6 +673,8 @@
 <span class="sd">        -------</span>
 <span class="sd">        deltaE</span>
 <span class="sd">            Deletion energy.</span>
+<span class="sd">        e_new</span>
+<span class="sd">            New total energy.</span>
 <span class="sd">        """</span>
         <span class="n">ads_name</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">ads</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span> <span class="k">if</span> <span class="n">ads</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">adsorbate_tag</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
 
@@ -674,7 +682,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Adsorbate with tag </span><span class="si">{</span><span class="n">adsorbate_tag</span><span class="si">}</span><span class="s2"> not found."</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbates</span><span class="p">[</span><span class="n">ads_name</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_deltaE</span> <span class="o">*</span> <span class="mi">100</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_deltaE</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span>
 
         <span class="c1"># Randomly select an adsorbate molecule of this specific tag to delete if ads_index is not provided</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">ads_index</span><span class="p">:</span>
@@ -685,15 +693,19 @@
             <span class="n">ads_indices</span> <span class="o">=</span> <span class="n">ads_index</span>
 
         <span class="n">atoms_trial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="n">atoms_trial</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>  <span class="c1"># type: ignore</span>
+        <span class="n">atoms_trial</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span>  <span class="c1"># type: ignore</span>
+
+        <span class="n">to_delete</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="p">[</span><span class="n">ads_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">ads_indices</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># type: ignore</span>
+        <span class="n">to_delete</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span>  <span class="c1"># type: ignore</span>
+        <span class="n">to_delete_energy</span> <span class="o">=</span> <span class="n">to_delete</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
 
         <span class="c1"># Delete the selected adsorbate atoms from the trial structure</span>
-        <span class="k">del</span> <span class="n">atoms_trial</span><span class="p">[</span><span class="n">ads_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">ads_indices</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">atoms_trial</span><span class="p">[</span><span class="n">ads_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">ads_indices</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># type: ignore</span>
 
         <span class="n">e_new</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
-        <span class="n">deltaE</span> <span class="o">=</span> <span class="n">e_new</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_energy</span><span class="p">[</span><span class="n">ads_name</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span>
+        <span class="n">deltaE</span> <span class="o">=</span> <span class="n">e_new</span> <span class="o">+</span> <span class="n">to_delete_energy</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span>
 
-        <span class="k">return</span> <span class="n">deltaE</span></div>
+        <span class="k">return</span> <span class="n">deltaE</span><span class="p">,</span> <span class="n">e_new</span></div>
 
 
 <div class="viewcode-block" id="TMMC.check_tmmc_files_exist">
@@ -727,8 +739,8 @@
             <span class="n">not_found_files</span> <span class="o">=</span> <span class="p">[]</span>
 
             <span class="k">for</span> <span class="n">n_mol</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_loading</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-                <span class="n">ins_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">/ins_energy_H2O_</span><span class="si">{</span><span class="n">n_mol</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">.npy"</span>
-                <span class="n">del_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">/del_energy_H2O_</span><span class="si">{</span><span class="n">n_mol</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">.npy"</span>
+                <span class="n">ins_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">/ins_energy_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">n_mol</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">.npy"</span>
+                <span class="n">del_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">/del_energy_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">n_mol</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">.npy"</span>
                 <span class="n">vol_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">/volume_</span><span class="si">{</span><span class="n">n_mol</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">.npy"</span>
 
                 <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="p">[</span><span class="n">ins_file</span><span class="p">,</span> <span class="n">del_file</span><span class="p">,</span> <span class="n">vol_file</span><span class="p">]:</span>
@@ -749,6 +761,7 @@
         <span class="n">max_loading</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">replicas</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="nb">range</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
         <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">folder_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"tmmc_weights"</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Loads TMMC simulation data and pre-computes the fugacity-independent Boltzmann weights</span>
@@ -766,6 +779,8 @@
 <span class="sd">            List or range of replica indices to load. Default is range(1, 5).</span>
 <span class="sd">        show_progress : bool, optional</span>
 <span class="sd">            If True, shows a progress bar during the loading of weights. Default is True.</span>
+<span class="sd">        folder_name : str, optional</span>
+<span class="sd">            Name of the folder to save the pre-computed weights. Default is "tmmc_weights".</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -786,12 +801,14 @@
         <span class="n">ins_weights</span> <span class="o">=</span> <span class="p">{</span><span class="n">replica</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">replicas</span><span class="p">}</span>
         <span class="n">del_weights</span> <span class="o">=</span> <span class="p">{</span><span class="n">replica</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">replicas</span><span class="p">}</span>
 
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">folder_name</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
         <span class="k">for</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">replicas</span><span class="p">:</span>
-            <span class="n">prefix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"tmmc_weights/</span><span class="si">{</span><span class="n">replica</span><span class="si">}</span><span class="s2">"</span>
+            <span class="n">prefix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">folder_name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">replica</span><span class="si">}</span><span class="s2">"</span>
 
             <span class="c1"># Read the saved wheighs if exists</span>
-            <span class="n">ins_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">_ins_weights.npz"</span>
-            <span class="n">del_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">_del_weights.npz"</span>
+            <span class="n">ins_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="si">}</span><span class="s2">_ins_weights.npz"</span>
+            <span class="n">del_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="si">}</span><span class="s2">_del_weights.npz"</span>
 
             <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">ins_file</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">del_file</span><span class="p">):</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading precomputed weights for replica </span><span class="si">{</span><span class="n">replica</span><span class="si">}</span><span class="s2"> from disk..."</span><span class="p">)</span>
@@ -808,10 +825,14 @@
                     <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="n">show_progress</span><span class="p">,</span>
                 <span class="p">):</span>
                     <span class="c1"># Load and mask insertion energies</span>
-                    <span class="n">rep_ins_energies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">/ins_energy_H2O_</span><span class="si">{</span><span class="n">n_mol</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">.npy"</span><span class="p">)</span>
+                    <span class="n">rep_ins_energies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">/ins_energy_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">n_mol</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">.npy"</span>
+                    <span class="p">)</span>
 
                     <span class="c1"># Load and mask deletion energies</span>
-                    <span class="n">rep_del_energies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">/del_energy_H2O_</span><span class="si">{</span><span class="n">n_mol</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">.npy"</span><span class="p">)</span>
+                    <span class="n">rep_del_energies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">/del_energy_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">n_mol</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">.npy"</span>
+                    <span class="p">)</span>
 
                     <span class="c1"># Load volumes</span>
                     <span class="n">volumes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">/volume_</span><span class="si">{</span><span class="n">n_mol</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">.npy"</span><span class="p">)</span>
@@ -828,10 +849,10 @@
 
                 <span class="c1"># Save weights to disk for future use as compressed numpy arrays</span>
                 <span class="n">np</span><span class="o">.</span><span class="n">savez_compressed</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">"tmmc_weights/</span><span class="si">{</span><span class="n">replica</span><span class="si">}</span><span class="s2">_ins_weights.npz"</span><span class="p">,</span> <span class="o">*</span><span class="n">ins_weights</span><span class="p">[</span><span class="n">replica</span><span class="p">]</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">folder_name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">replica</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="si">}</span><span class="s2">_ins_weights.npz"</span><span class="p">,</span> <span class="o">*</span><span class="n">ins_weights</span><span class="p">[</span><span class="n">replica</span><span class="p">]</span>
                 <span class="p">)</span>
                 <span class="n">np</span><span class="o">.</span><span class="n">savez_compressed</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">"tmmc_weights/</span><span class="si">{</span><span class="n">replica</span><span class="si">}</span><span class="s2">_del_weights.npz"</span><span class="p">,</span> <span class="o">*</span><span class="n">del_weights</span><span class="p">[</span><span class="n">replica</span><span class="p">]</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">folder_name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">replica</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="si">}</span><span class="s2">_del_weights.npz"</span><span class="p">,</span> <span class="o">*</span><span class="n">del_weights</span><span class="p">[</span><span class="n">replica</span><span class="p">]</span>
                 <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">insertion_weights</span> <span class="o">=</span> <span class="n">ins_weights</span>
@@ -1046,7 +1067,7 @@
         <span class="n">uptakes_average</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">uptakes_list</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
         <span class="c1"># Calculates the standard error of the mean (SEM) for the uptake across replicas</span>
-        <span class="n">uptakes_sd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">uptakes_list</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">insertion_weights</span><span class="p">))</span>
+        <span class="n">uptakes_sd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">uptakes_list</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">insertion_weights</span><span class="p">))</span>
 
         <span class="c1"># Convert uptake to the specified units</span>
         <span class="n">uptakes_average</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv_factors</span><span class="p">[</span><span class="n">uptake_units</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
@@ -1079,35 +1100,37 @@
 <span class="sd">            The path to the trajectory file where the simulation will be executed.</span>
 <span class="sd">        """</span>
 
-        <span class="n">step_time_start</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">print_tmmc_run_header</span><span class="p">()</span>
-
-        <span class="n">ins_energies</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">del_energies</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="n">trajectory</span> <span class="o">=</span> <span class="n">TrajectoryReader</span><span class="p">(</span><span class="n">trajectory_path</span><span class="p">)</span>
 
-        <span class="n">del_energy_list</span> <span class="o">=</span> <span class="p">[]</span>
-
+        <span class="c1"># Iterate over each frame in the trajectory and perform N virtual insertions and deletions</span>
         <span class="k">for</span> <span class="n">frame_number</span><span class="p">,</span> <span class="n">frame</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">trajectory</span><span class="p">):</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">set_state</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="n">frame_volume</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span>
 
             <span class="n">ads_indices_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_adsorbates_index</span><span class="p">(</span><span class="n">tag</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tag</span><span class="p">)</span>
+
+            <span class="c1"># Pre-compute the deletion energies for all adsorbates in the current frame</span>
+            <span class="n">del_energy_temp_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">total_energy_temp_list</span> <span class="o">=</span> <span class="p">[]</span>
 
             <span class="k">for</span> <span class="n">ads_idx</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span>
                 <span class="n">ads_indices_list</span><span class="p">,</span>
                 <span class="n">disable</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
                 <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">"TMMC Deletions on frame  </span><span class="si">{</span><span class="n">frame_number</span><span class="si">:</span><span class="s2">05d</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
             <span class="p">):</span>
+                <span class="n">del_energy</span><span class="p">,</span> <span class="n">e_new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">try_virtual_deletion</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tag</span><span class="p">,</span> <span class="n">ads_index</span><span class="o">=</span><span class="n">ads_idx</span>
+                <span class="p">)</span>
+                <span class="n">del_energy_temp_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">del_energy</span><span class="p">)</span>
+                <span class="n">total_energy_temp_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">e_new</span><span class="p">)</span>
 
-                <span class="n">del_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">try_virtual_deletion</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tag</span><span class="p">,</span> <span class="n">ads_index</span><span class="o">=</span><span class="n">ads_idx</span><span class="p">)</span>
-                <span class="n">del_energy_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">del_energy</span><span class="p">)</span>
-
-            <span class="n">del_energy_list</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">max_deltaE</span> <span class="o">*</span> <span class="mi">100</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">del_energy_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">del_energy_list</span>
-            <span class="p">)</span>
+            <span class="c1"># If there are no adsorbates in the current frame, set a default deletion energy to avoid empty lists</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">del_energy_temp_list</span><span class="p">:</span>
+                <span class="n">del_energy_temp_list</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">max_deltaE</span> <span class="o">*</span> <span class="mi">100</span><span class="p">]</span>
+                <span class="n">total_energy_temp_list</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span><span class="p">]</span>
 
             <span class="c1"># Perform N virtual insertions of the adsorbate</span>
             <span class="k">for</span> <span class="n">iteration</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span>
@@ -1116,25 +1139,33 @@
                 <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">"TMMC Insertions on frame </span><span class="si">{</span><span class="n">frame_number</span><span class="si">:</span><span class="s2">05d</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
             <span class="p">):</span>
 
-                <span class="n">ins_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">try_virtual_insertion</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tag</span><span class="p">)</span>
+                <span class="n">step_time_start</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+
+                <span class="c1"># Perform a virtual insertion of the adsorbate and record the insertion energy</span>
+                <span class="n">ins_energy</span><span class="p">,</span> <span class="n">e_new_ins</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">try_virtual_insertion</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tag</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">total_ins_energy_list</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ins_energy</span><span class="p">)</span>
-                <span class="n">ins_energies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ins_energy</span>
 
-                <span class="n">del_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rnd_generator</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">del_energy_list</span><span class="p">)</span>
+                <span class="c1"># Perform a virtual deletion of a randomly selected adsorbate and record the deletion energy</span>
+                <span class="n">del_energy_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rnd_generator</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">del_energy_temp_list</span><span class="p">)))</span>
+                <span class="n">del_energy</span> <span class="o">=</span> <span class="n">del_energy_temp_list</span><span class="p">[</span><span class="n">del_energy_index</span><span class="p">]</span>
+                <span class="n">e_new_del</span> <span class="o">=</span> <span class="n">total_energy_temp_list</span><span class="p">[</span><span class="n">del_energy_index</span><span class="p">]</span>
+
                 <span class="bp">self</span><span class="o">.</span><span class="n">total_del_energy_list</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">del_energy</span><span class="p">)</span>
-                <span class="n">del_energies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">del_energy</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">total_energy_list</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">e_new_ins</span><span class="p">,</span> <span class="n">e_new_del</span><span class="p">])</span>
 
-                <span class="bp">self</span><span class="o">.</span><span class="n">volume_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">get_volume</span><span class="p">())</span>
-
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">print_tmmc_step_info</span><span class="p">(</span>
-                    <span class="n">step</span><span class="o">=</span><span class="p">(</span><span class="n">iteration</span> <span class="o">+</span> <span class="n">frame_number</span> <span class="o">*</span> <span class="n">N_per_frame</span><span class="p">),</span>
-                    <span class="n">del_energy</span><span class="o">=</span><span class="n">del_energies</span><span class="p">,</span>
-                    <span class="n">ins_energy</span><span class="o">=</span><span class="n">ins_energies</span><span class="p">,</span>
-                    <span class="n">step_time</span><span class="o">=</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">step_time_start</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">(),</span>
-                <span class="p">)</span>
+                <span class="c1"># Record the volume of the current system for this iteration</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">volume_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">frame_volume</span><span class="p">)</span>
 
                 <span class="c1"># Save the current state and trajectory</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_save_state</span><span class="p">()</span></div>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_save_state</span><span class="p">()</span>
+
+                <span class="c1"># Print the current step information to the output file</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">print_tmmc_step_info</span><span class="p">(</span>
+                    <span class="n">step</span><span class="o">=</span><span class="p">(</span><span class="n">iteration</span> <span class="o">+</span> <span class="n">frame_number</span> <span class="o">*</span> <span class="n">N_per_frame</span><span class="p">),</span>
+                    <span class="n">del_energy</span><span class="o">=</span><span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">del_energy</span><span class="p">},</span>
+                    <span class="n">ins_energy</span><span class="o">=</span><span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">ins_energy</span><span class="p">},</span>
+                    <span class="n">step_time</span><span class="o">=</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">step_time_start</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">(),</span>
+                <span class="p">)</span></div>
 </div>
 
 </pre></div>

@@ -201,27 +201,30 @@
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing FLAMES</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../overview.html">Overview</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Basic</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/widom.html">Widom insertion</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/gcmc.html">GCMC Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/restart.html">Restarting Simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/isotherm.html">GCMC Adsorption Isotherm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/multiple_ads.html">Multi-component GCMC Simulation</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/basic/index.html">Basic</a><input aria-label="Toggle navigation of Basic" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/basic/widom.html">Widom insertion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/basic/gcmc.html">GCMC Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/basic/restart.html">Restarting Simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/basic/isotherm.html">GCMC Adsorption Isotherm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/basic/multiple_ads.html">Multi-component GCMC Simulation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Intermediate</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/intermediate/hybrid_gcmc_md.html">Hybrid GCMC/MD Simulation</a></li>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/intermediate/index.html">Intermediate</a><input aria-label="Toggle navigation of Intermediate" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/intermediate/hybrid_gcmc_md.html">Hybrid GCMC/MD Simulation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Calculators</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/calculators/lennard_jones.html">Lennard-Jones Potential</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/calculators/ewald.html">Ewald Sum for Electrostatic Interactions</a></li>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/advanced/index.html">Advanced</a><input aria-label="Toggle navigation of Advanced" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/hybrid_gcmc_md_mixed_calc.html">Mixed calculators for GCMC/MD simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/hybrid_tmmc_md.html">Hybrid TMMC/MD Simulation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Advanced</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/advanced/hybrid_gcmc_md_mixed_calc.html">Mixed calculators for GCMC/MD simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/advanced/hybrid_tmmc_md.html">Hybrid TMMC/MD Simulation</a></li>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/calculators/index.html">Calculators</a><input aria-label="Toggle navigation of Calculators" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/calculators/lennard_jones.html">Lennard-Jones Potential</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/calculators/ewald.html">Ewald Sum for Electrostatic Interactions</a></li>
+</ul>
+</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Theoretical Background</span></p>
 <ul>
@@ -312,10 +315,15 @@
 <span class="sd">    This class handles all base parameters for the simulations.</span>
 <span class="sd">    Separates the basic logic used in the simulations from the specific implementation details.</span>
 
-<span class="sd">    :param model:</span>
+<span class="sd">    :param calculator:</span>
 <span class="sd">        The calculator to use for energy calculations. Can be any ASE-compatible calculator.</span>
 <span class="sd">        The output of the calculator should be in eV.</span>
-<span class="sd">    :type model: ase.calculators.calculator.Calculator</span>
+<span class="sd">    :type calculator: ase.calculators.calculator.Calculator</span>
+
+<span class="sd">    :param adsorbate_calculator:</span>
+<span class="sd">        The calculator to use for adsorbate energy calculations. Can be any ASE-compatible calculator.</span>
+<span class="sd">        The output of the calculator should be in eV.</span>
+<span class="sd">    :type adsorbate_calculator: ase.calculators.calculator.Calculator | None</span>
 
 <span class="sd">    :param framework_atoms:</span>
 <span class="sd">        The framework structure as an ASE Atoms object.</span>
@@ -400,13 +408,14 @@
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">model</span><span class="p">:</span> <span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span><span class="p">,</span>
+        <span class="n">calculator</span><span class="p">:</span> <span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span><span class="p">,</span>
         <span class="n">framework_atoms</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">,</span>
         <span class="n">adsorbates</span><span class="p">:</span> <span class="n">Adsorbate</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Adsorbate</span><span class="p">],</span>
         <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">pressure</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">device</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">vdw_radii</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">adsorbate_calculator</span><span class="p">:</span> <span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">framework_energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">adsorbate_energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">vdw_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.6</span><span class="p">,</span>
@@ -416,7 +425,7 @@
         <span class="n">output_to_file</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">output_folder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">fugacity_coeff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">fugacity_coeff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">void_fraction</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="n">random_seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">cutoff_radius</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">6.0</span><span class="p">,</span>
@@ -439,8 +448,7 @@
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="s2">"Movies"</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">output_to_file</span><span class="p">:</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="s2">"Output.out"</span><span class="p">),</span> <span class="s2">"a"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">out_file</span> <span class="o">=</span> <span class="n">f</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">out_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_folder</span><span class="p">,</span> <span class="s2">"Output.out"</span><span class="p">),</span> <span class="s2">"a"</span><span class="p">)</span>  <span class="c1"># noqa: SIM115</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">out_file</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -464,13 +472,16 @@
 
         <span class="c1"># -- General definitions for framework and adsorbate --</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span> <span class="o">=</span> <span class="n">calculator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_calculator</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">adsorbate_calculator</span> <span class="k">if</span> <span class="n">adsorbate_calculator</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">calculator</span>
+        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">device</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">set_framework</span><span class="p">(</span><span class="n">framework_atoms</span><span class="p">,</span> <span class="n">framework_energy</span><span class="o">=</span><span class="n">framework_energy</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span>
 
         <span class="k">if</span> <span class="n">framework_energy</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span> <span class="o">=</span> <span class="n">framework_energy</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ideal_supercell</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
@@ -487,22 +498,44 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">T</span> <span class="o">=</span> <span class="n">temperature</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">=</span> <span class="n">pressure</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">fugacity_coeff</span> <span class="o">=</span> <span class="n">fugacity_coeff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fugacity_coeff</span> <span class="o">=</span> <span class="n">fugacity_coeff</span> <span class="k">if</span> <span class="n">fugacity_coeff</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mf">1.0</span>
 
-        <span class="c1"># Fugacity from Pa (J/m^3) to eV / m^3</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fugacity</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fugacity_coeff</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">J</span><span class="p">)</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">eV</span>
+        <span class="c1"># Fugacity from Pa (J/m^3) to eV / Angs^3</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fugacity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fugacity_coeff</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">Pascal</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">kB</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>  <span class="c1"># Boltzmann weight, 1 / [eV/K * K]</span>
-
-        <span class="n">atm2pa</span> <span class="o">=</span> <span class="mi">101325</span>
-        <span class="n">mol2cm3</span> <span class="o">=</span> <span class="n">units</span><span class="o">.</span><span class="n">kB</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">J</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">mol</span> <span class="o">*</span> <span class="mf">273.15</span> <span class="o">/</span> <span class="n">atm2pa</span>
 
         <span class="c1"># Get the ideal supercell. This will be updated by the set_framework method</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ideal_supercell</span> <span class="o">=</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_get_ideal_supercell</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">automatic_supercell</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
         <span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv_factors</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vdw</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vdw_radii</span><span class="p">)</span> <span class="o">*</span> <span class="n">vdw_factor</span>
+        <span class="p">)</span>  <span class="c1"># Adjust van der Waals radii to avoid overlap</span>
+
+        <span class="c1"># Replace any NaN value by 1.5 on self.vdw to avoid potential problems</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vdw</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vdw</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">1.5</span>
+
+        <span class="c1"># Use an max deltaE to avoid errors on the calculator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_deltaE</span> <span class="o">=</span> <span class="n">max_deltaE</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">conv_factors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Get the conversion factors for different units.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict[str, dict[str, float]]</span>
+<span class="sd">            A dictionary containing conversion factors for different units.</span>
+<span class="sd">        """</span>
+
+        <span class="c1"># Constants for unit conversions</span>
+        <span class="n">atm2pa</span> <span class="o">=</span> <span class="mi">101325</span>
+        <span class="n">mol2cm3</span> <span class="o">=</span> <span class="n">units</span><span class="o">.</span><span class="n">kB</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">J</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">mol</span> <span class="o">*</span> <span class="mf">273.15</span> <span class="o">/</span> <span class="n">atm2pa</span>
+
+        <span class="n">conv_factors</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">"nmol"</span><span class="p">:</span> <span class="p">{</span>
                 <span class="n">adsorbate</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ideal_supercell</span><span class="p">)</span> <span class="k">for</span> <span class="n">adsorbate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span>
             <span class="p">},</span>
@@ -534,15 +567,7 @@
             <span class="p">},</span>
         <span class="p">}</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">vdw</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vdw_radii</span><span class="p">)</span> <span class="o">*</span> <span class="n">vdw_factor</span>
-        <span class="p">)</span>  <span class="c1"># Adjust van der Waals radii to avoid overlap</span>
-
-        <span class="c1"># Replace any NaN value by 1.5 on self.vdw to avoid potential problems</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">vdw</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vdw</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">1.5</span>
-
-        <span class="c1"># Use an max deltaE to avoid errors on the model</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">max_deltaE</span> <span class="o">=</span> <span class="n">max_deltaE</span>
+        <span class="k">return</span> <span class="n">conv_factors</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_save_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actual_iteration</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
@@ -612,9 +637,9 @@
 <span class="sd">        framework_atoms : ase.Atoms</span>
 <span class="sd">            The new framework structure as an ASE Atoms object.</span>
 <span class="sd">        framework_energy : float or None, optional</span>
-<span class="sd">            The energy of the framework in eV. If None, the energy will be calculated using the provided model.</span>
+<span class="sd">            The energy of the framework in eV. If None, the energy will be calculated using the provided calculator.</span>
 <span class="sd">        """</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">framework</span> <span class="o">=</span> <span class="n">framework_atoms</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">framework</span> <span class="o">=</span> <span class="n">framework_atoms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">set_tags</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">))</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">ideal_supercell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_ideal_supercell</span><span class="p">()</span>
@@ -628,14 +653,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">cell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">get_cell</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">perpendicular_cell</span> <span class="o">=</span> <span class="n">get_perpendicular_lengths</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">get_cell</span><span class="p">())</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
-        <span class="k">if</span> <span class="n">framework_energy</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">framework_energy</span> <span class="o">=</span> <span class="n">framework_energy</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ideal_supercell</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span>
+        <span class="k">if</span> <span class="n">framework_energy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">framework_energy</span> <span class="o">=</span> <span class="n">framework_energy</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ideal_supercell</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">framework_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">n_atoms_framework</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">framework_energy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">())</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">)</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">m</span><span class="o">**</span><span class="mi">3</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_atoms_framework</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">V</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">framework_mass</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_framework_mass</span><span class="p">()</span>
 
         <span class="c1"># Get the framework density in g/cm^3</span>
@@ -657,7 +682,7 @@
 <span class="sd">        adsorbates : Adsorbate</span>
 <span class="sd">            The list of adsorbate structure(s) as an Adsorbate object.</span>
 <span class="sd">        adsorbate_energy : float or None, optional</span>
-<span class="sd">            The energy of the adsorbate in eV. If None, the energy will be calculated using the provided model.</span>
+<span class="sd">            The energy of the adsorbate in eV. If None, the energy will be calculated using the provided calculator.</span>
 <span class="sd">        n_adsorbates : int</span>
 <span class="sd">            Number of adsorbate molecules in the framework.</span>
 <span class="sd">        """</span>
@@ -686,7 +711,8 @@
             <span class="n">adsorbate</span><span class="o">.</span><span class="n">tag</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
             <span class="n">adsorbate</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">set_cell</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">get_cell</span><span class="p">())</span>  <span class="c1"># type: ignore</span>
             <span class="n">adsorbate</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">set_pbc</span><span class="p">([</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">])</span>  <span class="c1"># type: ignore</span>
-            <span class="n">adsorbate</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>  <span class="c1"># type: ignore</span>
+            <span class="n">adsorbate</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_calculator</span>  <span class="c1"># type: ignore</span>
+            <span class="n">adsorbate</span><span class="o">.</span><span class="n">rnd_generator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rnd_generator</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">adsorbate_energy</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
@@ -730,6 +756,29 @@
         <span class="c1"># self.n_atoms_framework -= self.n_adsorbate_atoms * n_adsorbates</span>
         <span class="c1"># self.n_adsorbates = n_adsorbates</span>
 
+<div class="viewcode-block" id="BaseSimulator.adsorbate_by_tag">
+<a class="viewcode-back" href="../../input_description/base_simulator.html#flames.base_simulator.BaseSimulator.adsorbate_by_tag">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">adsorbate_by_tag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Adsorbate</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Get the adsorbate object corresponding to a given tag.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        tag : int</span>
+<span class="sd">            The tag of the adsorbate.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Adsorbate</span>
+<span class="sd">            The adsorbate object corresponding to the given tag.</span>
+<span class="sd">        """</span>
+        <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ads</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">tag</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">ads</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No adsorbate found with tag </span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="BaseSimulator.set_state">
 <a class="viewcode-back" href="../../input_description/base_simulator.html#flames.base_simulator.BaseSimulator.set_state">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -742,7 +791,7 @@
 <span class="sd">            The current state of the simulation as an ASE Atoms object.</span>
 <span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span></div>
 
 
@@ -805,7 +854,7 @@
 
         <span class="n">_resultsDict</span><span class="p">,</span> <span class="n">optFramework</span> <span class="o">=</span> <span class="n">crystalOptimization</span><span class="p">(</span>
             <span class="n">atoms_in</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="p">,</span>
-            <span class="n">calculator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+            <span class="n">calculator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">calculator</span><span class="p">,</span>
             <span class="n">optimizer</span><span class="o">=</span><span class="n">LBFGS</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
             <span class="n">fmax</span><span class="o">=</span><span class="n">max_force</span><span class="p">,</span>
             <span class="n">opt_cell</span><span class="o">=</span><span class="n">opt_cell</span><span class="p">,</span>
@@ -861,7 +910,7 @@
 
             <span class="n">_resultsDict</span><span class="p">,</span> <span class="n">optAdsorbate</span> <span class="o">=</span> <span class="n">crystalOptimization</span><span class="p">(</span>
                 <span class="n">atoms_in</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">structure</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
-                <span class="n">calculator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+                <span class="n">calculator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">calculator</span><span class="p">,</span>
                 <span class="n">optimizer</span><span class="o">=</span><span class="n">LBFGS</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
                 <span class="n">fmax</span><span class="o">=</span><span class="n">max_force</span><span class="p">,</span>
                 <span class="n">opt_cell</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -879,7 +928,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">structure</span> <span class="o">=</span> <span class="n">optAdsorbate</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">set_constraint</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">set_cell</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">get_cell</span><span class="p">())</span>  <span class="c1"># type: ignore</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>  <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span>  <span class="c1"># type: ignore</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_energy</span> <span class="o">=</span> <span class="p">{</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
             <span class="p">}</span></div>
@@ -923,7 +972,7 @@
 <span class="sd">        movie_interval : int, optional</span>
 <span class="sd">            The interval for saving trajectory frames (default is 100 steps).</span>
 <span class="sd">        calculator : ase.calculators.calculator.Calculator or None, optional</span>
-<span class="sd">            The calculator to use for energy calculations. If None, the default model will be used.</span>
+<span class="sd">            The calculator to use for energy calculations. If None, the default calculator will be used.</span>
 <span class="sd">        update_state : bool, optional</span>
 <span class="sd">            If True, updates the current state of the simulation with the final state after MD.</span>
 <span class="sd">            If False, returns the final state without updating. This difference is important for using</span>
@@ -994,7 +1043,7 @@
 
         <span class="n">new_state</span> <span class="o">=</span> <span class="n">run_md_simulation</span><span class="p">(</span>
             <span class="n">atoms</span><span class="o">=</span><span class="n">current_state</span><span class="p">,</span>
-            <span class="n">model</span><span class="o">=</span><span class="n">calculator</span> <span class="k">if</span> <span class="n">calculator</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+            <span class="n">calculator</span><span class="o">=</span><span class="n">calculator</span> <span class="k">if</span> <span class="n">calculator</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span><span class="p">,</span>
             <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
             <span class="n">pressure</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">*</span> <span class="mf">1e-5</span><span class="p">,</span>
             <span class="n">time_step</span><span class="o">=</span><span class="n">time_step</span><span class="p">,</span>
@@ -1053,7 +1102,7 @@
 <span class="sd">        movie_interval : int, optional</span>
 <span class="sd">            The interval for saving trajectory frames (default is 100 step).</span>
 <span class="sd">        calculator : ase.calculators.calculator.Calculator or None, optional</span>
-<span class="sd">            The calculator to use for energy calculations. If None, the default model will be used.</span>
+<span class="sd">            The calculator to use for energy calculations. If None, the default calculator will be used.</span>
 <span class="sd">        kwargs : optional</span>
 <span class="sd">            Arguments passed to the ase molecular dynamics class.</span>
 <span class="sd">        """</span>
@@ -1062,7 +1111,7 @@
         <span class="k">assert</span> <span class="n">mode</span> <span class="ow">in</span> <span class="n">allowed_modes</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Mode must be one of </span><span class="si">{</span><span class="n">allowed_modes</span><span class="si">}</span><span class="s2">."</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">calculator</span><span class="p">:</span>
-            <span class="n">calculator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+            <span class="n">calculator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">"iso_shape"</span> <span class="ow">or</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"aniso_shape"</span><span class="p">)</span> <span class="ow">and</span> <span class="n">driver</span> <span class="o">==</span> <span class="s2">"Berendsen"</span><span class="p">:</span>
 
@@ -1073,7 +1122,7 @@
 
             <span class="n">new_state</span> <span class="o">=</span> <span class="n">nPT_Berendsen</span><span class="p">(</span>
                 <span class="n">atoms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="p">,</span>
-                <span class="n">model</span><span class="o">=</span><span class="n">calculator</span><span class="p">,</span>
+                <span class="n">calculator</span><span class="o">=</span><span class="n">calculator</span><span class="p">,</span>
                 <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
                 <span class="n">pressure</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">*</span> <span class="mf">1e-5</span><span class="p">,</span>
                 <span class="n">time_step</span><span class="o">=</span><span class="n">time_step</span><span class="p">,</span>
@@ -1091,7 +1140,7 @@
 
             <span class="n">new_state</span> <span class="o">=</span> <span class="n">nPT_NoseHoover</span><span class="p">(</span>
                 <span class="n">atoms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="p">,</span>
-                <span class="n">model</span><span class="o">=</span><span class="n">calculator</span><span class="p">,</span>
+                <span class="n">calculator</span><span class="o">=</span><span class="n">calculator</span><span class="p">,</span>
                 <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
                 <span class="n">pressure</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">*</span> <span class="mf">1e-5</span><span class="p">,</span>
                 <span class="n">time_step</span><span class="o">=</span><span class="n">time_step</span><span class="p">,</span>
@@ -1111,7 +1160,7 @@
 
             <span class="n">new_state</span> <span class="o">=</span> <span class="n">nPT_MTKNPT</span><span class="p">(</span>
                 <span class="n">atoms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="p">,</span>
-                <span class="n">model</span><span class="o">=</span><span class="n">calculator</span><span class="p">,</span>
+                <span class="n">calculator</span><span class="o">=</span><span class="n">calculator</span><span class="p">,</span>
                 <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
                 <span class="n">pressure</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">*</span> <span class="mf">1e-5</span><span class="p">,</span>
                 <span class="n">time_step</span><span class="o">=</span><span class="n">time_step</span><span class="p">,</span>
@@ -1165,7 +1214,7 @@
 <span class="sd">        movie_interval : int, optional</span>
 <span class="sd">            The interval for saving trajectory frames (default is 100 step).</span>
 <span class="sd">        calculator : ase.calculators.calculator.Calculator or None, optional</span>
-<span class="sd">            The calculator to use for energy calculations. If None, the default model will be used.</span>
+<span class="sd">            The calculator to use for energy calculations. If None, the default calculator will be used.</span>
 <span class="sd">        kwargs : optional</span>
 <span class="sd">            Arguments passed to the ase molecular dynamics class.</span>
 
@@ -1186,7 +1235,7 @@
 <span class="sd">            Time constant for the Berendsen thermostat in fs (default is 1.0 fs).</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">calculator</span><span class="p">:</span>
-            <span class="n">calculator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+            <span class="n">calculator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span>
 
         <span class="k">assert</span> <span class="n">driver</span> <span class="ow">in</span> <span class="p">[</span>
             <span class="s2">"Berendsen"</span><span class="p">,</span>
@@ -1198,7 +1247,7 @@
 
             <span class="n">new_state</span> <span class="o">=</span> <span class="n">nVT_NoseHoover</span><span class="p">(</span>
                 <span class="n">atoms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="p">,</span>
-                <span class="n">model</span><span class="o">=</span><span class="n">calculator</span><span class="p">,</span>
+                <span class="n">calculator</span><span class="o">=</span><span class="n">calculator</span><span class="p">,</span>
                 <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
                 <span class="n">time_step</span><span class="o">=</span><span class="n">time_step</span><span class="p">,</span>
                 <span class="n">num_md_steps</span><span class="o">=</span><span class="n">nsteps</span><span class="p">,</span>
@@ -1217,7 +1266,7 @@
 
             <span class="n">new_state</span> <span class="o">=</span> <span class="n">nVT_Langevin</span><span class="p">(</span>
                 <span class="n">atoms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="p">,</span>
-                <span class="n">model</span><span class="o">=</span><span class="n">calculator</span><span class="p">,</span>
+                <span class="n">calculator</span><span class="o">=</span><span class="n">calculator</span><span class="p">,</span>
                 <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
                 <span class="n">time_step</span><span class="o">=</span><span class="n">time_step</span><span class="p">,</span>
                 <span class="n">num_md_steps</span><span class="o">=</span><span class="n">nsteps</span><span class="p">,</span>
@@ -1240,7 +1289,7 @@
 
             <span class="n">new_state</span> <span class="o">=</span> <span class="n">nVT_Berendsen</span><span class="p">(</span>
                 <span class="n">atoms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="p">,</span>
-                <span class="n">model</span><span class="o">=</span><span class="n">calculator</span><span class="p">,</span>
+                <span class="n">calculator</span><span class="o">=</span><span class="n">calculator</span><span class="p">,</span>
                 <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
                 <span class="n">time_step</span><span class="o">=</span><span class="n">time_step</span><span class="p">,</span>
                 <span class="n">num_md_steps</span><span class="o">=</span><span class="n">nsteps</span><span class="p">,</span>
