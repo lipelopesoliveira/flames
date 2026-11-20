@@ -1082,7 +1082,7 @@ class GCMC(BaseSimulator):
         atoms_trial.calc = self.calculator  # type: ignore
 
         # Delete the adsorbate atoms from the trial structure
-        del atoms_trial[ads_indices[0] : ads_indices[-1] + 1]
+        del atoms_trial[ads_indices[0] : ads_indices[-1] + 1]  # type: ignore
 
         # Calculate the new potential energy of the trial structure
         e_new = atoms_trial.get_potential_energy()  # type: ignore
@@ -1138,10 +1138,10 @@ class GCMC(BaseSimulator):
         # Create a trial system for the deletion
         atoms_trial = self.current_system.copy()
 
-        to_reinsert = atoms_trial[ads_indices[0] : ads_indices[-1] + 1].copy()
+        to_reinsert = atoms_trial[ads_indices[0] : ads_indices[-1] + 1].copy()  # type: ignore
 
         # Delete the adsorbate atoms from the trial structure
-        del atoms_trial[ads_indices[0] : ads_indices[-1] + 1]
+        del atoms_trial[ads_indices[0] : ads_indices[-1] + 1]  # type: ignore
 
         temp = random_mol_insertion(atoms_trial, to_reinsert, self.rnd_generator)
 
@@ -1205,8 +1205,8 @@ class GCMC(BaseSimulator):
 
         pos = atoms_trial.get_positions()  # type: ignore
 
-        pos[ads_indices[0] : ads_indices[-1] + 1] = random_translation(
-            original_position=pos[ads_indices[0] : ads_indices[-1] + 1],
+        pos[ads_indices[0] : ads_indices[-1] + 1] = random_translation(  # type: ignore
+            original_position=pos[ads_indices[0] : ads_indices[-1] + 1],  # type: ignore
             cell=self.current_system.cell.array,
             max_translation=self.max_translation,
             rnd_generator=self.rnd_generator,
@@ -1217,9 +1217,9 @@ class GCMC(BaseSimulator):
         overlaped = check_overlap_vesin(
             atoms=atoms_trial,
             group1_indices=np.concatenate(
-                [np.arange(0, ads_indices[0]), np.arange(ads_indices[-1] + 1, len(atoms_trial))]
+                [np.arange(0, ads_indices[0]), np.arange(ads_indices[-1] + 1, len(atoms_trial))]  # type: ignore
             ),
-            group2_indices=np.arange(ads_indices[0], ads_indices[-1] + 1),
+            group2_indices=np.arange(ads_indices[0], ads_indices[-1] + 1),  # type: ignore
             vdw_radii=self.vdw,
         )
 
@@ -1276,8 +1276,8 @@ class GCMC(BaseSimulator):
             self.get_adsorbates_index(tag=adsorbate_tag), axis=0
         )
 
-        pos[ads_indices[0] : ads_indices[-1] + 1] = random_rotation_limited(
-            original_position=pos[ads_indices[0] : ads_indices[-1] + 1],
+        pos[ads_indices[0] : ads_indices[-1] + 1] = random_rotation_limited(  # type: ignore
+            original_position=pos[ads_indices[0] : ads_indices[-1] + 1],  # type: ignore
             cell=self.current_system.cell.array,
             rnd_generator=self.rnd_generator,
             theta_max=self.max_rotation,
@@ -1287,9 +1287,9 @@ class GCMC(BaseSimulator):
         overlaped = check_overlap_vesin(
             atoms=atoms_trial,
             group1_indices=np.concatenate(
-                [np.arange(0, ads_indices[0]), np.arange(ads_indices[-1] + 1, len(atoms_trial))]
+                [np.arange(0, ads_indices[0]), np.arange(ads_indices[-1] + 1, len(atoms_trial))]  # type: ignore
             ),
-            group2_indices=np.arange(ads_indices[0], ads_indices[-1] + 1),
+            group2_indices=np.arange(ads_indices[0], ads_indices[-1] + 1),  # type: ignore
             vdw_radii=self.vdw,
         )
 
@@ -1363,7 +1363,7 @@ class GCMC(BaseSimulator):
         atoms_trial = self.current_system.copy()
         atoms_trial.calc = self.calculator  # type: ignore
 
-        cm_position = atoms_trial[ads1_indices[0] : ads1_indices[-1] + 1].get_center_of_mass()
+        cm_position = atoms_trial[ads1_indices[0] : ads1_indices[-1] + 1].get_center_of_mass()  # type: ignore
 
         to_insert = next(
             ads.structure.copy() for ads in self.adsorbates if ads.tag == adsorbate2_tag
@@ -1371,7 +1371,7 @@ class GCMC(BaseSimulator):
         to_insert.set_positions(to_insert.get_positions() - to_insert.get_center_of_mass() + cm_position)  # type: ignore
 
         # Delete the adsorbate atoms from the trial structure
-        del atoms_trial[ads1_indices[0] : ads1_indices[-1] + 1]
+        del atoms_trial[ads1_indices[0] : ads1_indices[-1] + 1]  # type: ignore
 
         atoms_trial += to_insert
 
