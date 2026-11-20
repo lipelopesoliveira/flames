@@ -487,6 +487,34 @@ class BaseSimulator:
 
         raise ValueError(f"No adsorbate found with tag {tag}.")
 
+    def get_adsorbates_index(self, tag: int) -> list[list]:
+        """
+        Get a list of index of the adsorbate molecules in the current system.
+        If a tag is provided, only returns the indices for adsorbates matching that tag.
+
+        Parameters
+        ----------
+        tag : int
+            The tag of the adsorbate to look for.
+
+        Returns
+        -------
+        list[list]
+            A list of lists containing the indices of the adsorbate molecules.
+        """
+        adsorbates_list = []
+
+        for adsorbate in self.adsorbates:
+            if adsorbate.tag != tag:
+                continue
+
+            indices = np.where(self.current_system.get_tags() == tag)[0]
+
+            if len(indices) > 0:
+                adsorbates_list.extend(indices.reshape(-1, len(adsorbate.structure)).tolist())
+
+        return adsorbates_list
+
     def set_state(self, state: ase.Atoms) -> None:
         """
         Set the current state of the simulation.

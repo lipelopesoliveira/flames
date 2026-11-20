@@ -196,7 +196,7 @@ class Adsorbate:
             TypeError: If structure is missing when passing a dict, or if the value type is invalid.
         """
         if value is None:
-            self._eos = None
+            self._eos = BaseEOS(molar_mass=self.molar_mass)
         elif isinstance(value, (BaseEOS, PengRobinsonEOS)):
             self._eos = value
         elif isinstance(value, dict):

@@ -211,23 +211,6 @@ class TMMC(BaseSimulator):
 
         return n_adsorbate_by_type
 
-    def get_adsorbates_index(self, tag: int | None = None) -> list[list]:
-        """
-        Get a list of indices of the adsorbate molecules in the current system.
-        """
-        adsorbates_list = []
-
-        for adsorbate in self.adsorbates:
-            if tag is not None and adsorbate.tag != tag:
-                continue
-
-            indices = np.where(self.current_system.get_tags() == adsorbate.tag)[0]
-
-            if len(indices) > 0:
-                adsorbates_list.extend(indices.reshape(-1, len(adsorbate.structure)).tolist())
-
-        return adsorbates_list
-
     def get_macrostate_str(self) -> str:
         """
         Return a string representation of the current multi-component macrostate.

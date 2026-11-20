@@ -285,7 +285,7 @@ class GCMC(BaseSimulator):
         uptake_restart, total_energy_restart, total_ads_restart = [], [], []
 
         if os.path.exists(os.path.join(self.out_folder, f"uptake_{self.P:.5f}.npy")):
-            uptake_restart = np.load(os.path.join(self.out_folder, f"uptake_{self.P:.5f}.npy"))
+            uptake_restart = np.load(os.path.join(self.out_folder, f"uptake_{self.P:.5f}.npy")).tolist()
 
         if os.path.exists(os.path.join(self.out_folder, f"total_energy_{self.P:.5f}.npy")):
             total_energy_restart = np.load(
@@ -305,9 +305,9 @@ class GCMC(BaseSimulator):
             Found lengths: {len(uptake_restart)}, {len(total_energy_restart)}, {len(total_ads_restart)}
             for uptake, total energy, and total ads respectively.""")
 
-        self.uptake_list = np.array(uptake_restart).tolist()
-        self.total_energy_list: list[float] = total_energy_restart
-        self.total_ads_list: list[int] = total_ads_restart
+        self.uptake_list = uptake_restart
+        self.total_energy_list = total_energy_restart
+        self.total_ads_list = total_ads_restart
 
         # Set the base iteration to the length of the uptake list
         self.base_iteration = len(self.uptake_list)
@@ -453,31 +453,6 @@ class GCMC(BaseSimulator):
         self.current_total_energy = temp_system.get_potential_energy()
         self.n_adsorbates[ads_name] += inserted_adsorbates
 
-    def get_adsorbates_index(self, tag: int | None = None) -> list[list]:
-        """
-        Get a list of index of the adsorbate molecules in the current system.
-        If a tag is provided, only returns the indices for adsorbates matching that tag.
-
-        Returns
-        -------
-        list[list]
-            A list of lists containing the indices of the adsorbate molecules.
-        """
-        adsorbates_list = []
-
-        for adsorbate in self.adsorbates:
-            # If a tag is provided and doesn't match this adsorbate, skip to the next one
-            if tag is not None and adsorbate.tag != tag:
-                continue
-
-            # Look for the current adsorbate's tag in the system
-            indices = np.where(self.current_system.get_tags() == adsorbate.tag)[0]
-
-            if len(indices) > 0:
-                adsorbates_list.extend(indices.reshape(-1, len(adsorbate.structure)).tolist())
-
-        return adsorbates_list
-
     def equilibrate(
         self,
         equilibration_steps: int = 0,
@@ -621,7 +596,7 @@ class GCMC(BaseSimulator):
 
         self.equilibrate(batch_size=batch_size, run_ADF=run_ADF, uncertainty=uncertainty, LLM=LLM)
 
-        results = {
+        results: dict = {
             "simulation": {
                 "code_version": VERSION,
                 "random_seed": self.random_seed,
