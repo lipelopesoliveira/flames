@@ -123,18 +123,15 @@ class CustomEwald(Calculator):
 
         # We will cache the tuning parameters so we only recalculate them
         # if the cell volume/shape changes (e.g., during NPT trial moves)
-        self._cached_cell = None
-        self.alpha = None
-        self.grid_limits = (1, 1, 1)
-        self.recip_cell = None
-        self.volume = None
+        self._cached_cell: np.ndarray | None = None
+        self.alpha: float = np.sqrt(-np.log(self.precision)) / self.cutoff
+        self.grid_limits: tuple[int, int, int] = (1, 1, 1)
+        self.recip_cell: np.ndarray | None = None
+        self.volume: float | None = None
 
     def _tune_ewald_parameters(self, cell) -> None:
         """Calculates alpha and k-space grid based on target precision."""
         self.volume = np.abs(np.linalg.det(cell))
-
-        # Real-space precision bound
-        self.alpha = np.sqrt(-np.log(self.precision)) / self.cutoff
 
         # Reciprocal-space precision bound
         k_max = 2.0 * self.alpha * np.sqrt(-np.log(self.precision))

@@ -140,7 +140,7 @@ for NMolecules in range(args.MaxMolecules + 1):
     previous_state = os.path.exists(f"Trajectory_{NMolecules - 1:04d}.traj")
 
     gcmc = GCMC(
-        model=model,
+        calculator=model,
         framework_atoms=framework,
         adsorbates=adsorbate,
         temperature=args.ExternalTemperature,
