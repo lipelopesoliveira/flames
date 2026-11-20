@@ -15,6 +15,9 @@ class BaseEOS(ABC):
     def __init__(
         self,
         molar_mass: float = 1.0,
+        Tc: float = 1.0,
+        Pc: float = 1.0,
+        omega: float = 1.0,
     ) -> None:
         """Initialize the base EOS with a molar mass.
         Parameters:
@@ -22,6 +25,9 @@ class BaseEOS(ABC):
         molar_mass (float): Molar mass of the substance (g/mol).
         """
         self._molar_mass = molar_mass
+        self.Tc = Tc
+        self.Pc = Pc
+        self.omega = omega
 
         # Universal gas constant in J/(mol*K)
         self.R = units.kB / units.J * units.mol
@@ -77,7 +83,7 @@ class BaseEOS(ABC):
             Bulk phase density in kg/m^3
         """
         Z = self.get_compressibility(temperature, pressure)
-        molar_volume = self.R * temperature * Z / pressure
+        molar_volume = self.R * temperature * Z / pressure if pressure != 0 else float('inf')
 
         density = 1e-3 * self.molar_mass / molar_volume
         return float(density)
@@ -100,7 +106,7 @@ class BaseEOS(ABC):
 
         """
         Z = self.get_compressibility(temperature, pressure)
-        molar_volume = self.R * temperature * Z / pressure
+        molar_volume = self.R * temperature * Z / pressure if pressure != 0 else float('inf')
 
         molar_density = 1 / molar_volume
         return float(molar_density)
