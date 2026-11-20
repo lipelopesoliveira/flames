@@ -143,7 +143,7 @@ class TMMC(BaseSimulator):
             automatic_supercell=automatic_supercell,
         )
 
-        self.logger = TMMCLogger(simulation=self, output_file=self.out_file)
+        self.logger: TMMCLogger = TMMCLogger(simulation=self, output_file=self.out_file)
 
         self.start_time = datetime.datetime.now()
 
@@ -492,8 +492,8 @@ class TMMC(BaseSimulator):
         # Checks if the weights directory exists
         # self.check_tmmc_files_exist(file_path, max_loading, replicas)
 
-        ins_weights = {replica: [] for replica in replicas}
-        del_weights = {replica: [] for replica in replicas}
+        ins_weights: dict[int, list[np.ndarray]] = {replica: [] for replica in replicas}
+        del_weights: dict[int, list[np.ndarray]] = {replica: [] for replica in replicas}
 
         os.makedirs(folder_name, exist_ok=True)
 

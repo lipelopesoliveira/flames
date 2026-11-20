@@ -224,7 +224,7 @@ class GCMC(BaseSimulator):
         self.n_adsorbates: dict[str, int] = {adsorbate.name: 0 for adsorbate in self.adsorbates}
         self.uptake_list: list[list[int]] = [[0] * len(self.adsorbates)]
         self.total_energy_list: list[float] = [self.framework_energy]
-        self.total_ads_list: list[float] = [0]
+        self.total_ads_list: list[int] = [0]
 
         self.max_translation = max_translation
         self.max_rotation = max_rotation
@@ -241,13 +241,13 @@ class GCMC(BaseSimulator):
             "npt_md": self.try_npt_md,
         }
 
-        self.n_movements = {move: [] for move in self.movements}
+        self.n_movements: dict[str, list[int]] = {move: [] for move in self.movements}
 
         # Base iteration for restarting the simulation. This is for tracking the iteration count only
         self._base_iteration: int = 0
 
         # Dictionary to store the equilibrated results by pyMSER
-        self.equilibrated_results: dict = {}
+        self.equilibrated_results: dict[str, float] = {}
 
     @property
     def base_iteration(self) -> int:
@@ -305,9 +305,9 @@ class GCMC(BaseSimulator):
             Found lengths: {len(uptake_restart)}, {len(total_energy_restart)}, {len(total_ads_restart)}
             for uptake, total energy, and total ads respectively.""")
 
-        self.uptake_list = np.array(uptake_restart)
-        self.total_energy_list = total_energy_restart
-        self.total_ads_list = total_ads_restart
+        self.uptake_list = np.array(uptake_restart).tolist()
+        self.total_energy_list: list[float] = total_energy_restart
+        self.total_ads_list: list[int] = total_ads_restart
 
         # Set the base iteration to the length of the uptake list
         self.base_iteration = len(self.uptake_list)
