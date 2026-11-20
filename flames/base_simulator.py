@@ -177,7 +177,7 @@ class BaseSimulator:
             "a",
         )
 
-        self.logger = BaseLogger(self, output_file=self.out_file)
+        self.logger: BaseLogger = BaseLogger(self, output_file=self.out_file)
 
         self.save_rejected = save_rejected
 

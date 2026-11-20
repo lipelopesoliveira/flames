@@ -161,7 +161,7 @@ class Widom(BaseSimulator):
             automatic_supercell=automatic_supercell,
         )
 
-        self.logger = WidomLogger(simulation=self, output_file=self.out_file)
+        self.logger: WidomLogger = WidomLogger(simulation=self, output_file=self.out_file)
 
         self.start_time = datetime.datetime.now()
 
