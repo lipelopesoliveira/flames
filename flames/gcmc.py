@@ -1002,12 +1002,16 @@ class GCMC(BaseSimulator):
         adsorbate = next(
             (i for i, ads in enumerate(self.adsorbates) if ads.tag == adsorbate_tag), None
         )
+
         if adsorbate is None:
             raise ValueError(f"Adsorbate with tag {adsorbate_tag} not found.")
 
+        # Get the structure to be safe in case adsorbate has several conformers or structures
+        adsorbate_structure = self.adsorbates[adsorbate].structure
+
         atoms_trial = random_mol_insertion(
             framework=self.current_system,
-            molecule=self.adsorbates[adsorbate].structure,
+            molecule=adsorbate_structure,
             rnd_generator=self.rnd_generator,
         )
 
@@ -1025,11 +1029,7 @@ class GCMC(BaseSimulator):
         atoms_trial.calc = self.calculator
         e_new = atoms_trial.get_potential_energy()
 
-        deltaE = (
-            e_new
-            - self.current_total_energy
-            - self.adsorbate_energy[self.adsorbates[adsorbate].name]
-        )
+        deltaE = e_new - self.current_total_energy - adsorbate_structure.get_potential_energy()
 
         if deltaE < -self.max_deltaE:
             self.logger._print_warning(
@@ -1081,13 +1081,17 @@ class GCMC(BaseSimulator):
         atoms_trial = self.current_system.copy()
         atoms_trial.calc = self.calculator  # type: ignore
 
+        to_delete = atoms_trial[ads_indices[0] : ads_indices[-1] + 1]  # type: ignore
+        to_delete.calc = self.calculator  # type: ignore
+        to_delete_energy = to_delete.get_potential_energy()  # type: ignore
+
         # Delete the adsorbate atoms from the trial structure
         del atoms_trial[ads_indices[0] : ads_indices[-1] + 1]  # type: ignore
 
         # Calculate the new potential energy of the trial structure
         e_new = atoms_trial.get_potential_energy()  # type: ignore
 
-        deltaE = e_new + self.adsorbate_energy[mol_name] - self.current_total_energy
+        deltaE = e_new + to_delete_energy - self.current_total_energy
 
         if deltaE < -self.max_deltaE:
             self.logger._print_warning(
@@ -1370,6 +1374,10 @@ class GCMC(BaseSimulator):
         )
         to_insert.set_positions(to_insert.get_positions() - to_insert.get_center_of_mass() + cm_position)  # type: ignore
 
+        to_delete = atoms_trial[ads1_indices[0] : ads1_indices[-1] + 1]  # type: ignore
+        to_delete.calc = self.calculator  # type: ignore
+        to_delete_energy = to_delete.get_potential_energy()  # type: ignore
+
         # Delete the adsorbate atoms from the trial structure
         del atoms_trial[ads1_indices[0] : ads1_indices[-1] + 1]  # type: ignore
 
@@ -1391,7 +1399,7 @@ class GCMC(BaseSimulator):
         deltaE = (
             e_trial
             - self.current_total_energy
-            - self.adsorbate_energy[ads2_name]
+            - to_delete_energy
             + self.adsorbate_energy[ads1_name]
         )
 
