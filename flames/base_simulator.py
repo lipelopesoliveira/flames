@@ -170,7 +170,7 @@ class BaseSimulator:
         if output_to_file:
             self.out_file = open(os.path.join(self.out_folder, "Output.out"), "a")  # noqa: SIM115
         else:
-            self.out_file = None
+            self.out_file = open(os.devnull, "w")  # noqa: SIM115
 
         self.trajectory = Trajectory(
             os.path.join(self.out_folder, "Movies", "Trajectory.traj"),
