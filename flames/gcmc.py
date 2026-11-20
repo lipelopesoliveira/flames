@@ -212,7 +212,7 @@ class GCMC(BaseSimulator):
             automatic_supercell=automatic_supercell,
         )
 
-        self.logger = GCMCLogger(simulation=self, output_file=self.out_file)
+        self.logger: GCMCLogger = GCMCLogger(simulation=self, output_file=self.out_file)
 
         self.start_time = datetime.datetime.now()
 
