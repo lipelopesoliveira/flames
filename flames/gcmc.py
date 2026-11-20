@@ -42,8 +42,8 @@ class GCMC(BaseSimulator):
     :type calculator: ase.calculators.calculator.Calculator
 
     :param adsorbate_calculator:
-            The calculator to use for adsorbate energy calculations. Can be any ASE-compatible calculator.
-            The output of the calculator should be in eV.
+        The calculator to use for adsorbate energy calculations. Can be any ASE-compatible calculator.
+        The output of the calculator should be in eV.
     :type adsorbate_calculator: ase.calculators.calculator.Calculator | None
 
     :param framework_atoms:
