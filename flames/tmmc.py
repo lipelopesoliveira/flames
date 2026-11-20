@@ -37,7 +37,7 @@ class TMMC(BaseSimulator):
     :param adsorbate_calculator:
             The calculator to use for adsorbate energy calculations. Can be any ASE-compatible calculator.
             The output of the calculator should be in eV.
-        :type adsorbate_calculator: ase.calculators.calculator.Calculator | None
+    :type adsorbate_calculator: ase.calculators.calculator.Calculator | None
 
     :param framework_atoms:
         The framework structure as an ASE Atoms object.

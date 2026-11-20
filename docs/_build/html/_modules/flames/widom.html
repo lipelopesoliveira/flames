@@ -319,9 +319,15 @@
 <span class="sd">        Temperature of the ideal reservoir in Kelvin.</span>
 <span class="sd">    :type temperature: float</span>
 
-<span class="sd">    :param model:</span>
-<span class="sd">        ASE-compatible calculator for energy calculations.</span>
-<span class="sd">    :type model: ase.calculators.calculator.Calculator</span>
+<span class="sd">    :param calculator:</span>
+<span class="sd">        The calculator to use for energy calculations. Can be any ASE-compatible calculator.</span>
+<span class="sd">        The output of the calculator should be in eV.</span>
+<span class="sd">    :type calculator: ase.calculators.calculator.Calculator</span>
+
+<span class="sd">    :param adsorbate_calculator:</span>
+<span class="sd">        The calculator to use for adsorbate energy calculations. Can be any ASE-compatible calculator.</span>
+<span class="sd">        The output of the calculator should be in eV.</span>
+<span class="sd">    :type adsorbate_calculator: ase.calculators.calculator.Calculator | None</span>
 
 <span class="sd">    :param vdw_radii:</span>
 <span class="sd">        Van der Waals radii of the atoms in the framework and adsorbate.</span>
@@ -390,8 +396,9 @@
         <span class="n">framework_atoms</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">,</span>
         <span class="n">adsorbate_atoms</span><span class="p">:</span> <span class="n">Adsorbate</span><span class="p">,</span>
         <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">model</span><span class="p">:</span> <span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span><span class="p">,</span>
+        <span class="n">calculator</span><span class="p">:</span> <span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span><span class="p">,</span>
         <span class="n">vdw_radii</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">adsorbate_calculator</span><span class="p">:</span> <span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">framework_energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">adsorbate_energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">vdw_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.6</span><span class="p">,</span>
@@ -412,7 +419,8 @@
 <span class="sd">        """</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+            <span class="n">calculator</span><span class="o">=</span><span class="n">calculator</span><span class="p">,</span>
+            <span class="n">adsorbate_calculator</span><span class="o">=</span><span class="n">adsorbate_calculator</span><span class="p">,</span>
             <span class="n">framework_atoms</span><span class="o">=</span><span class="n">framework_atoms</span><span class="p">,</span>
             <span class="n">adsorbates</span><span class="o">=</span><span class="n">adsorbate_atoms</span><span class="p">,</span>
             <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">,</span>
@@ -730,7 +738,7 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">MAX_ENERGY_ERROR</span><span class="p">,</span> <span class="n">atoms_trial</span>
 
         <span class="c1"># Set the same calculator to the trial atoms</span>
-        <span class="n">atoms_trial</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+        <span class="n">atoms_trial</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span>
 
         <span class="c1"># Calculate the interaction energy of the trial configuration</span>
         <span class="n">deltaE</span> <span class="o">=</span> <span class="p">(</span>

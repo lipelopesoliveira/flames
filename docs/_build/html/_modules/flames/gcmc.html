@@ -295,6 +295,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">flames</span><span class="w"> </span><span class="kn">import</span> <span class="n">VERSION</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">flames.adsorbate</span><span class="w"> </span><span class="kn">import</span> <span class="n">Adsorbate</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">flames.base_simulator</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseSimulator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flames.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">MaxInsertionTriesError</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">flames.logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">GCMCLogger</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">flames.operations</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">check_overlap_vesin</span><span class="p">,</span>
@@ -315,10 +316,15 @@
 
 <span class="sd">    Currently, it supports any ASE-compatible calculator for energy calculations.</span>
 
-<span class="sd">    :param model:</span>
+<span class="sd">    :param calculator:</span>
 <span class="sd">        The calculator to use for energy calculations. Can be any ASE-compatible calculator.</span>
 <span class="sd">        The output of the calculator should be in eV.</span>
-<span class="sd">    :type model: ase.calculators.calculator.Calculator</span>
+<span class="sd">    :type calculator: ase.calculators.calculator.Calculator</span>
+
+<span class="sd">    :param adsorbate_calculator:</span>
+<span class="sd">            The calculator to use for adsorbate energy calculations. Can be any ASE-compatible calculator.</span>
+<span class="sd">            The output of the calculator should be in eV.</span>
+<span class="sd">    :type adsorbate_calculator: ase.calculators.calculator.Calculator | None</span>
 
 <span class="sd">    :param framework_atoms:</span>
 <span class="sd">        The framework structure as an ASE Atoms object.</span>
@@ -432,13 +438,14 @@
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">model</span><span class="p">:</span> <span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span><span class="p">,</span>
+        <span class="n">calculator</span><span class="p">:</span> <span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span><span class="p">,</span>
         <span class="n">framework_atoms</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">,</span>
         <span class="n">adsorbates</span><span class="p">:</span> <span class="n">Adsorbate</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Adsorbate</span><span class="p">],</span>
         <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">pressure</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">device</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">vdw_radii</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">adsorbate_calculator</span><span class="p">:</span> <span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">vdw_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.6</span><span class="p">,</span>
         <span class="n">framework_energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">adsorbate_energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -461,7 +468,8 @@
 <span class="sd">        """</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+            <span class="n">calculator</span><span class="o">=</span><span class="n">calculator</span><span class="p">,</span>
+            <span class="n">adsorbate_calculator</span><span class="o">=</span><span class="n">adsorbate_calculator</span><span class="p">,</span>
             <span class="n">framework_atoms</span><span class="o">=</span><span class="n">framework_atoms</span><span class="p">,</span>
             <span class="n">adsorbates</span><span class="o">=</span><span class="n">adsorbates</span><span class="p">,</span>
             <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">,</span>
@@ -701,16 +709,16 @@
 <span class="sd">        """</span>
         <span class="n">temp_system</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
-        <span class="n">adsorvate</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">ads</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span> <span class="k">if</span> <span class="n">ads</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">ads_name</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">adsorbate</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">ads</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span> <span class="k">if</span> <span class="n">ads</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">ads_name</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">adsorvate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">adsorbate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Adsorbate with name '</span><span class="si">{</span><span class="n">ads_name</span><span class="si">}</span><span class="s2">' not found in the adsorbates list."</span><span class="p">)</span>
 
         <span class="n">n_attempts</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">inserted_adsorbates</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">while</span> <span class="n">inserted_adsorbates</span> <span class="o">&lt;</span> <span class="n">n_adsorbates</span> <span class="ow">and</span> <span class="n">n_attempts</span> <span class="o">&lt;</span> <span class="n">max_attempts</span><span class="p">:</span>
             <span class="n">n_attempts</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="n">atoms_trial</span> <span class="o">=</span> <span class="n">random_mol_insertion</span><span class="p">(</span><span class="n">temp_system</span><span class="p">,</span> <span class="n">adsorvate</span><span class="o">.</span><span class="n">structure</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rnd_generator</span><span class="p">)</span>
+            <span class="n">atoms_trial</span> <span class="o">=</span> <span class="n">random_mol_insertion</span><span class="p">(</span><span class="n">temp_system</span><span class="p">,</span> <span class="n">adsorbate</span><span class="o">.</span><span class="n">structure</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rnd_generator</span><span class="p">)</span>
 
             <span class="n">overlaped</span> <span class="o">=</span> <span class="n">check_overlap_vesin</span><span class="p">(</span>
                 <span class="n">atoms</span><span class="o">=</span><span class="n">atoms_trial</span><span class="p">,</span>
@@ -724,14 +732,14 @@
                 <span class="n">inserted_adsorbates</span> <span class="o">+=</span> <span class="mi">1</span>
 
         <span class="k">if</span> <span class="n">n_attempts</span> <span class="o">==</span> <span class="n">max_attempts</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">"Maximum number of attempts (</span><span class="si">{</span><span class="n">max_attempts</span><span class="si">}</span><span class="s2">) reached. "</span>
-                <span class="o">+</span> <span class="sa">f</span><span class="s2">"Could not insert all </span><span class="si">{</span><span class="n">n_adsorbates</span><span class="si">}</span><span class="s2"> adsorbates without overlap. "</span>
-                <span class="o">+</span> <span class="sa">f</span><span class="s2">"Max inserted adsorbates: </span><span class="si">{</span><span class="n">inserted_adsorbates</span><span class="si">}</span><span class="s2">."</span>
+            <span class="k">raise</span> <span class="n">MaxInsertionTriesError</span><span class="p">(</span>
+                <span class="n">max_insertion_tries</span><span class="o">=</span><span class="n">max_attempts</span><span class="p">,</span>
+                <span class="n">n_adsorbates</span><span class="o">=</span><span class="n">n_adsorbates</span><span class="p">,</span>
+                <span class="n">inserted_adsorbates</span><span class="o">=</span><span class="n">inserted_adsorbates</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="c1"># Update the current system and total energy</span>
-        <span class="n">temp_system</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+        <span class="n">temp_system</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span> <span class="o">=</span> <span class="n">temp_system</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span> <span class="o">=</span> <span class="n">temp_system</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbates</span><span class="p">[</span><span class="n">ads_name</span><span class="p">]</span> <span class="o">+=</span> <span class="n">inserted_adsorbates</span></div>
@@ -1339,7 +1347,7 @@
             <span class="k">return</span> <span class="kc">False</span>
 
         <span class="c1"># Energy calculation</span>
-        <span class="n">atoms_trial</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+        <span class="n">atoms_trial</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span>
         <span class="n">e_new</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>
 
         <span class="n">deltaE</span> <span class="o">=</span> <span class="p">(</span>
@@ -1399,7 +1407,7 @@
 
         <span class="c1"># Create a trial system for the deletion</span>
         <span class="n">atoms_trial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="n">atoms_trial</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>  <span class="c1"># type: ignore</span>
+        <span class="n">atoms_trial</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span>  <span class="c1"># type: ignore</span>
 
         <span class="c1"># Delete the adsorbate atoms from the trial structure</span>
         <span class="k">del</span> <span class="n">atoms_trial</span><span class="p">[</span><span class="n">ads_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">ads_indices</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
@@ -1478,7 +1486,7 @@
         <span class="k">if</span> <span class="n">overlaped</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
 
-        <span class="n">temp</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>  <span class="c1"># type: ignore</span>
+        <span class="n">temp</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span>  <span class="c1"># type: ignore</span>
         <span class="n">e_new</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>
 
         <span class="n">deltaE</span> <span class="o">=</span> <span class="n">e_new</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span>
@@ -1552,7 +1560,7 @@
         <span class="k">if</span> <span class="n">overlaped</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
 
-        <span class="n">atoms_trial</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>  <span class="c1"># type: ignore</span>
+        <span class="n">atoms_trial</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span>  <span class="c1"># type: ignore</span>
         <span class="n">e_trial</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
 
         <span class="n">deltaE</span> <span class="o">=</span> <span class="n">e_trial</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span>
@@ -1625,7 +1633,7 @@
         <span class="k">if</span> <span class="n">overlaped</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
 
-        <span class="n">atoms_trial</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>  <span class="c1"># type: ignore</span>
+        <span class="n">atoms_trial</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span>  <span class="c1"># type: ignore</span>
         <span class="n">e_trial</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
 
         <span class="n">deltaE</span> <span class="o">=</span> <span class="n">e_trial</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_total_energy</span>
@@ -1679,8 +1687,8 @@
             <span class="p">)</span>
         <span class="p">)</span>
 
-        <span class="n">ads1_name</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">ads</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span> <span class="k">if</span> <span class="n">ads</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">adsorbate1_tag</span><span class="p">))</span>
-        <span class="n">ads2_name</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">ads</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span> <span class="k">if</span> <span class="n">ads</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">adsorbate2_tag</span><span class="p">))</span>
+        <span class="n">ads1_name</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">ads</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span> <span class="k">if</span> <span class="n">ads</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">adsorbate1_tag</span><span class="p">)</span>
+        <span class="n">ads2_name</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">ads</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">ads</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbates</span> <span class="k">if</span> <span class="n">ads</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">adsorbate2_tag</span><span class="p">)</span>
 
         <span class="c1"># Check if both adsorbate tags are present in the system</span>
         <span class="n">ads_tags</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">get_tags</span><span class="p">()))</span>
@@ -1693,7 +1701,7 @@
         <span class="p">)</span>
 
         <span class="n">atoms_trial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="n">atoms_trial</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>  <span class="c1"># type: ignore</span>
+        <span class="n">atoms_trial</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span>  <span class="c1"># type: ignore</span>
 
         <span class="n">cm_position</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="p">[</span><span class="n">ads1_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">ads1_indices</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get_center_of_mass</span><span class="p">()</span>
 
@@ -1717,7 +1725,7 @@
         <span class="k">if</span> <span class="n">overlaped</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
 
-        <span class="n">atoms_trial</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>  <span class="c1"># type: ignore</span>
+        <span class="n">atoms_trial</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span>  <span class="c1"># type: ignore</span>
         <span class="n">e_trial</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
 
         <span class="n">deltaE</span> <span class="o">=</span> <span class="p">(</span>
@@ -1761,7 +1769,7 @@
 <span class="sd">        """</span>
 
         <span class="n">atoms_trial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
-        <span class="n">atoms_trial</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>  <span class="c1"># type: ignore</span>
+        <span class="n">atoms_trial</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span>  <span class="c1"># type: ignore</span>
 
         <span class="n">MaxwellBoltzmannDistribution</span><span class="p">(</span><span class="n">atoms_trial</span><span class="p">,</span> <span class="n">temperature_K</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">force_temp</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
