@@ -29,7 +29,7 @@ adsorbate = Adsorbate(
 )
 
 gcmc = GCMC(
-    model=calc,
+    calculator=calc,
     framework_atoms=framework,
     adsorbates=adsorbate,
     temperature=298.15,

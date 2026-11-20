@@ -59,7 +59,7 @@ for i, pressure in enumerate(pressure_list):
     )
 
     gcmc = GCMC(
-        model=model,
+        calculator=model,
         framework_atoms=framework,
         adsorbates=adsorbate,
         temperature=Temperature,

@@ -69,7 +69,7 @@ print(
 )
 
 gcmc = GCMC(
-    model=model,
+    calculator=model,
     framework_atoms=framework,
     adsorbates=[adsorbate_1, adsorbate_2],
     temperature=Temperature,

@@ -45,7 +45,7 @@ Temperature = 298.0
 NSteps = 30000
 
 widom = Widom(
-    model=calc,  # type: ignore
+    calculator=calc,  # type: ignore
     framework_atoms=framework,
     adsorbate_atoms=adsorbate,
     temperature=Temperature,
