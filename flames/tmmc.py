@@ -315,8 +315,11 @@ class TMMC(BaseSimulator):
         if adsorbate is None:
             raise ValueError(f"Adsorbate with tag {adsorbate_tag} not found.")
 
+        # Get the structure to be safe in case adsorbate has several conformers or structures
+        adsorbate_structure = adsorbate.structure
+
         atoms_trial = random_mol_insertion(
-            self.current_system, adsorbate.structure, self.rnd_generator
+            self.current_system, adsorbate_structure, self.rnd_generator
         )
 
         overlaped = check_overlap_vesin(
@@ -331,7 +334,7 @@ class TMMC(BaseSimulator):
         atoms_trial.calc = self.calculator
         e_new = atoms_trial.get_potential_energy()
 
-        deltaE = e_new - self.current_total_energy - self.adsorbate_energy[adsorbate.name]
+        deltaE = e_new - self.current_total_energy - adsorbate_structure.get_potential_energy()
 
         if deltaE < -self.max_deltaE:
             self.logger._print_warning(
