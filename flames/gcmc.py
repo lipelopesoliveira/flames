@@ -285,7 +285,9 @@ class GCMC(BaseSimulator):
         uptake_restart, total_energy_restart, total_ads_restart = [], [], []
 
         if os.path.exists(os.path.join(self.out_folder, f"uptake_{self.P:.5f}.npy")):
-            uptake_restart = np.load(os.path.join(self.out_folder, f"uptake_{self.P:.5f}.npy")).tolist()
+            uptake_restart = np.load(
+                os.path.join(self.out_folder, f"uptake_{self.P:.5f}.npy")
+            ).tolist()
 
         if os.path.exists(os.path.join(self.out_folder, f"total_energy_{self.P:.5f}.npy")):
             total_energy_restart = np.load(

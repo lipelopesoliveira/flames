@@ -785,10 +785,10 @@ Start optimizing adsorbate structure...
         )
 
         if update_state:
-             self.set_state(new_state)
+            self.set_state(new_state)
             self.set_framework(new_state[: self.n_atoms_framework].copy())  # type: ignore
-        
-        return new_state       
+
+        return new_state
 
     def npt(
         self,
