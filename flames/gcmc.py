@@ -795,12 +795,8 @@ class GCMC(BaseSimulator):
         if eos_a is None or eos_b is None:
             raise ValueError("An equation of state is required for identity swaps.")
 
-        f_a = (
-            eos_a.get_fugacity_coefficient(self.T, self.P) * ads_a.mol_fraction * self.fugacity
-        )
-        f_b = (
-            eos_b.get_fugacity_coefficient(self.T, self.P) * ads_b.mol_fraction * self.fugacity
-        )
+        f_a = eos_a.get_fugacity_coefficient(self.T, self.P) * ads_a.mol_fraction * self.fugacity
+        f_b = eos_b.get_fugacity_coefficient(self.T, self.P) * ads_b.mol_fraction * self.fugacity
 
         exp_value = np.exp(-self.beta * deltaE)
         pre_factor = (N_a / (N_b + 1)) * (f_b / f_a)
