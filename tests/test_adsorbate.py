@@ -1,5 +1,5 @@
-from pathlib import Path
 import re
+from pathlib import Path
 
 import pytest
 from ase.atoms import Atoms
@@ -132,6 +132,7 @@ def test_set_structure_raises_error(dummy_water):
     expected_msg = "Structure must be a string (file path), an ASE Atoms object, or a list of ASE Atoms objects."
     with pytest.raises(TypeError, match=re.escape(expected_msg)):
         adsorbate.structure = None  # type: ignore
+
 
 def test_weights_dict_initialization(dummy_water):
     """Test that passing a dict sets up MoveWeights."""
