@@ -421,9 +421,9 @@ class BaseSimulator:
         # Set tags and properties for each adsorbate
         for i, adsorbate in enumerate(self.adsorbates):
             adsorbate.tag = i + 1
-            adsorbate.structure.set_cell(self.framework.get_cell())  # type: ignore
-            adsorbate.structure.set_pbc([True, True, True])  # type: ignore
-            adsorbate.structure.calc = self.adsorbate_calculator  # type: ignore
+            adsorbate.set_cell(self.framework.get_cell())  # type: ignore
+            adsorbate.set_pbc([True, True, True])  # type: ignore
+            adsorbate.set_calculator(self.adsorbate_calculator)  # type: ignore
             adsorbate.rnd_generator = self.rnd_generator
 
         if isinstance(adsorbate_energy, float):
