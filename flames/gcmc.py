@@ -224,7 +224,7 @@ class GCMC(BaseSimulator):
         self.n_adsorbates: dict[str, int] = {adsorbate.name: 0 for adsorbate in self.adsorbates}
         self.uptake_list: list[list[int]] = [[0] * len(self.adsorbates)]
         self.total_energy_list: list[float] = [self.framework_energy]
-        self.total_ads_list: list[int] = [0]
+        self.total_ads_list: list[float] = [0.0]
 
         self.max_translation = max_translation
         self.max_rotation = max_rotation
@@ -790,11 +790,16 @@ class GCMC(BaseSimulator):
         N_a = self.n_adsorbates[ads_a.name]
         N_b = self.n_adsorbates[ads_b.name]
 
+        eos_a = ads_a.eos
+        eos_b = ads_b.eos
+        if eos_a is None or eos_b is None:
+            raise ValueError("An equation of state is required for identity swaps.")
+
         f_a = (
-            ads_a.eos.get_fugacity_coefficient(self.T, self.P) * ads_a.mol_fraction * self.fugacity
+            eos_a.get_fugacity_coefficient(self.T, self.P) * ads_a.mol_fraction * self.fugacity
         )
         f_b = (
-            ads_b.eos.get_fugacity_coefficient(self.T, self.P) * ads_b.mol_fraction * self.fugacity
+            eos_b.get_fugacity_coefficient(self.T, self.P) * ads_b.mol_fraction * self.fugacity
         )
 
         exp_value = np.exp(-self.beta * deltaE)
@@ -1671,7 +1676,7 @@ class GCMC(BaseSimulator):
         accepted = self.movements[move](adsorbate_tag=ads_tag)
         self.n_movements[move].append(1 if accepted else 0)
 
-        self.uptake_list = np.append(self.uptake_list, [list(self.n_adsorbates.values())], axis=0)
+        self.uptake_list.append(list(self.n_adsorbates.values()))
         self.total_energy_list.append(self.current_total_energy)
         self.total_ads_list.append(self.get_total_ads_energy())
 
