@@ -675,7 +675,7 @@ Start optimizing adsorbate structure...
         trajectory_file: TrajectoryReader | TrajectoryWriter | None = None,
         set_momenta: bool = True,
         **kwargs,
-    ) -> None | ase.Atoms:
+    ) -> ase.Atoms:
         """
         Run a molecular dynamics simulation using the specified ensemble and thermostat.
 
@@ -784,11 +784,11 @@ Start optimizing adsorbate structure...
             **kwargs,
         )
 
-        if not update_state:
-            return new_state
-
-        self.set_state(new_state)
-        self.set_framework(new_state[: self.n_atoms_framework].copy())  # type: ignore
+        if update_state:
+             self.set_state(new_state)
+            self.set_framework(new_state[: self.n_atoms_framework].copy())  # type: ignore
+        
+        return new_state       
 
     def npt(
         self,
