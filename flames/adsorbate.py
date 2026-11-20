@@ -237,6 +237,36 @@ class Adsorbate:
         """
         return self.structure.get_masses().sum()  # type: ignore
 
+    def set_cell(self, cell: np.ndarray) -> None:
+        """
+        Sets the simulation cell for all structures of the adsorbate.
+
+        Args:
+            cell (np.ndarray): A 3x3 array representing the simulation cell vectors.
+        """
+        for structure in self._structure:
+            structure.set_cell(cell)  # type: ignore
+
+    def set_pbc(self, pbc: bool | list[bool]) -> None:
+        """
+        Sets the periodic boundary conditions for all structures of the adsorbate.
+
+        Args:
+            pbc (bool | list[bool]): A boolean or list of booleans indicating periodicity in each dimension.
+        """
+        for structure in self._structure:
+            structure.set_pbc(pbc)  # type: ignore
+
+    def set_calculator(self, calculator: Any) -> None:
+        """
+        Assigns a calculator to all structures of the adsorbate.
+
+        Args:
+            calculator (Any): An ASE calculator instance.
+        """
+        for structure in self._structure:
+            structure.calc = calculator  # type: ignore
+
     def pick_random_move(self, generator: np.random.Generator | None = None) -> str:
         """
         Selects a random Monte Carlo move based on the adsorbate's move weights.
