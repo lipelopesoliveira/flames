@@ -334,7 +334,8 @@ class TMMC(BaseSimulator):
         atoms_trial.calc = self.calculator
         e_new = atoms_trial.get_potential_energy()
 
-        deltaE = e_new - self.current_total_energy - adsorbate_structure.get_potential_energy()
+        # deltaE = E_new - E_old = E(AB) - (E(A) + E(B))
+        deltaE = e_new - (self.current_total_energy + adsorbate_structure.get_potential_energy())
 
         if deltaE < -self.max_deltaE:
             self.logger._print_warning(
@@ -388,8 +389,9 @@ class TMMC(BaseSimulator):
         # Delete the selected adsorbate atoms from the trial structure
         del atoms_trial[ads_indices[0] : ads_indices[-1] + 1]  # type: ignore
 
+        # deltaE = E_new - E_old = (E(A) + E(B)) - E(AB)
         e_new = atoms_trial.get_potential_energy()  # type: ignore
-        deltaE = e_new + to_delete_energy - self.current_total_energy
+        deltaE = (e_new + to_delete_energy) - self.current_total_energy
 
         return deltaE, e_new
 
@@ -591,7 +593,6 @@ class TMMC(BaseSimulator):
 
         # Calculate transition probabilities P(N -> N+1) and P(N -> N-1)
         for n_mol in tqdm(range(n_states), desc="Computing MPD (Π)", disable=not show_progress):
-
             # Broadcast: (n_samples, 1) * (1, n_press) -> (n_samples, n_press)
             # P_ins(N -> N+1) = min(1, w_ins(N) * fugacity)
             ins_acc = np.minimum(1.0, ins_weights[n_mol][:, None] * fugacity_array[None, :])
@@ -602,7 +603,7 @@ class TMMC(BaseSimulator):
             del_acc = np.minimum(1.0, del_weights[n_mol][:, None] / fugacity_array[None, :])
             probs_minus[n_mol] = np.mean(del_acc, axis=0)
 
-        # Numerical safeguard: Prevent log(0) which causes NaNs in the cumsum
+        # Numerical safeguard to prevent log(0) which causes NaNs in the cumsum
         epsilon = 1e-300
         safe_probs_plus = np.clip(probs_plus[:-1], a_min=epsilon, a_max=None)
         safe_probs_minus = np.clip(probs_minus[1:], a_min=epsilon, a_max=None)
@@ -612,7 +613,7 @@ class TMMC(BaseSimulator):
         log_ratios = np.log(safe_probs_plus / safe_probs_minus)
         lnpi[1:] = np.cumsum(log_ratios, axis=0)
 
-        # Numerically stable normalization: Log-Sum-Exp prevents overflow/underflow
+        # Numerically stable normalization using Log-Sum-Exp prevents overflow/underflow
         lnpi -= np.max(lnpi, axis=0, keepdims=True)
         pi = np.exp(lnpi)
         pi /= np.sum(pi, axis=0, keepdims=True)
@@ -769,9 +770,8 @@ class TMMC(BaseSimulator):
 
         trajectory = TrajectoryReader(trajectory_path)
 
-        # Iterate over each frame in the trajectory and perform N virtual insertions and deletions
+        # Iterate over each frame in the trajectory and perform N_per_frame virtual insertions and deletions
         for frame_number, frame in enumerate(trajectory):
-
             self.set_state(frame)  # type: ignore
             frame_volume = self.current_system.get_volume()
 
@@ -803,7 +803,6 @@ class TMMC(BaseSimulator):
                 disable=(self.out_file is None),
                 desc=f"TMMC Insertions on frame {frame_number:05d}",
             ):
-
                 step_time_start = datetime.datetime.now()
 
                 # Perform a virtual insertion of the adsorbate and record the insertion energy
