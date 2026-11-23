@@ -258,12 +258,15 @@ class Adsorbate:
         for structure in self._structure:
             structure.set_pbc(pbc)  # type: ignore
 
-    def set_calculator(self, calculator: Any, overwrite: bool = False) -> None:
+    def set_calculator(self, calculator: Any, overwrite: bool = True) -> None:
         """
         Assigns a calculator to all structures of the adsorbate.
 
         Args:
-            calculator (Any): An ASE calculator instance.
+            calculator (Any):
+                An ASE calculator instance.
+        overwrite (bool):
+            If True, existing calculators will be overwritten. If False, a warning is issued instead.
         """
         for structure in self._structure:
             if structure.calc is None:
