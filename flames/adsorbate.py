@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import warnings
 from copy import deepcopy
 from typing import Any
-import warnings
 
 import ase.io
 import numpy as np
@@ -272,7 +272,7 @@ class Adsorbate:
             if structure.calc is None:
                 structure.calc = calculator  # type: ignore
             elif structure.calc is not None and overwrite:
-                structure.calc = calculator  # type: ignore    
+                structure.calc = calculator  # type: ignore
                 warnings.warn(
                     f"Structure {structure} already has a calculator assigned. Overwriting it."
                 )
