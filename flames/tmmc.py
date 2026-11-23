@@ -746,6 +746,422 @@ class TMMC(BaseSimulator):
 
         return uptakes_average, uptakes_sd, pi_average
 
+    def load_tmmc_weights_interpolated(
+        self,
+        file_path: str,
+        loadings: list[int] | np.ndarray,
+        replicas: list | range = range(1, 5),
+        show_progress: bool = True,
+        folder_name: str = "tmmc_weights",
+    ) -> tuple[dict[int, dict[int, np.ndarray]], dict[int, dict[int, np.ndarray]]]:
+        """
+        Loads TMMC simulation data ONLY for a specified subset of macrostates (loadings)
+        and pre-computes the fugacity-independent Boltzmann weights for each replica.
+
+        In the interpolated single-macrostate (NVT + ghost swap) GC-TMMC approach
+        (Mazur et al., ACS Appl. Mater. Interfaces 2024, 16, 25559-25567), direct
+        simulations are performed only for a sparse subset of particle numbers N
+        spanning [0, N_max], reducing computational cost by up to 1-2 orders of
+        magnitude. For each explicitly simulated macrostate N, the fugacity-independent
+        insertion and deletion weights are pre-computed as:
+
+            w_ins(N) = (V * beta / (N + 1)) * exp(-beta * deltaE_ins)
+            w_del(N) = (N / (V * beta))     * exp(-beta * deltaE_del)
+
+        such that at any fugacity f, the unbiased Metropolis acceptance probabilities
+        are evaluated as:
+
+            p_acc(N -> N + 1) = min(1, w_ins(N) * f)
+            p_acc(N -> N - 1) = min(1, w_del(N) / f)
+
+        The resulting weights are stored as nested dictionaries mapping
+        ``replica -> {n_mol: weight_array}`` so that the exact simulated macrostate
+        indices are preserved for subsequent linear interpolation.
+
+        Parameters
+        ----------
+        file_path : str
+            Path prefix to the directories containing the TMMC simulation data
+            (expects ``{file_path}_{replica}/``).
+        loadings : list[int] | np.ndarray
+            Subset of macrostate loadings (number of adsorbate molecules N) to load.
+            Must include ``0`` and at least one non-zero loading (typically ``N_max``).
+            Including ``1`` in the subset is recommended to avoid interpolation error
+            in the deletion probability near the empty-pore limit.
+        replicas : list | range, optional
+            List or range of replica indices to load. Default is ``range(1, 5)``.
+        show_progress : bool, optional
+            If True, shows a progress bar during weight loading. Default is True.
+        folder_name : str, optional
+            Directory where compressed pre-computed weight caches (``.npz``) are
+            stored and reused. Default is ``"tmmc_weights"``.
+
+        Returns
+        -------
+        ins_weights : dict[int, dict[int, np.ndarray]]
+            Pre-computed insertion weights mapped as ``ins_weights[replica][n_mol]``.
+        del_weights : dict[int, dict[int, np.ndarray]]
+            Pre-computed deletion weights mapped as ``del_weights[replica][n_mol]``.
+
+        Raises
+        ------
+        ValueError
+            If ``loadings`` contains fewer than two unique macrostates or does not
+            include ``0``.
+        """
+        loadings_arr = np.array(sorted({int(n) for n in loadings}), dtype=int)
+        if len(loadings_arr) < 2:
+            raise ValueError("`loadings` must contain at least two distinct macrostates.")
+        if loadings_arr[0] != 0:
+            raise ValueError("`loadings` must include N = 0.")
+
+        ins_weights: dict[int, dict[int, np.ndarray]] = {replica: {} for replica in replicas}
+        del_weights: dict[int, dict[int, np.ndarray]] = {replica: {} for replica in replicas}
+
+        os.makedirs(folder_name, exist_ok=True)
+        ads_name = self.adsorbates[0].name
+
+        for replica in replicas:
+            cache_tag = f"{replica}_{self.T}_interp_{len(loadings_arr)}states"
+            ins_file = os.path.join(folder_name, f"{cache_tag}_ins_weights.npz")
+            del_file = os.path.join(folder_name, f"{cache_tag}_del_weights.npz")
+
+            loaded_from_cache = False
+            if os.path.exists(ins_file) and os.path.exists(del_file):
+                ins_data = np.load(ins_file)
+                del_data = np.load(del_file)
+                if "loadings" in ins_data and np.array_equal(ins_data["loadings"], loadings_arr):
+                    print(
+                        f"Loading precomputed interpolated weights for replica {replica} from disk..."
+                    )
+                    ins_weights[replica] = {int(n): ins_data[f"n_{n:04d}"] for n in loadings_arr}
+                    del_weights[replica] = {int(n): del_data[f"n_{n:04d}"] for n in loadings_arr}
+                    loaded_from_cache = True
+
+            if not loaded_from_cache:
+                prefix = f"{file_path}_{replica}"
+                for n_mol in tqdm(
+                    loadings_arr,
+                    desc=f"Loading subset weights (Replica {replica})",
+                    disable=not show_progress,
+                ):
+                    rep_ins_energies = np.load(f"{prefix}/ins_energy_{ads_name}_{n_mol:04d}.npy")
+                    rep_del_energies = np.load(f"{prefix}/del_energy_{ads_name}_{n_mol:04d}.npy")
+                    volumes = np.load(f"{prefix}/volume_{n_mol:04d}.npy")
+
+                    w_ins = (volumes * self.beta / (n_mol + 1)) * np.exp(
+                        -self.beta * rep_ins_energies
+                    )
+                    w_del = (n_mol / (volumes * self.beta)) * np.exp(-self.beta * rep_del_energies)
+
+                    ins_weights[replica][int(n_mol)] = w_ins
+                    del_weights[replica][int(n_mol)] = w_del
+
+                np.savez_compressed(
+                    ins_file,
+                    loadings=loadings_arr,
+                    **{f"n_{n:04d}": ins_weights[replica][int(n)] for n in loadings_arr},
+                    allow_pickle=True,
+                )
+                np.savez_compressed(
+                    del_file,
+                    loadings=loadings_arr,
+                    **{f"n_{n:04d}": del_weights[replica][int(n)] for n in loadings_arr},
+                    allow_pickle=True,
+                )
+
+        self.interpolated_insertion_weights = ins_weights
+        self.interpolated_deletion_weights = del_weights
+        self.sampled_loadings = loadings_arr
+
+        return ins_weights, del_weights
+
+    def compute_mpd_interpolated(
+        self,
+        ins_weights: dict[int, np.ndarray],
+        del_weights: dict[int, np.ndarray],
+        fugacities_Pa: np.ndarray,
+        show_progress: bool = True,
+    ) -> np.ndarray:
+        """
+        Computes the full Macrostate Probability Distribution (MPD or Π) across all
+        integer loadings N ∈ [0, N_max] from a sparse subset of simulated macrostates
+        using linear interpolation of transition probabilities.
+
+        Theoretical Background
+        ----------------------
+        In single-macrostate (NVT + ghost swap) GC-TMMC, each independent canonical
+        simulation at fixed loading N yields the unbiased transition probabilities for
+        trial insertion and deletion:
+
+            P(N -> N + 1; f) = ⟨ min(1, w_ins(N) * f) ⟩_NVT
+            P(N -> N - 1; f) = ⟨ min(1, w_del(N) / f) ⟩_NVT
+
+        Rather than simulating every integer N ∈ [0, N_max] or interpolating ln Π(N)
+        directly, this method exploits the smooth variation of P(N -> N + 1) and
+        P(N -> N - 1) with N (Mazur et al., ACS Appl. Mater. Interfaces 2024, 16,
+        25559-25567). For any unsampled integer macrostate N lying between two adjacent
+        simulated macrostates N_a < N < N_b, both transition probabilities are estimated
+        independently by linear interpolation at each fugacity f:
+
+            P(N -> N ± 1; f) = (1 - α) * P(N_a -> N_a ± 1; f) + α * P(N_b -> N_b ± 1; f)
+
+        where α = (N - N_a) / (N_b - N_a).
+
+        Once the complete transition probability arrays are reconstructed for every
+        integer N ∈ [0, N_max], detailed balance between adjacent macrostates:
+
+            Π(N) * P(N -> N + 1) = Π(N + 1) * P(N + 1 -> N)
+
+        is integrated sequentially starting from an arbitrary reference ln Π(0) = 0:
+
+            ln Π(N + 1) = ln Π(N) + ln[ P(N -> N + 1) / P(N + 1 -> N) ]
+
+        Finally, the distribution is normalized at each fugacity using the Log-Sum-Exp
+        (LSE) trick to prevent numerical overflow or underflow.
+
+        Notes
+        -----
+        At N = 0, P(0 -> -1) = 0 because no molecules can be deleted, whereas the first
+        integration step requires P(1 -> 0). If N = 1 is omitted from the simulated subset,
+        P(1 -> 0) is linearly interpolated from 0, which may introduce small errors at very
+        low pressures. Including N = 1 in the simulated subset avoids this artifact.
+
+        Parameters
+        ----------
+        ins_weights : dict[int, np.ndarray]
+            Dictionary mapping simulated macrostate ``n_mol`` to its pre-computed
+            insertion weight array.
+        del_weights : dict[int, np.ndarray]
+            Dictionary mapping simulated macrostate ``n_mol`` to its pre-computed
+            deletion weight array.
+        fugacities_Pa : np.ndarray
+            1D array of fugacities in Pascal.
+        show_progress : bool, optional
+            If True, shows a progress bar over the simulated macrostates.
+            Default is True.
+
+        Returns
+        -------
+        pi : np.ndarray
+            2D array of the normalized MPD for every integer loading N ∈ [0, N_max]
+            and each fugacity. Shape: ``(N_max + 1, n_press)``.
+        """
+        simulated_N = np.array(sorted(ins_weights.keys()), dtype=int)
+        if len(simulated_N) < 2 or simulated_N[0] != 0:
+            raise ValueError(
+                "Simulated macrostates must include N = 0 and at least one non-zero loading."
+            )
+        if set(simulated_N) != set(del_weights.keys()):
+            raise ValueError(
+                "`ins_weights` and `del_weights` must contain the same macrostate keys."
+            )
+
+        # Convert fugacities from Pascal to ASE units (eV/Å³)
+        fugacity_array = np.asarray(fugacities_Pa, dtype=float) * units.Pascal
+        n_press = len(fugacity_array)
+        n_sampled = len(simulated_N)
+        max_loading = int(simulated_N[-1])
+        full_N = np.arange(0, max_loading + 1, dtype=int)
+
+        # 1. Compute P(N -> N+1) and P(N -> N-1) ONLY at the simulated macrostates
+        p_plus_sparse = np.zeros((n_sampled, n_press), dtype=float)
+        p_minus_sparse = np.zeros((n_sampled, n_press), dtype=float)
+
+        for idx, n_mol in enumerate(
+            tqdm(simulated_N, desc="Computing sparse transition probs", disable=not show_progress)
+        ):
+            ins_acc = np.minimum(1.0, ins_weights[int(n_mol)][:, None] * fugacity_array[None, :])
+            p_plus_sparse[idx] = np.mean(ins_acc, axis=0)
+
+            if n_mol > 0:
+                del_acc = np.minimum(
+                    1.0, del_weights[int(n_mol)][:, None] / fugacity_array[None, :]
+                )
+                p_minus_sparse[idx] = np.mean(del_acc, axis=0)
+
+        # 2. Vectorized linear interpolation of both transition probability curves
+        #    onto every integer macrostate N in [0, max_loading] across all fugacities
+        interval_idx = np.searchsorted(simulated_N, full_N, side="right") - 1
+        interval_idx = np.clip(interval_idx, 0, n_sampled - 2)
+
+        n_left = simulated_N[interval_idx]
+        n_right = simulated_N[interval_idx + 1]
+        alpha = ((full_N - n_left) / (n_right - n_left))[:, None]
+
+        probs_plus = (1.0 - alpha) * p_plus_sparse[interval_idx] + alpha * p_plus_sparse[
+            interval_idx + 1
+        ]
+        probs_minus = (1.0 - alpha) * p_minus_sparse[interval_idx] + alpha * p_minus_sparse[
+            interval_idx + 1
+        ]
+
+        # 3. Numerical safeguard to prevent log(0) in the detailed balance ratio
+        epsilon = 1e-300
+        safe_probs_plus = np.clip(probs_plus[:-1], a_min=epsilon, a_max=None)
+        safe_probs_minus = np.clip(probs_minus[1:], a_min=epsilon, a_max=None)
+
+        # 4. Integrate ln Π(N) via detailed balance
+        lnpi = np.zeros((max_loading + 1, n_press), dtype=float)
+        log_ratios = np.log(safe_probs_plus / safe_probs_minus)
+        lnpi[1:] = np.cumsum(log_ratios, axis=0)
+
+        # 5. Numerically stable normalization using Log-Sum-Exp
+        lnpi -= np.max(lnpi, axis=0, keepdims=True)
+        pi = np.exp(lnpi)
+        pi /= np.sum(pi, axis=0, keepdims=True)
+
+        return pi
+
+    def compute_isotherm_replica_interpolated(
+        self,
+        ins_weights: dict[int, np.ndarray],
+        del_weights: dict[int, np.ndarray],
+        fugacities_Pa: np.ndarray,
+        show_progress: bool = True,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Computes the adsorption isotherm (expected uptake) and interpolated Macrostate
+        Probability Distribution (MPD) for a single replica from a sparse subset of
+        pre-computed insertion and deletion weights.
+
+        This is a convenience wrapper combining ``compute_mpd_interpolated`` (which
+        reconstructs Π(N) over all integer loadings N ∈ [0, N_max] via linear
+        interpolation of transition probabilities) and ``compute_uptake_from_mpd``
+        (which computes the grand canonical ensemble average ⟨N⟩ = Σ_N N * Π(N)).
+
+        Parameters
+        ----------
+        ins_weights : dict[int, np.ndarray]
+            Dictionary mapping simulated macrostate ``n_mol`` to its insertion weight array.
+        del_weights : dict[int, np.ndarray]
+            Dictionary mapping simulated macrostate ``n_mol`` to its deletion weight array.
+        fugacities_Pa : np.ndarray
+            1D array of fugacities in Pascal.
+        show_progress : bool, optional
+            If True, shows a progress bar. Default is True.
+
+        Returns
+        -------
+        uptakes : np.ndarray
+            1D array of expected uptake (molecules per simulation cell) for each fugacity.
+            Shape: ``(n_press,)``.
+        pi_T : np.ndarray
+            2D array of the interpolated MPD, transposed to shape ``(n_press, N_max + 1)``
+            to match ``compute_isotherm_replica``.
+        """
+        pi = self.compute_mpd_interpolated(
+            ins_weights=ins_weights,
+            del_weights=del_weights,
+            fugacities_Pa=fugacities_Pa,
+            show_progress=show_progress,
+        )
+        uptakes = self.compute_uptake_from_mpd(pi)
+
+        return uptakes, pi.T
+
+    def compute_isotherm_interpolated(
+        self,
+        fugacities_Pa: np.ndarray,
+        loadings: list[int] | np.ndarray | None = None,
+        uptake_units: str = "nmol",
+        show_progress: bool = True,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Computes replica-averaged adsorption uptakes and interpolated Macrostate
+        Probability Distributions (MPD) across a list of fugacities from a reduced
+        set of macrostates.
+
+        Supports two workflows:
+        1. **Direct sparse workflow**: Call ``load_tmmc_weights_interpolated`` first,
+           then call this method with ``loadings=None`` to use the loaded subset weights.
+        2. **Subsampling/benchmarking workflow**: If full-macrostate weights were
+           already loaded via ``load_tmmc_weights``, pass a ``loadings`` subset here
+           to slice those weights in memory and test interpolation accuracy without
+           reloading from disk.
+
+        Parameters
+        ----------
+        fugacities_Pa : np.ndarray
+            Array of fugacities in Pascal for which to compute the isotherm.
+        loadings : list[int] | np.ndarray | None, optional
+            Optional subset of macrostates to slice from full weights loaded via
+            ``load_tmmc_weights`` (or to further subsample already-loaded interpolated
+            weights). If ``None``, uses all macrostates loaded by
+            ``load_tmmc_weights_interpolated``. Default is ``None``.
+        uptake_units : str, optional
+            Units in which to report the uptake (must be a key in ``self.conv_factors``).
+            Default is ``"nmol"``.
+        show_progress : bool, optional
+            If True, shows a progress bar during computation. Default is True.
+
+        Returns
+        -------
+        uptakes_average : np.ndarray
+            Expected uptake (in ``uptake_units``) averaged across replicas for each fugacity.
+        uptakes_sd : np.ndarray
+            Standard error of the mean (SEM) for the uptake across replicas.
+        pi_average : np.ndarray
+            2D array of the interpolated MPD averaged across replicas.
+            Shape: ``(n_press, N_max + 1)``.
+        """
+        if uptake_units not in self.conv_factors:
+            raise ValueError(
+                f"Invalid uptake_units '{uptake_units}'. Valid options are: {list(self.conv_factors.keys())}"
+            )
+
+        interp_ins = getattr(self, "interpolated_insertion_weights", None)
+        interp_del = getattr(self, "interpolated_deletion_weights", None)
+
+        if interp_ins and interp_del:
+            if loadings is not None:
+                selected = sorted({int(n) for n in loadings})
+                ins_source = {r: {n: interp_ins[r][n] for n in selected} for r in interp_ins}
+                del_source = {r: {n: interp_del[r][n] for n in selected} for r in interp_del}
+            else:
+                ins_source = interp_ins
+                del_source = interp_del
+        elif self.insertion_weights and self.deletion_weights and loadings is not None:
+            selected = sorted({int(n) for n in loadings})
+            ins_source = {
+                r: {n: self.insertion_weights[r][n] for n in selected}
+                for r in self.insertion_weights
+            }
+            del_source = {
+                r: {n: self.deletion_weights[r][n] for n in selected} for r in self.deletion_weights
+            }
+        else:
+            raise ValueError(
+                "No interpolated weights available. Either run `load_tmmc_weights_interpolated` "
+                "first, or pass `loadings` after running `load_tmmc_weights`."
+            )
+
+        uptakes_list = []
+        pi_list = []
+
+        for replica in sorted(ins_source.keys()):
+            uptakes, pi = self.compute_isotherm_replica_interpolated(
+                ins_weights=ins_source[replica],
+                del_weights=del_source[replica],
+                fugacities_Pa=fugacities_Pa,
+                show_progress=show_progress,
+            )
+            uptakes_list.append(uptakes)
+            pi_list.append(pi)
+
+        n_replicas = len(uptakes_list)
+        uptakes_average = np.mean(uptakes_list, axis=0)
+        ddof = 1 if n_replicas > 1 else 0
+        uptakes_sd = np.std(uptakes_list, axis=0, ddof=ddof) / np.sqrt(n_replicas)
+
+        conv = self.conv_factors[uptake_units][self.adsorbates[0].name]
+        uptakes_average *= conv
+        uptakes_sd *= conv
+
+        pi_average = np.mean(pi_list, axis=0)
+
+        return uptakes_average, uptakes_sd, pi_average
+
     def run_tmmc(self, N_per_frame: int, trajectory_path: str) -> None:
         """
         Run the transition matrix Monte Carlo simulation for N iterations in
