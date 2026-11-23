@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from typing import Any
+import warnings
 
 import ase.io
 import numpy as np
@@ -257,7 +258,7 @@ class Adsorbate:
         for structure in self._structure:
             structure.set_pbc(pbc)  # type: ignore
 
-    def set_calculator(self, calculator: Any) -> None:
+    def set_calculator(self, calculator: Any, overwrite: bool = False) -> None:
         """
         Assigns a calculator to all structures of the adsorbate.
 
@@ -265,7 +266,17 @@ class Adsorbate:
             calculator (Any): An ASE calculator instance.
         """
         for structure in self._structure:
-            structure.calc = calculator  # type: ignore
+            if structure.calc is None:
+                structure.calc = calculator  # type: ignore
+            elif structure.calc is not None and overwrite:
+                structure.calc = calculator  # type: ignore    
+                warnings.warn(
+                    f"Structure {structure} already has a calculator assigned. Overwriting it."
+                )
+            else:
+                warnings.warn(
+                    f"Structure {structure} already has a calculator assigned. Use overwrite=True to replace it."
+                )
 
     def pick_random_move(self, generator: np.random.Generator | None = None) -> str:
         """
