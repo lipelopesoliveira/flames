@@ -776,7 +776,7 @@ class TMMC(BaseSimulator):
 
         The resulting weights are stored as nested dictionaries mapping
         ``replica -> {n_mol: weight_array}`` so that the exact simulated macrostate
-        indices are preserved for subsequent linear interpolation.
+        indices are preserved for subsequent interpolation.
 
         Parameters
         ----------
@@ -876,20 +876,59 @@ class TMMC(BaseSimulator):
 
         return ins_weights, del_weights
 
+    @staticmethod
+    def _linear_interp_2d(
+        x_new: np.ndarray,
+        x_known: np.ndarray,
+        y_known: np.ndarray,
+    ) -> np.ndarray:
+        """
+        Vectorized piecewise linear interpolation along axis 0 of a 2D array.
+
+        If ``x_new`` contains points outside ``[x_known[0], x_known[-1]]``,
+        linearly extrapolates using the nearest boundary interval.
+
+        Parameters
+        ----------
+        x_new : np.ndarray
+            1D array of new x-coordinates where interpolation is desired.
+        x_known : np.ndarray
+            1D array of known x-coordinates corresponding to the rows of ``y_known``
+        y_known : np.ndarray
+            2D array of known y-values, where each row corresponds to a known x-coordinate
+
+        Returns
+        -------
+        np.ndarray
+            2D array of interpolated y-values at ``x_new``, with the same number of columns as ``y_known``.
+        """
+        if len(x_known) == 1:
+            return np.repeat(y_known, len(x_new), axis=0)
+
+        # Find the indices into a sorted array `x_known` such that, if the corresponding elements
+        # in `x_new` were inserted before the indices, the order of `x_known` would be preserved.
+        idx = np.searchsorted(x_known, x_new, side="right") - 1
+        idx = np.clip(idx, 0, len(x_known) - 2)
+
+        x_left = x_known[idx]
+        x_right = x_known[idx + 1]
+        alpha = ((x_new - x_left) / (x_right - x_left))[:, None]
+
+        return (1.0 - alpha) * y_known[idx] + alpha * y_known[idx + 1]
+
     def compute_mpd_interpolated(
         self,
         ins_weights: dict[int, np.ndarray],
         del_weights: dict[int, np.ndarray],
         fugacities_Pa: np.ndarray,
+        interpolation_space: str = "log",
         show_progress: bool = True,
     ) -> np.ndarray:
         """
         Computes the full Macrostate Probability Distribution (MPD or Π) across all
         integer loadings N ∈ [0, N_max] from a sparse subset of simulated macrostates
-        using linear interpolation of transition probabilities.
+        by interpolating the transition probabilities.
 
-        Theoretical Background
-        ----------------------
         In single-macrostate (NVT + ghost swap) GC-TMMC, each independent canonical
         simulation at fixed loading N yields the unbiased transition probabilities for
         trial insertion and deletion:
@@ -897,35 +936,50 @@ class TMMC(BaseSimulator):
         P(N -> N + 1; f) = ⟨ min(1, w_ins(N) * f) ⟩_NVT
         P(N -> N - 1; f) = ⟨ min(1, w_del(N) / f) ⟩_NVT
 
-        Rather than simulating every integer N ∈ [0, N_max] or interpolating ln Π(N)
-        directly, this method exploits the smooth variation of P(N -> N + 1) and
-        P(N -> N - 1) with N (Mazur et al., ACS Appl. Mater. Interfaces 2024, 16,
-        25559-25567). For any unsampled integer macrostate N lying between two adjacent
-        simulated macrostates N_a < N < N_b, both transition probabilities are estimated
-        independently by linear interpolation at each fugacity f:
+        Instead of simulating every integer N ∈ [0, N_max], transition probabilities
+        are evaluated only at a few sampled macrostates and reconstructed across all
+        unsampled integers N lying between adjacent sampled states N_a < N < N_b
+        with α = (N - N_a) / (N_b - N_a):
 
-        P(N -> N ± 1; f) = (1 - α) * P(N_a -> N_a ± 1; f) + α * P(N_b -> N_b ± 1; f)
+        1. **Log-space interpolation** (``interpolation_space="log"``, default):
+        Linearly interpolates the natural logarithms of the transition probabilities
+        directly:
 
-        where α = (N - N_a) / (N_b - N_a).
+        ln P(N -> N + 1; f) = (1 - α) ln P(N_a -> N_a + 1; f) + α ln P(N_b -> N_b + 1; f)
 
-        Once the complete transition probability arrays are reconstructed for every
-        integer N ∈ [0, N_max], detailed balance between adjacent macrostates:
+        ln P(N -> N - 1; f) = (1 - α) ln P(N_a -> N_a - 1; f) + α ln P(N_b -> N_b - 1; f)
+
+        Because detailed balance integrates the *logarithm* of the transition probability
+        ratio—corresponding to the discrete derivative of the free energy landscape
+        ∂(ln Π)/∂N—interpolating in log-space is exact when P(N) varies exponentially
+        with N (e.g., near pore saturation or across free-energy barriers), prevents 
+        overestimation across steep probability drops, and strictly guarantees P > 0 everywhere.
+
+        2. **Linear-space interpolation** (``interpolation_space="linear"``):
+        Linearly interpolates P(N -> N ± 1; f) directly before taking the logarithm,
+        following Mazur et al. (ACS Appl. Mater. Interfaces 2024, 16, 25559-25567).
+
+        Once the complete transition probability profiles are obtained for all
+        N ∈ [0, N_max], equilibrium detailed balance between adjacent macrostates:
 
         Π(N) * P(N -> N + 1) = Π(N + 1) * P(N + 1 -> N)
 
         is integrated sequentially starting from an arbitrary reference ln Π(0) = 0:
 
-        ln Π(N + 1) = ln Π(N) + ln[ P(N -> N + 1) / P(N + 1 -> N) ]
+        ln Π(N + 1) = ln Π(N) + ln P(N -> N + 1) - ln P(N + 1 -> N)
 
-        Finally, the distribution is normalized at each fugacity using the Log-Sum-Exp
-        (LSE) trick to prevent numerical overflow or underflow.
+        Finally, Π(N) is normalized at each fugacity using the Log-Sum-Exp (LSE)
+        trick to prevent numerical overflow or underflow.
 
         Notes
         -----
-        At N = 0, P(0 -> -1) = 0 because no molecules can be deleted, whereas the first
-        integration step requires P(1 -> 0). If N = 1 is omitted from the simulated subset,
-        P(1 -> 0) is linearly interpolated from 0, which may introduce small errors at very
-        low pressures. Including N = 1 in the simulated subset avoids this artifact.
+        At N = 0, deletion is impossible so P(0 -> -1) = 0 and ln P(0 -> -1) = -∞.
+        In log-space mode, N = 0 is therefore excluded from the deletion anchors and
+        ln P(N -> N - 1) is interpolated using only sampled macrostates with N ≥ 1.
+        **Including N = 1 in the sampled subset is strongly recommended** so that
+        all deletion probabilities on N ∈ [1, N_max] are purely interpolated. If
+        N = 1 is absent, ln P(N -> N - 1) is linearly extrapolated backward from
+        the first two non-zero sampled macrostates and clipped to [ln(1e-300), 0].
 
         Parameters
         ----------
@@ -937,6 +991,10 @@ class TMMC(BaseSimulator):
             deletion weight array.
         fugacities_Pa : np.ndarray
             1D array of fugacities in Pascal.
+        interpolation_space : str, optional
+            Space in which piecewise linear interpolation is performed:
+            ``"log"`` (interpolates ln P) or ``"linear"`` (interpolates P).
+            Default is ``"log"``.
         show_progress : bool, optional
             If True, shows a progress bar over the simulated macrostates.
             Default is True.
@@ -947,6 +1005,12 @@ class TMMC(BaseSimulator):
             2D array of the normalized MPD for every integer loading N ∈ [0, N_max]
             and each fugacity. Shape: ``(N_max + 1, n_press)``.
         """
+        if interpolation_space not in ("log", "linear"):
+            raise ValueError(
+                f"Invalid interpolation_space '{interpolation_space}'. "
+                "Expected 'log' or 'linear'."
+            )
+
         simulated_N = np.array(sorted(ins_weights.keys()), dtype=int)
         if len(simulated_N) < 2 or simulated_N[0] != 0:
             raise ValueError(
@@ -964,7 +1028,7 @@ class TMMC(BaseSimulator):
         max_loading = int(simulated_N[-1])
         full_N = np.arange(0, max_loading + 1, dtype=int)
 
-        # 1. Compute P(N -> N+1) and P(N -> N-1) ONLY at the simulated macrostates
+        # Compute P(N -> N+1) and P(N -> N-1) ONLY at the simulated macrostates
         p_plus_sparse = np.zeros((n_sampled, n_press), dtype=float)
         p_minus_sparse = np.zeros((n_sampled, n_press), dtype=float)
 
@@ -980,33 +1044,46 @@ class TMMC(BaseSimulator):
                 )
                 p_minus_sparse[idx] = np.mean(del_acc, axis=0)
 
-        # 2. Vectorized linear interpolation of both transition probability curves
-        #    onto every integer macrostate N in [0, max_loading] across all fugacities
-        interval_idx = np.searchsorted(simulated_N, full_N, side="right") - 1
-        interval_idx = np.clip(interval_idx, 0, n_sampled - 2)
-
-        n_left = simulated_N[interval_idx]
-        n_right = simulated_N[interval_idx + 1]
-        alpha = ((full_N - n_left) / (n_right - n_left))[:, None]
-
-        probs_plus = (1.0 - alpha) * p_plus_sparse[interval_idx] + alpha * p_plus_sparse[
-            interval_idx + 1
-        ]
-        probs_minus = (1.0 - alpha) * p_minus_sparse[interval_idx] + alpha * p_minus_sparse[
-            interval_idx + 1
-        ]
-
-        # 3. Numerical safeguard to prevent log(0) in the detailed balance ratio
         epsilon = 1e-300
-        safe_probs_plus = np.clip(probs_plus[:-1], a_min=epsilon, a_max=None)
-        safe_probs_minus = np.clip(probs_minus[1:], a_min=epsilon, a_max=None)
+        log_eps = np.log(epsilon)
 
-        # 4. Integrate ln Π(N) via detailed balance
+        # Interpolate onto the full integer grid N ∈ [0, max_loading]
+        if interpolation_space == "log":
+            # Insertion: interpolate ln P(N -> N+1) on N ∈ [0, max_loading - 1]
+            log_p_plus_sparse = np.log(np.clip(p_plus_sparse, a_min=epsilon, a_max=1.0))
+            log_probs_plus = self._linear_interp_2d(full_N[:-1], simulated_N, log_p_plus_sparse)
+
+            # Deletion: exclude N = 0 (where P_del = 0) and interpolate ln P(N -> N-1) on N ∈ [1, max_loading]
+            simulated_N_del = simulated_N[1:]
+            if simulated_N_del[0] > 1:
+                self.logger._print_warning(
+                    f"WARNING: N = 1 is not in the sampled macrostates (lowest non-zero N is "
+                    f"{simulated_N_del[0]}). Linearly extrapolating ln P_del backward to N = 1; "
+                    "include N = 1 in `loadings` for higher low-pressure accuracy."
+                )
+
+            log_p_minus_sparse = np.log(np.clip(p_minus_sparse[1:], a_min=epsilon, a_max=1.0))
+            log_probs_minus = self._linear_interp_2d(
+                full_N[1:], simulated_N_del, log_p_minus_sparse
+            )
+            # Enforce physical probability bounds [epsilon, 1.0] in log-space after any backward extrapolation
+            log_probs_minus = np.clip(log_probs_minus, a_min=log_eps, a_max=0.0)
+
+            log_ratios = log_probs_plus - log_probs_minus
+
+        else:
+            probs_plus = self._linear_interp_2d(full_N[:-1], simulated_N, p_plus_sparse)
+            probs_minus = self._linear_interp_2d(full_N[1:], simulated_N, p_minus_sparse)
+
+            safe_probs_plus = np.clip(probs_plus, a_min=epsilon, a_max=None)
+            safe_probs_minus = np.clip(probs_minus, a_min=epsilon, a_max=None)
+            log_ratios = np.log(safe_probs_plus / safe_probs_minus)
+
+        # Integrate ln Π(N) via detailed balance
         lnpi = np.zeros((max_loading + 1, n_press), dtype=float)
-        log_ratios = np.log(safe_probs_plus / safe_probs_minus)
         lnpi[1:] = np.cumsum(log_ratios, axis=0)
 
-        # 5. Numerically stable normalization using Log-Sum-Exp
+        # Numerically stable normalization using Log-Sum-Exp
         lnpi -= np.max(lnpi, axis=0, keepdims=True)
         pi = np.exp(lnpi)
         pi /= np.sum(pi, axis=0, keepdims=True)
@@ -1018,6 +1095,7 @@ class TMMC(BaseSimulator):
         ins_weights: dict[int, np.ndarray],
         del_weights: dict[int, np.ndarray],
         fugacities_Pa: np.ndarray,
+        interpolation_space: str = "log",
         show_progress: bool = True,
     ) -> tuple[np.ndarray, np.ndarray]:
         """
@@ -1025,10 +1103,8 @@ class TMMC(BaseSimulator):
         Probability Distribution (MPD) for a single replica from a sparse subset of
         pre-computed insertion and deletion weights.
 
-        This is a convenience wrapper combining ``compute_mpd_interpolated`` (which
-        reconstructs Π(N) over all integer loadings N ∈ [0, N_max] via linear
-        interpolation of transition probabilities) and ``compute_uptake_from_mpd``
-        (which computes the grand canonical ensemble average ⟨N⟩ = Σ_N N * Π(N)).
+        Convenience wrapper combining ``compute_mpd_interpolated`` and
+        ``compute_uptake_from_mpd``.
 
         Parameters
         ----------
@@ -1038,6 +1114,9 @@ class TMMC(BaseSimulator):
             Dictionary mapping simulated macrostate ``n_mol`` to its deletion weight array.
         fugacities_Pa : np.ndarray
             1D array of fugacities in Pascal.
+        interpolation_space : str, optional
+            Space in which transition probabilities are interpolated: ``"log"``
+            (default) or ``"linear"``.
         show_progress : bool, optional
             If True, shows a progress bar. Default is True.
 
@@ -1047,13 +1126,13 @@ class TMMC(BaseSimulator):
             1D array of expected uptake (molecules per simulation cell) for each fugacity.
             Shape: ``(n_press,)``.
         pi_T : np.ndarray
-            2D array of the interpolated MPD, transposed to shape ``(n_press, N_max + 1)``
-            to match ``compute_isotherm_replica``.
+            2D array of the interpolated MPD, transposed to shape ``(n_press, N_max + 1)``.
         """
         pi = self.compute_mpd_interpolated(
             ins_weights=ins_weights,
             del_weights=del_weights,
             fugacities_Pa=fugacities_Pa,
+            interpolation_space=interpolation_space,
             show_progress=show_progress,
         )
         uptakes = self.compute_uptake_from_mpd(pi)
@@ -1064,6 +1143,7 @@ class TMMC(BaseSimulator):
         self,
         fugacities_Pa: np.ndarray,
         loadings: list[int] | np.ndarray | None = None,
+        interpolation_space: str = "log",
         uptake_units: str = "nmol",
         show_progress: bool = True,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -1074,12 +1154,11 @@ class TMMC(BaseSimulator):
 
         Supports two workflows:
         1. **Direct sparse workflow**: Call ``load_tmmc_weights_interpolated`` first,
-        then call this method with ``loadings=None`` to use the loaded subset weights.
-
+           then call this method with ``loadings=None`` to use the loaded subset weights.
         2. **Subsampling/benchmarking workflow**: If full-macrostate weights were
-        already loaded via ``load_tmmc_weights``, pass a ``loadings`` subset here
-        to slice those weights in memory and test interpolation accuracy without
-        reloading from disk.
+           already loaded via ``load_tmmc_weights``, pass a ``loadings`` subset here
+           to slice those weights in memory and benchmark interpolation accuracy
+           without reloading from disk.
 
         Parameters
         ----------
@@ -1090,6 +1169,9 @@ class TMMC(BaseSimulator):
             ``load_tmmc_weights`` (or to further subsample already-loaded interpolated
             weights). If ``None``, uses all macrostates loaded by
             ``load_tmmc_weights_interpolated``. Default is ``None``.
+        interpolation_space : str, optional
+            Space in which transition probabilities are interpolated: ``"log"``
+            (interpolates ln P, default) or ``"linear"`` (interpolates P directly).
         uptake_units : str, optional
             Units in which to report the uptake (must be a key in ``self.conv_factors``).
             Default is ``"nmol"``.
@@ -1116,20 +1198,21 @@ class TMMC(BaseSimulator):
 
         if interp_ins and interp_del:
             if loadings is not None:
-                selected = sorted({int(n) for n in loadings})
+                selected = sorted(set(int(n) for n in loadings))
                 ins_source = {r: {n: interp_ins[r][n] for n in selected} for r in interp_ins}
                 del_source = {r: {n: interp_del[r][n] for n in selected} for r in interp_del}
             else:
                 ins_source = interp_ins
                 del_source = interp_del
         elif self.insertion_weights and self.deletion_weights and loadings is not None:
-            selected = sorted({int(n) for n in loadings})
+            selected = sorted(set(int(n) for n in loadings))
             ins_source = {
                 r: {n: self.insertion_weights[r][n] for n in selected}
                 for r in self.insertion_weights
             }
             del_source = {
-                r: {n: self.deletion_weights[r][n] for n in selected} for r in self.deletion_weights
+                r: {n: self.deletion_weights[r][n] for n in selected}
+                for r in self.deletion_weights
             }
         else:
             raise ValueError(
@@ -1145,6 +1228,7 @@ class TMMC(BaseSimulator):
                 ins_weights=ins_source[replica],
                 del_weights=del_source[replica],
                 fugacities_Pa=fugacities_Pa,
+                interpolation_space=interpolation_space,
                 show_progress=show_progress,
             )
             uptakes_list.append(uptakes)
