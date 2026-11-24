@@ -382,8 +382,9 @@ class TMMC(BaseSimulator):
         atoms_trial = self.current_system.copy()
         atoms_trial.calc = self.calculator  # type: ignore
 
+        # Separate the adsorbate atoms to be deleted and calculate their energy using the adsorbate calculator
         to_delete = atoms_trial[ads_indices[0] : ads_indices[-1] + 1]  # type: ignore
-        to_delete.calc = self.calculator  # type: ignore
+        to_delete.calc = self.adsorbate_calculator  # type: ignore
         to_delete_energy = to_delete.get_potential_energy()  # type: ignore
 
         # Delete the selected adsorbate atoms from the trial structure
@@ -952,7 +953,7 @@ class TMMC(BaseSimulator):
         Because detailed balance integrates the *logarithm* of the transition probability
         ratio—corresponding to the discrete derivative of the free energy landscape
         ∂(ln Π)/∂N—interpolating in log-space is exact when P(N) varies exponentially
-        with N (e.g., near pore saturation or across free-energy barriers), prevents 
+        with N (e.g., near pore saturation or across free-energy barriers), prevents
         overestimation across steep probability drops, and strictly guarantees P > 0 everywhere.
 
         2. **Linear-space interpolation** (``interpolation_space="linear"``):
@@ -1154,11 +1155,11 @@ class TMMC(BaseSimulator):
 
         Supports two workflows:
         1. **Direct sparse workflow**: Call ``load_tmmc_weights_interpolated`` first,
-           then call this method with ``loadings=None`` to use the loaded subset weights.
+        then call this method with ``loadings=None`` to use the loaded subset weights.
         2. **Subsampling/benchmarking workflow**: If full-macrostate weights were
-           already loaded via ``load_tmmc_weights``, pass a ``loadings`` subset here
-           to slice those weights in memory and benchmark interpolation accuracy
-           without reloading from disk.
+        already loaded via ``load_tmmc_weights``, pass a ``loadings`` subset here
+        to slice those weights in memory and benchmark interpolation accuracy
+        without reloading from disk.
 
         Parameters
         ----------
@@ -1198,21 +1199,20 @@ class TMMC(BaseSimulator):
 
         if interp_ins and interp_del:
             if loadings is not None:
-                selected = sorted(set(int(n) for n in loadings))
+                selected = sorted({int(n) for n in loadings})
                 ins_source = {r: {n: interp_ins[r][n] for n in selected} for r in interp_ins}
                 del_source = {r: {n: interp_del[r][n] for n in selected} for r in interp_del}
             else:
                 ins_source = interp_ins
                 del_source = interp_del
         elif self.insertion_weights and self.deletion_weights and loadings is not None:
-            selected = sorted(set(int(n) for n in loadings))
+            selected = sorted({int(n) for n in loadings})
             ins_source = {
                 r: {n: self.insertion_weights[r][n] for n in selected}
                 for r in self.insertion_weights
             }
             del_source = {
-                r: {n: self.deletion_weights[r][n] for n in selected}
-                for r in self.deletion_weights
+                r: {n: self.deletion_weights[r][n] for n in selected} for r in self.deletion_weights
             }
         else:
             raise ValueError(

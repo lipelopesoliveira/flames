@@ -679,8 +679,9 @@
         <span class="n">atoms_trial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_system</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">atoms_trial</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span>  <span class="c1"># type: ignore</span>
 
+        <span class="c1"># Separate the adsorbate atoms to be deleted and calculate their energy using the adsorbate calculator</span>
         <span class="n">to_delete</span> <span class="o">=</span> <span class="n">atoms_trial</span><span class="p">[</span><span class="n">ads_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">ads_indices</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># type: ignore</span>
-        <span class="n">to_delete</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span>  <span class="c1"># type: ignore</span>
+        <span class="n">to_delete</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_calculator</span>  <span class="c1"># type: ignore</span>
         <span class="n">to_delete_energy</span> <span class="o">=</span> <span class="n">to_delete</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
 
         <span class="c1"># Delete the selected adsorbate atoms from the trial structure</span>
@@ -1094,7 +1095,7 @@
 
 <span class="sd">        The resulting weights are stored as nested dictionaries mapping</span>
 <span class="sd">        ``replica -&gt; {n_mol: weight_array}`` so that the exact simulated macrostate</span>
-<span class="sd">        indices are preserved for subsequent linear interpolation.</span>
+<span class="sd">        indices are preserved for subsequent interpolation.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1195,6 +1196,46 @@
         <span class="k">return</span> <span class="n">ins_weights</span><span class="p">,</span> <span class="n">del_weights</span></div>
 
 
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_linear_interp_2d</span><span class="p">(</span>
+        <span class="n">x_new</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">x_known</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">y_known</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Vectorized piecewise linear interpolation along axis 0 of a 2D array.</span>
+
+<span class="sd">        If ``x_new`` contains points outside ``[x_known[0], x_known[-1]]``,</span>
+<span class="sd">        linearly extrapolates using the nearest boundary interval.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x_new : np.ndarray</span>
+<span class="sd">            1D array of new x-coordinates where interpolation is desired.</span>
+<span class="sd">        x_known : np.ndarray</span>
+<span class="sd">            1D array of known x-coordinates corresponding to the rows of ``y_known``</span>
+<span class="sd">        y_known : np.ndarray</span>
+<span class="sd">            2D array of known y-values, where each row corresponds to a known x-coordinate</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        np.ndarray</span>
+<span class="sd">            2D array of interpolated y-values at ``x_new``, with the same number of columns as ``y_known``.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_known</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">y_known</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_new</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Find the indices into a sorted array `x_known` such that, if the corresponding elements</span>
+        <span class="c1"># in `x_new` were inserted before the indices, the order of `x_known` would be preserved.</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">x_known</span><span class="p">,</span> <span class="n">x_new</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s2">"right"</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_known</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">x_left</span> <span class="o">=</span> <span class="n">x_known</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="n">x_right</span> <span class="o">=</span> <span class="n">x_known</span><span class="p">[</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="p">((</span><span class="n">x_new</span> <span class="o">-</span> <span class="n">x_left</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">x_right</span> <span class="o">-</span> <span class="n">x_left</span><span class="p">))[:,</span> <span class="kc">None</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">y_known</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">+</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">y_known</span><span class="p">[</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+
 <div class="viewcode-block" id="TMMC.compute_mpd_interpolated">
 <a class="viewcode-back" href="../../input_description/tmmc.html#flames.tmmc.TMMC.compute_mpd_interpolated">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">compute_mpd_interpolated</span><span class="p">(</span>
@@ -1202,15 +1243,14 @@
         <span class="n">ins_weights</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
         <span class="n">del_weights</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
         <span class="n">fugacities_Pa</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">interpolation_space</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"log"</span><span class="p">,</span>
         <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Computes the full Macrostate Probability Distribution (MPD or Π) across all</span>
 <span class="sd">        integer loadings N ∈ [0, N_max] from a sparse subset of simulated macrostates</span>
-<span class="sd">        using linear interpolation of transition probabilities.</span>
+<span class="sd">        by interpolating the transition probabilities.</span>
 
-<span class="sd">        Theoretical Background</span>
-<span class="sd">        ----------------------</span>
 <span class="sd">        In single-macrostate (NVT + ghost swap) GC-TMMC, each independent canonical</span>
 <span class="sd">        simulation at fixed loading N yields the unbiased transition probabilities for</span>
 <span class="sd">        trial insertion and deletion:</span>
@@ -1218,35 +1258,50 @@
 <span class="sd">        P(N -&gt; N + 1; f) = ⟨ min(1, w_ins(N) * f) ⟩_NVT</span>
 <span class="sd">        P(N -&gt; N - 1; f) = ⟨ min(1, w_del(N) / f) ⟩_NVT</span>
 
-<span class="sd">        Rather than simulating every integer N ∈ [0, N_max] or interpolating ln Π(N)</span>
-<span class="sd">        directly, this method exploits the smooth variation of P(N -&gt; N + 1) and</span>
-<span class="sd">        P(N -&gt; N - 1) with N (Mazur et al., ACS Appl. Mater. Interfaces 2024, 16,</span>
-<span class="sd">        25559-25567). For any unsampled integer macrostate N lying between two adjacent</span>
-<span class="sd">        simulated macrostates N_a &lt; N &lt; N_b, both transition probabilities are estimated</span>
-<span class="sd">        independently by linear interpolation at each fugacity f:</span>
+<span class="sd">        Instead of simulating every integer N ∈ [0, N_max], transition probabilities</span>
+<span class="sd">        are evaluated only at a few sampled macrostates and reconstructed across all</span>
+<span class="sd">        unsampled integers N lying between adjacent sampled states N_a &lt; N &lt; N_b</span>
+<span class="sd">        with α = (N - N_a) / (N_b - N_a):</span>
 
-<span class="sd">        P(N -&gt; N ± 1; f) = (1 - α) * P(N_a -&gt; N_a ± 1; f) + α * P(N_b -&gt; N_b ± 1; f)</span>
+<span class="sd">        1. **Log-space interpolation** (``interpolation_space="log"``, default):</span>
+<span class="sd">        Linearly interpolates the natural logarithms of the transition probabilities</span>
+<span class="sd">        directly:</span>
 
-<span class="sd">        where α = (N - N_a) / (N_b - N_a).</span>
+<span class="sd">        ln P(N -&gt; N + 1; f) = (1 - α) ln P(N_a -&gt; N_a + 1; f) + α ln P(N_b -&gt; N_b + 1; f)</span>
 
-<span class="sd">        Once the complete transition probability arrays are reconstructed for every</span>
-<span class="sd">        integer N ∈ [0, N_max], detailed balance between adjacent macrostates:</span>
+<span class="sd">        ln P(N -&gt; N - 1; f) = (1 - α) ln P(N_a -&gt; N_a - 1; f) + α ln P(N_b -&gt; N_b - 1; f)</span>
+
+<span class="sd">        Because detailed balance integrates the *logarithm* of the transition probability</span>
+<span class="sd">        ratio—corresponding to the discrete derivative of the free energy landscape</span>
+<span class="sd">        ∂(ln Π)/∂N—interpolating in log-space is exact when P(N) varies exponentially</span>
+<span class="sd">        with N (e.g., near pore saturation or across free-energy barriers), prevents</span>
+<span class="sd">        overestimation across steep probability drops, and strictly guarantees P &gt; 0 everywhere.</span>
+
+<span class="sd">        2. **Linear-space interpolation** (``interpolation_space="linear"``):</span>
+<span class="sd">        Linearly interpolates P(N -&gt; N ± 1; f) directly before taking the logarithm,</span>
+<span class="sd">        following Mazur et al. (ACS Appl. Mater. Interfaces 2024, 16, 25559-25567).</span>
+
+<span class="sd">        Once the complete transition probability profiles are obtained for all</span>
+<span class="sd">        N ∈ [0, N_max], equilibrium detailed balance between adjacent macrostates:</span>
 
 <span class="sd">        Π(N) * P(N -&gt; N + 1) = Π(N + 1) * P(N + 1 -&gt; N)</span>
 
 <span class="sd">        is integrated sequentially starting from an arbitrary reference ln Π(0) = 0:</span>
 
-<span class="sd">        ln Π(N + 1) = ln Π(N) + ln[ P(N -&gt; N + 1) / P(N + 1 -&gt; N) ]</span>
+<span class="sd">        ln Π(N + 1) = ln Π(N) + ln P(N -&gt; N + 1) - ln P(N + 1 -&gt; N)</span>
 
-<span class="sd">        Finally, the distribution is normalized at each fugacity using the Log-Sum-Exp</span>
-<span class="sd">        (LSE) trick to prevent numerical overflow or underflow.</span>
+<span class="sd">        Finally, Π(N) is normalized at each fugacity using the Log-Sum-Exp (LSE)</span>
+<span class="sd">        trick to prevent numerical overflow or underflow.</span>
 
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
-<span class="sd">        At N = 0, P(0 -&gt; -1) = 0 because no molecules can be deleted, whereas the first</span>
-<span class="sd">        integration step requires P(1 -&gt; 0). If N = 1 is omitted from the simulated subset,</span>
-<span class="sd">        P(1 -&gt; 0) is linearly interpolated from 0, which may introduce small errors at very</span>
-<span class="sd">        low pressures. Including N = 1 in the simulated subset avoids this artifact.</span>
+<span class="sd">        At N = 0, deletion is impossible so P(0 -&gt; -1) = 0 and ln P(0 -&gt; -1) = -∞.</span>
+<span class="sd">        In log-space mode, N = 0 is therefore excluded from the deletion anchors and</span>
+<span class="sd">        ln P(N -&gt; N - 1) is interpolated using only sampled macrostates with N ≥ 1.</span>
+<span class="sd">        **Including N = 1 in the sampled subset is strongly recommended** so that</span>
+<span class="sd">        all deletion probabilities on N ∈ [1, N_max] are purely interpolated. If</span>
+<span class="sd">        N = 1 is absent, ln P(N -&gt; N - 1) is linearly extrapolated backward from</span>
+<span class="sd">        the first two non-zero sampled macrostates and clipped to [ln(1e-300), 0].</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1258,6 +1313,10 @@
 <span class="sd">            deletion weight array.</span>
 <span class="sd">        fugacities_Pa : np.ndarray</span>
 <span class="sd">            1D array of fugacities in Pascal.</span>
+<span class="sd">        interpolation_space : str, optional</span>
+<span class="sd">            Space in which piecewise linear interpolation is performed:</span>
+<span class="sd">            ``"log"`` (interpolates ln P) or ``"linear"`` (interpolates P).</span>
+<span class="sd">            Default is ``"log"``.</span>
 <span class="sd">        show_progress : bool, optional</span>
 <span class="sd">            If True, shows a progress bar over the simulated macrostates.</span>
 <span class="sd">            Default is True.</span>
@@ -1268,6 +1327,12 @@
 <span class="sd">            2D array of the normalized MPD for every integer loading N ∈ [0, N_max]</span>
 <span class="sd">            and each fugacity. Shape: ``(N_max + 1, n_press)``.</span>
 <span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">interpolation_space</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"log"</span><span class="p">,</span> <span class="s2">"linear"</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Invalid interpolation_space '</span><span class="si">{</span><span class="n">interpolation_space</span><span class="si">}</span><span class="s2">'. "</span>
+                <span class="s2">"Expected 'log' or 'linear'."</span>
+            <span class="p">)</span>
+
         <span class="n">simulated_N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">ins_weights</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">simulated_N</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">simulated_N</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
@@ -1285,7 +1350,7 @@
         <span class="n">max_loading</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">simulated_N</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
         <span class="n">full_N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_loading</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
 
-        <span class="c1"># 1. Compute P(N -&gt; N+1) and P(N -&gt; N-1) ONLY at the simulated macrostates</span>
+        <span class="c1"># Compute P(N -&gt; N+1) and P(N -&gt; N-1) ONLY at the simulated macrostates</span>
         <span class="n">p_plus_sparse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_sampled</span><span class="p">,</span> <span class="n">n_press</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="n">p_minus_sparse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_sampled</span><span class="p">,</span> <span class="n">n_press</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 
@@ -1301,33 +1366,46 @@
                 <span class="p">)</span>
                 <span class="n">p_minus_sparse</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">del_acc</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
-        <span class="c1"># 2. Vectorized linear interpolation of both transition probability curves</span>
-        <span class="c1">#    onto every integer macrostate N in [0, max_loading] across all fugacities</span>
-        <span class="n">interval_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">simulated_N</span><span class="p">,</span> <span class="n">full_N</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s2">"right"</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
-        <span class="n">interval_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">interval_idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">n_sampled</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
-
-        <span class="n">n_left</span> <span class="o">=</span> <span class="n">simulated_N</span><span class="p">[</span><span class="n">interval_idx</span><span class="p">]</span>
-        <span class="n">n_right</span> <span class="o">=</span> <span class="n">simulated_N</span><span class="p">[</span><span class="n">interval_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
-        <span class="n">alpha</span> <span class="o">=</span> <span class="p">((</span><span class="n">full_N</span> <span class="o">-</span> <span class="n">n_left</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_right</span> <span class="o">-</span> <span class="n">n_left</span><span class="p">))[:,</span> <span class="kc">None</span><span class="p">]</span>
-
-        <span class="n">probs_plus</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">p_plus_sparse</span><span class="p">[</span><span class="n">interval_idx</span><span class="p">]</span> <span class="o">+</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">p_plus_sparse</span><span class="p">[</span>
-            <span class="n">interval_idx</span> <span class="o">+</span> <span class="mi">1</span>
-        <span class="p">]</span>
-        <span class="n">probs_minus</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">p_minus_sparse</span><span class="p">[</span><span class="n">interval_idx</span><span class="p">]</span> <span class="o">+</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">p_minus_sparse</span><span class="p">[</span>
-            <span class="n">interval_idx</span> <span class="o">+</span> <span class="mi">1</span>
-        <span class="p">]</span>
-
-        <span class="c1"># 3. Numerical safeguard to prevent log(0) in the detailed balance ratio</span>
         <span class="n">epsilon</span> <span class="o">=</span> <span class="mf">1e-300</span>
-        <span class="n">safe_probs_plus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">probs_plus</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">a_min</span><span class="o">=</span><span class="n">epsilon</span><span class="p">,</span> <span class="n">a_max</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-        <span class="n">safe_probs_minus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">probs_minus</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">a_min</span><span class="o">=</span><span class="n">epsilon</span><span class="p">,</span> <span class="n">a_max</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">log_eps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">epsilon</span><span class="p">)</span>
 
-        <span class="c1"># 4. Integrate ln Π(N) via detailed balance</span>
+        <span class="c1"># Interpolate onto the full integer grid N ∈ [0, max_loading]</span>
+        <span class="k">if</span> <span class="n">interpolation_space</span> <span class="o">==</span> <span class="s2">"log"</span><span class="p">:</span>
+            <span class="c1"># Insertion: interpolate ln P(N -&gt; N+1) on N ∈ [0, max_loading - 1]</span>
+            <span class="n">log_p_plus_sparse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">p_plus_sparse</span><span class="p">,</span> <span class="n">a_min</span><span class="o">=</span><span class="n">epsilon</span><span class="p">,</span> <span class="n">a_max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">))</span>
+            <span class="n">log_probs_plus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_linear_interp_2d</span><span class="p">(</span><span class="n">full_N</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">simulated_N</span><span class="p">,</span> <span class="n">log_p_plus_sparse</span><span class="p">)</span>
+
+            <span class="c1"># Deletion: exclude N = 0 (where P_del = 0) and interpolate ln P(N -&gt; N-1) on N ∈ [1, max_loading]</span>
+            <span class="n">simulated_N_del</span> <span class="o">=</span> <span class="n">simulated_N</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="k">if</span> <span class="n">simulated_N_del</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">_print_warning</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"WARNING: N = 1 is not in the sampled macrostates (lowest non-zero N is "</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">simulated_N_del</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">). Linearly extrapolating ln P_del backward to N = 1; "</span>
+                    <span class="s2">"include N = 1 in `loadings` for higher low-pressure accuracy."</span>
+                <span class="p">)</span>
+
+            <span class="n">log_p_minus_sparse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">p_minus_sparse</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">a_min</span><span class="o">=</span><span class="n">epsilon</span><span class="p">,</span> <span class="n">a_max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">))</span>
+            <span class="n">log_probs_minus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_linear_interp_2d</span><span class="p">(</span>
+                <span class="n">full_N</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">simulated_N_del</span><span class="p">,</span> <span class="n">log_p_minus_sparse</span>
+            <span class="p">)</span>
+            <span class="c1"># Enforce physical probability bounds [epsilon, 1.0] in log-space after any backward extrapolation</span>
+            <span class="n">log_probs_minus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">log_probs_minus</span><span class="p">,</span> <span class="n">a_min</span><span class="o">=</span><span class="n">log_eps</span><span class="p">,</span> <span class="n">a_max</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+
+            <span class="n">log_ratios</span> <span class="o">=</span> <span class="n">log_probs_plus</span> <span class="o">-</span> <span class="n">log_probs_minus</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">probs_plus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_linear_interp_2d</span><span class="p">(</span><span class="n">full_N</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">simulated_N</span><span class="p">,</span> <span class="n">p_plus_sparse</span><span class="p">)</span>
+            <span class="n">probs_minus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_linear_interp_2d</span><span class="p">(</span><span class="n">full_N</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">simulated_N</span><span class="p">,</span> <span class="n">p_minus_sparse</span><span class="p">)</span>
+
+            <span class="n">safe_probs_plus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">probs_plus</span><span class="p">,</span> <span class="n">a_min</span><span class="o">=</span><span class="n">epsilon</span><span class="p">,</span> <span class="n">a_max</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+            <span class="n">safe_probs_minus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">probs_minus</span><span class="p">,</span> <span class="n">a_min</span><span class="o">=</span><span class="n">epsilon</span><span class="p">,</span> <span class="n">a_max</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+            <span class="n">log_ratios</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">safe_probs_plus</span> <span class="o">/</span> <span class="n">safe_probs_minus</span><span class="p">)</span>
+
+        <span class="c1"># Integrate ln Π(N) via detailed balance</span>
         <span class="n">lnpi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">max_loading</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_press</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-        <span class="n">log_ratios</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">safe_probs_plus</span> <span class="o">/</span> <span class="n">safe_probs_minus</span><span class="p">)</span>
         <span class="n">lnpi</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">log_ratios</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
-        <span class="c1"># 5. Numerically stable normalization using Log-Sum-Exp</span>
+        <span class="c1"># Numerically stable normalization using Log-Sum-Exp</span>
         <span class="n">lnpi</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">lnpi</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">pi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">lnpi</span><span class="p">)</span>
         <span class="n">pi</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pi</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -1342,6 +1420,7 @@
         <span class="n">ins_weights</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
         <span class="n">del_weights</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
         <span class="n">fugacities_Pa</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">interpolation_space</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"log"</span><span class="p">,</span>
         <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
@@ -1349,10 +1428,8 @@
 <span class="sd">        Probability Distribution (MPD) for a single replica from a sparse subset of</span>
 <span class="sd">        pre-computed insertion and deletion weights.</span>
 
-<span class="sd">        This is a convenience wrapper combining ``compute_mpd_interpolated`` (which</span>
-<span class="sd">        reconstructs Π(N) over all integer loadings N ∈ [0, N_max] via linear</span>
-<span class="sd">        interpolation of transition probabilities) and ``compute_uptake_from_mpd``</span>
-<span class="sd">        (which computes the grand canonical ensemble average ⟨N⟩ = Σ_N N * Π(N)).</span>
+<span class="sd">        Convenience wrapper combining ``compute_mpd_interpolated`` and</span>
+<span class="sd">        ``compute_uptake_from_mpd``.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1362,6 +1439,9 @@
 <span class="sd">            Dictionary mapping simulated macrostate ``n_mol`` to its deletion weight array.</span>
 <span class="sd">        fugacities_Pa : np.ndarray</span>
 <span class="sd">            1D array of fugacities in Pascal.</span>
+<span class="sd">        interpolation_space : str, optional</span>
+<span class="sd">            Space in which transition probabilities are interpolated: ``"log"``</span>
+<span class="sd">            (default) or ``"linear"``.</span>
 <span class="sd">        show_progress : bool, optional</span>
 <span class="sd">            If True, shows a progress bar. Default is True.</span>
 
@@ -1371,13 +1451,13 @@
 <span class="sd">            1D array of expected uptake (molecules per simulation cell) for each fugacity.</span>
 <span class="sd">            Shape: ``(n_press,)``.</span>
 <span class="sd">        pi_T : np.ndarray</span>
-<span class="sd">            2D array of the interpolated MPD, transposed to shape ``(n_press, N_max + 1)``</span>
-<span class="sd">            to match ``compute_isotherm_replica``.</span>
+<span class="sd">            2D array of the interpolated MPD, transposed to shape ``(n_press, N_max + 1)``.</span>
 <span class="sd">        """</span>
         <span class="n">pi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_mpd_interpolated</span><span class="p">(</span>
             <span class="n">ins_weights</span><span class="o">=</span><span class="n">ins_weights</span><span class="p">,</span>
             <span class="n">del_weights</span><span class="o">=</span><span class="n">del_weights</span><span class="p">,</span>
             <span class="n">fugacities_Pa</span><span class="o">=</span><span class="n">fugacities_Pa</span><span class="p">,</span>
+            <span class="n">interpolation_space</span><span class="o">=</span><span class="n">interpolation_space</span><span class="p">,</span>
             <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">uptakes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_uptake_from_mpd</span><span class="p">(</span><span class="n">pi</span><span class="p">)</span>
@@ -1391,6 +1471,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">fugacities_Pa</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">loadings</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">interpolation_space</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"log"</span><span class="p">,</span>
         <span class="n">uptake_units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"nmol"</span><span class="p">,</span>
         <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
@@ -1402,11 +1483,10 @@
 <span class="sd">        Supports two workflows:</span>
 <span class="sd">        1. **Direct sparse workflow**: Call ``load_tmmc_weights_interpolated`` first,</span>
 <span class="sd">        then call this method with ``loadings=None`` to use the loaded subset weights.</span>
-
 <span class="sd">        2. **Subsampling/benchmarking workflow**: If full-macrostate weights were</span>
 <span class="sd">        already loaded via ``load_tmmc_weights``, pass a ``loadings`` subset here</span>
-<span class="sd">        to slice those weights in memory and test interpolation accuracy without</span>
-<span class="sd">        reloading from disk.</span>
+<span class="sd">        to slice those weights in memory and benchmark interpolation accuracy</span>
+<span class="sd">        without reloading from disk.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1417,6 +1497,9 @@
 <span class="sd">            ``load_tmmc_weights`` (or to further subsample already-loaded interpolated</span>
 <span class="sd">            weights). If ``None``, uses all macrostates loaded by</span>
 <span class="sd">            ``load_tmmc_weights_interpolated``. Default is ``None``.</span>
+<span class="sd">        interpolation_space : str, optional</span>
+<span class="sd">            Space in which transition probabilities are interpolated: ``"log"``</span>
+<span class="sd">            (interpolates ln P, default) or ``"linear"`` (interpolates P directly).</span>
 <span class="sd">        uptake_units : str, optional</span>
 <span class="sd">            Units in which to report the uptake (must be a key in ``self.conv_factors``).</span>
 <span class="sd">            Default is ``"nmol"``.</span>
@@ -1472,6 +1555,7 @@
                 <span class="n">ins_weights</span><span class="o">=</span><span class="n">ins_source</span><span class="p">[</span><span class="n">replica</span><span class="p">],</span>
                 <span class="n">del_weights</span><span class="o">=</span><span class="n">del_source</span><span class="p">[</span><span class="n">replica</span><span class="p">],</span>
                 <span class="n">fugacities_Pa</span><span class="o">=</span><span class="n">fugacities_Pa</span><span class="p">,</span>
+                <span class="n">interpolation_space</span><span class="o">=</span><span class="n">interpolation_space</span><span class="p">,</span>
                 <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">uptakes_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">uptakes</span><span class="p">)</span>
