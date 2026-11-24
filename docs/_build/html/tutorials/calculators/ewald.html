@@ -3,7 +3,7 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html"><link rel="next" title="Mixed calculators for GCMC/MD simulations" href="../advanced/hybrid_gcmc_md_mixed_calc.html"><link rel="prev" title="Lennard-Jones Potential" href="lennard_jones.html">
+<link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html"><link rel="next" title="Widom test particle insertion method" href="../../theoretical_background/widom.html"><link rel="prev" title="Lennard-Jones Potential" href="lennard_jones.html">
         <link rel="prefetch" href="../../_static/logo-light-mode.png" as="image">
         <link rel="prefetch" href="../../_static/logo-dark-mode.png" as="image">
 
@@ -202,27 +202,30 @@
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing FLAMES</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../overview.html">Overview</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Basic</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../basic/widom.html">Widom insertion</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../basic/gcmc.html">GCMC Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../basic/restart.html">Restarting Simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../basic/isotherm.html">GCMC Adsorption Isotherm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../basic/multiple_ads.html">Multi-component GCMC Simulation</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Intermediate</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../intermediate/hybrid_gcmc_md.html">Hybrid GCMC/MD Simulation</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Calculators</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="lennard_jones.html">Lennard-Jones Potential</a></li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Ewald Sum for Electrostatic Interactions</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../basic/index.html">Basic</a><input aria-label="Toggle navigation of Basic" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../basic/widom.html">Widom insertion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../basic/gcmc.html">GCMC Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../basic/restart.html">Restarting Simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../basic/isotherm.html">GCMC Adsorption Isotherm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../basic/multiple_ads.html">Multi-component GCMC Simulation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Advanced</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../advanced/hybrid_gcmc_md_mixed_calc.html">Mixed calculators for GCMC/MD simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../advanced/hybrid_tmmc_md.html">Hybrid TMMC/MD Simulation</a></li>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../intermediate/index.html">Intermediate</a><input aria-label="Toggle navigation of Intermediate" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../intermediate/hybrid_gcmc_md.html">Hybrid GCMC/MD Simulation</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../advanced/index.html">Advanced</a><input aria-label="Toggle navigation of Advanced" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../advanced/hybrid_gcmc_md_mixed_calc.html">Mixed calculators for GCMC/MD simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../advanced/hybrid_tmmc_md.html">Hybrid TMMC/MD Simulation</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Calculators</a><input aria-label="Toggle navigation of Calculators" checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="lennard_jones.html">Lennard-Jones Potential</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Ewald Sum for Electrostatic Interactions</a></li>
+</ul>
+</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Theoretical Background</span></p>
 <ul>
@@ -723,12 +726,12 @@ O     O         0.0772730000      0.8051800000      0.4335000000   -0.8124180
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="../advanced/hybrid_gcmc_md_mixed_calc.html">
+          <a class="next-page" href="../../theoretical_background/widom.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Mixed calculators for GCMC/MD simulations</div>
+                <div class="title">Widom test particle insertion method</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>

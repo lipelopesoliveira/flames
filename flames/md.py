@@ -26,7 +26,7 @@ from flames.mtknpt import MTKNPT
 
 def run_md_simulation(
     atoms: Atoms,
-    model: Calculator,
+    calculator: Calculator,
     ensemble: str,
     thermostat: str,
     temperature: float,
@@ -51,7 +51,7 @@ def run_md_simulation(
     ----------
     atoms : ase.Atoms
         The atomic structure to simulate.
-    model : Calculator
+    calculator : Calculator
         The ASE calculator to attach to the atoms.
     ensemble : str
         The ensemble to use: "NVT" or "NPT".
@@ -223,7 +223,7 @@ def run_md_simulation(
     # 3. Delegate to the core execution engine
     return _md_core(
         atoms=atoms,
-        model=model,
+        calculator=calculator,
         dyn_class=dyn_class,
         dyn_params=dyn_params,
         ensemble=ensemble,
@@ -240,7 +240,7 @@ def run_md_simulation(
 
 def _md_core(
     atoms: Atoms,
-    model: Calculator,
+    calculator: Calculator,
     dyn_class: type[MolecularDynamics],
     dyn_params: dict[str, Any],
     ensemble: str,
@@ -257,7 +257,7 @@ def _md_core(
     Internal engine that runs the ASE molecular dynamics process,
     managing file paths, loggers, momenta initialization, and terminal outputs.
     """
-    atoms.calc = model
+    atoms.calc = calculator
 
     # Determine next available trajectory index
     existing_md_traj = [

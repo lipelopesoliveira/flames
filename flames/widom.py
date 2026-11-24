@@ -39,9 +39,15 @@ class Widom(BaseSimulator):
         Temperature of the ideal reservoir in Kelvin.
     :type temperature: float
 
-    :param model:
-        ASE-compatible calculator for energy calculations.
-    :type model: ase.calculators.calculator.Calculator
+    :param calculator:
+        The calculator to use for energy calculations. Can be any ASE-compatible calculator.
+        The output of the calculator should be in eV.
+    :type calculator: ase.calculators.calculator.Calculator
+
+    :param adsorbate_calculator:
+        The calculator to use for adsorbate energy calculations. Can be any ASE-compatible calculator.
+        The output of the calculator should be in eV.
+    :type adsorbate_calculator: ase.calculators.calculator.Calculator | None
 
     :param vdw_radii:
         Van der Waals radii of the atoms in the framework and adsorbate.
@@ -110,8 +116,9 @@ class Widom(BaseSimulator):
         framework_atoms: ase.Atoms,
         adsorbate_atoms: Adsorbate,
         temperature: float,
-        model: calculator.Calculator,
+        calculator: calculator.Calculator,
         vdw_radii: np.ndarray,
+        adsorbate_calculator: calculator.Calculator | None = None,
         framework_energy: float | None = None,
         adsorbate_energy: float | None = None,
         vdw_factor: float = 0.6,
@@ -132,7 +139,8 @@ class Widom(BaseSimulator):
         """
 
         super().__init__(
-            model=model,
+            calculator=calculator,
+            adsorbate_calculator=adsorbate_calculator,
             framework_atoms=framework_atoms,
             adsorbates=adsorbate_atoms,
             temperature=temperature,
@@ -153,7 +161,7 @@ class Widom(BaseSimulator):
             automatic_supercell=automatic_supercell,
         )
 
-        self.logger = WidomLogger(simulation=self, output_file=self.out_file)
+        self.logger: WidomLogger = WidomLogger(simulation=self, output_file=self.out_file)
 
         self.start_time = datetime.datetime.now()
 
@@ -162,7 +170,7 @@ class Widom(BaseSimulator):
         self.minimum_configuration: ase.Atoms = self.framework.copy()
         self.minimum_energy: float = 0
         self.base_iteration = 0
-        self.n_adsorbates = 0
+        self.n_adsorbates = {adsorbate_atoms.name: 0}
         self.int_energy_list = np.zeros(1, dtype=float)
 
         self.boltz_fac = np.exp(-self.beta * self.int_energy_list)
@@ -439,7 +447,7 @@ class Widom(BaseSimulator):
             return self.MAX_ENERGY_ERROR, atoms_trial
 
         # Set the same calculator to the trial atoms
-        atoms_trial.calc = self.model
+        atoms_trial.calc = self.calculator
 
         # Calculate the interaction energy of the trial configuration
         deltaE = (

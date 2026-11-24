@@ -5,16 +5,20 @@
 ### New Features 🎉
 
 - Added new MD-based GCMC movements (NVE, NPT, MVT) as possible moves that are subjected to acceptance/rejection criteria in the `GCMC` class. This allows for the integration of Molecular Dynamics (MD) simulations into the Markov chain Monte Carlo (MCMC) framework, enabling the exploration of the system's phase space through both Monte Carlo and Molecular Dynamics methods.
+- New `LennardJones` and `EwaldSum` calculators based on JIT for improved performance in calculating Lennard-Jones and electrostatic interactions, respectively. These calculators provide faster energy calculations during simulations, enhancing the overall efficiency of the code.
 
 ### Enhanced ✨
 
 - Refactor the `TMMC` class to improve code readability and maintainability. The refactoring includes reorganizing methods, improving variable naming, and enhancing the overall structure of the class to facilitate future development and debugging.
+- Now `TMMC` class also saves the total energy of the virtual insertions and deletions, allowing for a more comprehensive analysis of the simulation results.
+- Now all volumes in the system are in units of cubic angstroms (Å³) instead of cubic meters (m³). This change ensures consistency in the units used throughout the codebase and aligns with common conventions in molecular simulations.
 
 ### Fixed 🐛
 
 ### Documentation 📖
 
 - Added a new example for running TMMC simulations. This example demonstrates how to set up and execute a TMMC simulation using the `TMMC` class, providing users with practical guidance on its usage.
+- Improved the online documentation for the code with additional explanations and examples for the new features and enhancements introduced in this release.
 
 ### Modified 🛠
 

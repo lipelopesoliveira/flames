@@ -75,24 +75,23 @@ def random_rotation(
         np.ndarray:
             A 3D vector or array of vectors representing the rotated position(s).
     """
-    # 1. Unwap the molecule positions to perform the rotation correctly
+    # Unwap the molecule positions to perform the rotation correctly
     unrwap_pos = unwrap_positions(positions=original_position, cell=cell)
 
-    # 2. Calculate the geometric center (centroid) of the points.
+    # Calculate the geometric center (centroid) of the points.
     center = np.mean(unrwap_pos, axis=0)
 
-    # 3. Translate the points so their center is at the origin (0, 0, 0).
+    # Translate the points so their center is at the origin (0, 0, 0).
     # Rotation is always performed around the origin.
     centered_points = np.array(unrwap_pos) - center
 
-    # 4. Generate a uniform random rotation in 3D space.
-    #    Pass the provided generator to the 'random_state' parameter.
+    # Generate a uniform random rotation in 3D space using the random generator.
     random_rot = Rotation.random(rng=rnd_generator)
 
-    # 5. Apply the random rotation to the centered points.
+    # Apply the random rotation to the centered points.
     rotated_centered_points = random_rot.apply(centered_points)
 
-    # 6. Translate the rotated points back to their original center.
+    # Translate the rotated points back to their original center.
     rotated_points = rotated_centered_points + center
 
     return rotated_points
@@ -133,13 +132,13 @@ def random_rotation_limited(
     # Center coordinates at origin
     centered_points = np.array(unrwap_pos) - center
 
-    # --- Generate random axis uniformly on the unit sphere ---
+    # Generate random axis uniformly on the unit sphere
     axis = randon_unit_vector_sphere_marsaglia(rnd_generator)
 
-    # --- Generate random angle in [-theta_max, theta_max] ---
+    # Generate random angle in [-theta_max, theta_max]
     angle = rnd_generator.uniform(-theta_max, theta_max)
 
-    # --- Create rotation object from quaternion representation ---
+    # Create rotation object from quaternion representation
     q = np.array([np.cos(angle / 2), *np.sin(angle / 2) * axis])
 
     rot = Rotation.from_quat(q, scalar_first=True)
@@ -177,15 +176,15 @@ def random_translation(
         np.ndarray:
             A 3D vector or array of vectors representing the translated position(s).
     """
-    # 1. Generate random translation vectors on the interval [-0.5, 0.5].
+    # Generate random translation vectors on the interval [-0.5, 0.5].
     translation_vectors = rnd_generator.uniform(
         -max_translation / 2, max_translation / 2, size=(1, 3)
     )
 
-    # 2. Unrap the atomic positions
+    # Unrap the atomic positions
     unwrap_pos = unwrap_positions(positions=original_position, cell=cell)
 
-    # 2. Apply the translation to the original positions.
+    # Apply the translation to the original positions.
     translated_positions = unwrap_pos + translation_vectors
 
     return translated_positions
@@ -214,15 +213,10 @@ def random_position_cell(
         np.ndarray:
             A 3D random position inside the unit cell.
     """
-
+    # Unwrap the atomic positions to perform the translation correctly
     unwrap_pos = unwrap_positions(positions=original_position, cell=lattice_vectors)
 
-    # Ensure original_position is a numpy array at the origin
-    # Note: This line might not be necessary depending on your use case.
-    # It centers the input `original_position` array before applying the translation.
-    original_position = np.array(unwrap_pos) - np.average(unwrap_pos, axis=0)
-
-    # 2. Use the 'rnd_generator' to generate random numbers
+    # Use the 'rnd_generator' to generate random numbers
     random_fractions = rnd_generator.random(3)
 
     # Convert fractional coordinates to a Cartesian vector
@@ -253,17 +247,21 @@ def random_mol_insertion(
 
     tmp_molecule = molecule.copy()
 
-    tmp_molecule.set_positions(
-        random_rotation(molecule.get_positions(), framework.cell.array, rnd_generator)
-    )
+    # Center the molecule at the origin before translation
+    tmp_molecule.set_positions(tmp_molecule.get_positions() - tmp_molecule.get_center_of_mass())
 
+    # Generate a random position within the unit cell and set the molecule's positions
     tmp_molecule.set_positions(
         random_position_cell(tmp_molecule.get_positions(), framework.cell.array, rnd_generator)
     )
 
+    # Generate a random rotation for the molecule
+    tmp_molecule.set_positions(
+        random_rotation(tmp_molecule.get_positions(), framework.cell.array, rnd_generator)
+    )
+
     new_framework = framework.copy()
     new_framework += tmp_molecule
-    new_framework.wrap()
 
     return new_framework
 

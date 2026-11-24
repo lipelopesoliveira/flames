@@ -35,10 +35,15 @@ class BaseSimulator:
     This class handles all base parameters for the simulations.
     Separates the basic logic used in the simulations from the specific implementation details.
 
-    :param model:
+    :param calculator:
         The calculator to use for energy calculations. Can be any ASE-compatible calculator.
         The output of the calculator should be in eV.
-    :type model: ase.calculators.calculator.Calculator
+    :type calculator: ase.calculators.calculator.Calculator
+
+    :param adsorbate_calculator:
+        The calculator to use for adsorbate energy calculations. Can be any ASE-compatible calculator.
+        The output of the calculator should be in eV.
+    :type adsorbate_calculator: ase.calculators.calculator.Calculator | None
 
     :param framework_atoms:
         The framework structure as an ASE Atoms object.
@@ -123,13 +128,14 @@ class BaseSimulator:
 
     def __init__(
         self,
-        model: calculator.Calculator,
+        calculator: calculator.Calculator,
         framework_atoms: ase.Atoms,
         adsorbates: Adsorbate | list[Adsorbate],
         temperature: float,
         pressure: float,
         device: str,
         vdw_radii: np.ndarray,
+        adsorbate_calculator: calculator.Calculator | None = None,
         framework_energy: float | None = None,
         adsorbate_energy: float | None = None,
         vdw_factor: float = 0.6,
@@ -139,7 +145,7 @@ class BaseSimulator:
         output_to_file: bool = True,
         output_folder: str | None = None,
         debug: bool = False,
-        fugacity_coeff: float = 1.0,
+        fugacity_coeff: float | None = None,
         void_fraction: float = 1.0,
         random_seed: int | None = None,
         cutoff_radius: float = 6.0,
@@ -162,9 +168,9 @@ class BaseSimulator:
         os.makedirs(os.path.join(self.out_folder, "Movies"), exist_ok=True)
 
         if output_to_file:
-                self.out_file = open(os.path.join(self.out_folder, "Output.out"), "a")
+            self.out_file = open(os.path.join(self.out_folder, "Output.out"), "a")  # noqa: SIM115
         else:
-            self.out_file = None
+            self.out_file = open(os.devnull, "w")  # noqa: SIM115
 
         self.trajectory = Trajectory(
             os.path.join(self.out_folder, "Movies", "Trajectory.traj"),
@@ -186,13 +192,16 @@ class BaseSimulator:
 
         # -- General definitions for framework and adsorbate --
 
-        self.model = model
+        self.calculator = calculator
+        self.adsorbate_calculator = (
+            adsorbate_calculator if adsorbate_calculator is not None else calculator
+        )
         self.device = device
 
         self.set_framework(framework_atoms, framework_energy=framework_energy)
 
         self.current_system = self.framework.copy()
-        self.current_system.calc = self.model
+        self.current_system.calc = self.calculator
 
         if framework_energy:
             self.current_total_energy = framework_energy * np.prod(self.ideal_supercell)  # type: ignore
@@ -209,22 +218,44 @@ class BaseSimulator:
         self.T = temperature
         self.P = pressure
 
-        self.fugacity_coeff = fugacity_coeff
+        self.fugacity_coeff = fugacity_coeff if fugacity_coeff is not None else 1.0
 
-        # Fugacity from Pa (J/m^3) to eV / m^3
-        self.fugacity = (self.P * self.fugacity_coeff * units.J) / units.eV
+        # Fugacity from Pa (J/m^3) to eV / Angs^3
+        self.fugacity = self.P * self.fugacity_coeff * units.Pascal
 
         self.beta = 1 / (units.kB * self.T)  # Boltzmann weight, 1 / [eV/K * K]
-
-        atm2pa = 101325
-        mol2cm3 = units.kB / units.J * units.mol * 273.15 / atm2pa
 
         # Get the ideal supercell. This will be updated by the set_framework method
         self.ideal_supercell = (
             self._get_ideal_supercell() if self.automatic_supercell else np.array([1, 1, 1])
         )
 
-        self.conv_factors = {
+        self.vdw: np.ndarray = (
+            np.array(vdw_radii) * vdw_factor
+        )  # Adjust van der Waals radii to avoid overlap
+
+        # Replace any NaN value by 1.5 on self.vdw to avoid potential problems
+        self.vdw[np.isnan(self.vdw)] = 1.5
+
+        # Use an max deltaE to avoid errors on the calculator
+        self.max_deltaE = max_deltaE
+
+    @property
+    def conv_factors(self) -> dict[str, dict[str, float]]:
+        """
+        Get the conversion factors for different units.
+
+        Returns
+        -------
+        dict[str, dict[str, float]]
+            A dictionary containing conversion factors for different units.
+        """
+
+        # Constants for unit conversions
+        atm2pa = 101325
+        mol2cm3 = units.kB / units.J * units.mol * 273.15 / atm2pa
+
+        conv_factors = {
             "nmol": {
                 adsorbate.name: 1 / np.prod(self.ideal_supercell) for adsorbate in self.adsorbates
             },
@@ -256,15 +287,7 @@ class BaseSimulator:
             },
         }
 
-        self.vdw: np.ndarray = (
-            np.array(vdw_radii) * vdw_factor
-        )  # Adjust van der Waals radii to avoid overlap
-
-        # Replace any NaN value by 1.5 on self.vdw to avoid potential problems
-        self.vdw[np.isnan(self.vdw)] = 1.5
-
-        # Use an max deltaE to avoid errors on the model
-        self.max_deltaE = max_deltaE
+        return conv_factors
 
     def _save_trajectory(self, actual_iteration: int) -> None:
         """
@@ -329,9 +352,9 @@ class BaseSimulator:
         framework_atoms : ase.Atoms
             The new framework structure as an ASE Atoms object.
         framework_energy : float or None, optional
-            The energy of the framework in eV. If None, the energy will be calculated using the provided model.
+            The energy of the framework in eV. If None, the energy will be calculated using the provided calculator.
         """
-        self.framework = framework_atoms
+        self.framework = framework_atoms.copy()
         self.framework.set_tags(np.zeros(len(self.framework), dtype=int))
 
         self.ideal_supercell = self._get_ideal_supercell()
@@ -345,14 +368,14 @@ class BaseSimulator:
         self.cell = np.array(self.framework.get_cell())
         self.perpendicular_cell = get_perpendicular_lengths(self.framework.get_cell()) * np.eye(3)
 
-        self.framework.calc = self.model
-        if framework_energy:
-            self.framework_energy = framework_energy * np.prod(self.ideal_supercell)
+        self.framework.calc = self.calculator
+        if framework_energy is not None:
+            self.framework_energy = framework_energy * float(np.prod(self.ideal_supercell))
         else:
-            self.framework_energy = self.framework.get_potential_energy()
-        self.n_atoms_framework = len(self.framework)
+            self.framework_energy = float(self.framework.get_potential_energy())
 
-        self.V = np.linalg.det(self.cell) / units.m**3
+        self.n_atoms_framework = len(self.framework)
+        self.V = self.framework.get_volume()
         self.framework_mass = self.get_framework_mass()
 
         # Get the framework density in g/cm^3
@@ -371,7 +394,7 @@ class BaseSimulator:
         adsorbates : Adsorbate
             The list of adsorbate structure(s) as an Adsorbate object.
         adsorbate_energy : float or None, optional
-            The energy of the adsorbate in eV. If None, the energy will be calculated using the provided model.
+            The energy of the adsorbate in eV. If None, the energy will be calculated using the provided calculator.
         n_adsorbates : int
             Number of adsorbate molecules in the framework.
         """
@@ -398,9 +421,10 @@ class BaseSimulator:
         # Set tags and properties for each adsorbate
         for i, adsorbate in enumerate(self.adsorbates):
             adsorbate.tag = i + 1
-            adsorbate.structure.set_cell(self.framework.get_cell())  # type: ignore
-            adsorbate.structure.set_pbc([True, True, True])  # type: ignore
-            adsorbate.structure.calc = self.model  # type: ignore
+            adsorbate.set_cell(self.framework.get_cell())  # type: ignore
+            adsorbate.set_pbc([True, True, True])  # type: ignore
+            adsorbate.set_calculator(self.adsorbate_calculator)  # type: ignore
+            adsorbate.rnd_generator = self.rnd_generator
 
         if isinstance(adsorbate_energy, float):
             if len(self.adsorbates) != 1:
@@ -443,6 +467,54 @@ class BaseSimulator:
         # self.n_atoms_framework -= self.n_adsorbate_atoms * n_adsorbates
         # self.n_adsorbates = n_adsorbates
 
+    def adsorbate_by_tag(self, tag: int) -> Adsorbate:
+        """
+        Get the adsorbate object corresponding to a given tag.
+
+        Parameters
+        ----------
+        tag : int
+            The tag of the adsorbate.
+
+        Returns
+        -------
+        Adsorbate
+            The adsorbate object corresponding to the given tag.
+        """
+        for ads in self.adsorbates:
+            if ads.tag == tag:
+                return ads
+
+        raise ValueError(f"No adsorbate found with tag {tag}.")
+
+    def get_adsorbates_index(self, tag: int) -> list[list]:
+        """
+        Get a list of index of the adsorbate molecules in the current system.
+        If a tag is provided, only returns the indices for adsorbates matching that tag.
+
+        Parameters
+        ----------
+        tag : int
+            The tag of the adsorbate to look for.
+
+        Returns
+        -------
+        list[list]
+            A list of lists containing the indices of the adsorbate molecules.
+        """
+        adsorbates_list = []
+
+        for adsorbate in self.adsorbates:
+            if adsorbate.tag != tag:
+                continue
+
+            indices = np.where(self.current_system.get_tags() == tag)[0]
+
+            if len(indices) > 0:
+                adsorbates_list.extend(indices.reshape(-1, len(adsorbate.structure)).tolist())
+
+        return adsorbates_list
+
     def set_state(self, state: ase.Atoms) -> None:
         """
         Set the current state of the simulation.
@@ -453,7 +525,7 @@ class BaseSimulator:
             The current state of the simulation as an ASE Atoms object.
         """
         self.current_system = state.copy()
-        self.current_system.calc = self.model
+        self.current_system.calc = self.calculator
         self.current_total_energy = self.current_system.get_potential_energy()
 
     def _pick_random_move(self) -> tuple[int, str]:
@@ -513,7 +585,7 @@ Start optimizing framework structure...
 
         _resultsDict, optFramework = crystalOptimization(
             atoms_in=self.framework,
-            calculator=self.model,
+            calculator=self.calculator,
             optimizer=LBFGS,  # type: ignore
             fmax=max_force,
             opt_cell=opt_cell,
@@ -566,7 +638,7 @@ Start optimizing adsorbate structure...
 
             _resultsDict, optAdsorbate = crystalOptimization(
                 atoms_in=self.adsorbates[i].structure,  # type: ignore
-                calculator=self.model,
+                calculator=self.calculator,
                 optimizer=LBFGS,  # type: ignore
                 fmax=max_force,
                 opt_cell=False,
@@ -584,7 +656,7 @@ Start optimizing adsorbate structure...
             self.adsorbates[i].structure = optAdsorbate.copy()
             self.adsorbates[i].structure.set_constraint(None)  # type: ignore
             self.adsorbates[i].structure.set_cell(self.framework.get_cell())  # type: ignore
-            self.adsorbates[i].structure.calc = self.model  # type: ignore
+            self.adsorbates[i].structure.calc = self.calculator  # type: ignore
             self.adsorbate_energy = {
                 self.adsorbates[i].name: self.adsorbates[i].structure.get_potential_energy()  # type: ignore
             }
@@ -603,7 +675,7 @@ Start optimizing adsorbate structure...
         trajectory_file: TrajectoryReader | TrajectoryWriter | None = None,
         set_momenta: bool = True,
         **kwargs,
-    ) -> None | ase.Atoms:
+    ) -> ase.Atoms:
         """
         Run a molecular dynamics simulation using the specified ensemble and thermostat.
 
@@ -625,7 +697,7 @@ Start optimizing adsorbate structure...
         movie_interval : int, optional
             The interval for saving trajectory frames (default is 100 steps).
         calculator : ase.calculators.calculator.Calculator or None, optional
-            The calculator to use for energy calculations. If None, the default model will be used.
+            The calculator to use for energy calculations. If None, the default calculator will be used.
         update_state : bool, optional
             If True, updates the current state of the simulation with the final state after MD.
             If False, returns the final state without updating. This difference is important for using
@@ -696,7 +768,7 @@ Start optimizing adsorbate structure...
 
         new_state = run_md_simulation(
             atoms=current_state,
-            model=calculator if calculator else self.model,
+            calculator=calculator if calculator else self.calculator,
             temperature=self.T,
             pressure=self.P * 1e-5,
             time_step=time_step,
@@ -712,11 +784,11 @@ Start optimizing adsorbate structure...
             **kwargs,
         )
 
-        if not update_state:
-            return new_state
+        if update_state:
+            self.set_state(new_state)
+            self.set_framework(new_state[: self.n_atoms_framework].copy())  # type: ignore
 
-        self.set_state(new_state)
-        self.set_framework(new_state[: self.n_atoms_framework].copy())  # type: ignore
+        return new_state
 
     def npt(
         self,
@@ -752,7 +824,7 @@ Start optimizing adsorbate structure...
         movie_interval : int, optional
             The interval for saving trajectory frames (default is 100 step).
         calculator : ase.calculators.calculator.Calculator or None, optional
-            The calculator to use for energy calculations. If None, the default model will be used.
+            The calculator to use for energy calculations. If None, the default calculator will be used.
         kwargs : optional
             Arguments passed to the ase molecular dynamics class.
         """
@@ -761,7 +833,7 @@ Start optimizing adsorbate structure...
         assert mode in allowed_modes, f"Mode must be one of {allowed_modes}."
 
         if not calculator:
-            calculator = self.model
+            calculator = self.calculator
 
         if (mode == "iso_shape" or mode == "aniso_shape") and driver == "Berendsen":
 
@@ -772,7 +844,7 @@ Start optimizing adsorbate structure...
 
             new_state = nPT_Berendsen(
                 atoms=self.current_system,
-                model=calculator,
+                calculator=calculator,
                 temperature=self.T,
                 pressure=self.P * 1e-5,
                 time_step=time_step,
@@ -790,7 +862,7 @@ Start optimizing adsorbate structure...
 
             new_state = nPT_NoseHoover(
                 atoms=self.current_system,
-                model=calculator,
+                calculator=calculator,
                 temperature=self.T,
                 pressure=self.P * 1e-5,
                 time_step=time_step,
@@ -810,7 +882,7 @@ Start optimizing adsorbate structure...
 
             new_state = nPT_MTKNPT(
                 atoms=self.current_system,
-                model=calculator,
+                calculator=calculator,
                 temperature=self.T,
                 pressure=self.P * 1e-5,
                 time_step=time_step,
@@ -861,7 +933,7 @@ Start optimizing adsorbate structure...
         movie_interval : int, optional
             The interval for saving trajectory frames (default is 100 step).
         calculator : ase.calculators.calculator.Calculator or None, optional
-            The calculator to use for energy calculations. If None, the default model will be used.
+            The calculator to use for energy calculations. If None, the default calculator will be used.
         kwargs : optional
             Arguments passed to the ase molecular dynamics class.
 
@@ -882,7 +954,7 @@ Start optimizing adsorbate structure...
             Time constant for the Berendsen thermostat in fs (default is 1.0 fs).
         """
         if not calculator:
-            calculator = self.model
+            calculator = self.calculator
 
         assert driver in [
             "Berendsen",
@@ -894,7 +966,7 @@ Start optimizing adsorbate structure...
 
             new_state = nVT_NoseHoover(
                 atoms=self.current_system,
-                model=calculator,
+                calculator=calculator,
                 temperature=self.T,
                 time_step=time_step,
                 num_md_steps=nsteps,
@@ -913,7 +985,7 @@ Start optimizing adsorbate structure...
 
             new_state = nVT_Langevin(
                 atoms=self.current_system,
-                model=calculator,
+                calculator=calculator,
                 temperature=self.T,
                 time_step=time_step,
                 num_md_steps=nsteps,
@@ -936,7 +1008,7 @@ Start optimizing adsorbate structure...
 
             new_state = nVT_Berendsen(
                 atoms=self.current_system,
-                model=calculator,
+                calculator=calculator,
                 temperature=self.T,
                 time_step=time_step,
                 num_md_steps=nsteps,

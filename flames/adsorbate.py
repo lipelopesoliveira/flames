@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 from copy import deepcopy
 from typing import Any
 
@@ -32,6 +33,7 @@ class Adsorbate:
         move_weights: MoveWeights | dict[str, float] | None = None,
         eos: BaseEOS | dict[str, float] | None = None,
         tag: int = 0,
+        rnd_generator: np.random.Generator | None = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -48,15 +50,14 @@ class Adsorbate:
             **kwargs (Any): Additional keyword arguments passed to `ase.io.read`.
         """
         self._name = name
-
         self._mol_fraction = mol_fraction
-
         self._tag = tag
+        self._rnd_generator = (
+            rnd_generator if rnd_generator is not None else np.random.default_rng()
+        )
 
-        if isinstance(structure, str):
-            self._structure: Atoms = ase.io.read(structure, **kwargs)  # type: ignore
-        else:
-            self._structure = structure
+        self._structure: list[Atoms] = []  # Initialize as an empty list; will be set properly below
+        self.structure = structure  # This will handle the structure assignment and validation
 
         self._molar_mass = molar_mass if molar_mass is not None else self.get_molar_mass()
 
@@ -65,7 +66,7 @@ class Adsorbate:
         self.move_weights = move_weights if move_weights is not None else {}
 
         # Route through setter to handle EOS initialization
-        self._eos = None
+        self._eos = BaseEOS(molar_mass=self.molar_mass)
         self.eos = eos
 
     def __repr__(self) -> str:
@@ -113,30 +114,43 @@ class Adsorbate:
     @tag.setter
     def tag(self, value: int) -> None:
         self._tag = value
-        if self.structure is not None:
-            self.structure.set_tags(np.ones(len(self.structure), dtype=int) * value)  # type: ignore
+        for structure in self._structure:
+            structure.set_tags(np.ones(len(structure), dtype=int) * value)  # type: ignore
 
     @property
     def structure(self) -> Atoms:
         """Atoms: The structure of the adsorbate."""
-        return self._structure
+
+        # Return one randomly selected structure if multiple are present
+        index = self._rnd_generator.integers(0, len(self._structure))
+        return self._structure[index]
 
     @structure.setter
-    def structure(self, value: Atoms) -> None:
+    def structure(self, value: str | Atoms | list[Atoms]) -> None:
         """
         Sets the structure of the adsorbate, ensuring it is stored as a list of Atoms.
 
         Args:
-            value (str | Atoms | list[Atoms] | None): The structure to set. Strings are
+            value (str | Atoms | list[Atoms]): The structure to set. Strings are
                 interpreted as file paths and read using ASE's default read behavior.
 
         Raises:
             TypeError: If the input is not a recognized structure type or valid file.
         """
-        if not isinstance(value, Atoms):
-            raise TypeError("Structure must be an ASE Atoms object")
 
-        self._structure = value
+        if type(value) not in [str, Atoms, list]:
+            raise TypeError(
+                "Structure must be a string (file path), an ASE Atoms object, or a list of ASE Atoms objects."
+            )
+
+        if isinstance(value, str):
+            self._structure = ase.io.read(value, index=":")  # type: ignore
+        elif isinstance(value, list):
+            if not all(isinstance(atom, Atoms) for atom in value):
+                raise TypeError("All elements in the list must be ASE Atoms objects.")
+            self._structure = value
+        elif isinstance(value, Atoms):
+            self._structure = [value]
 
     @property
     def move_weights(self) -> MoveWeights:
@@ -183,7 +197,7 @@ class Adsorbate:
             TypeError: If structure is missing when passing a dict, or if the value type is invalid.
         """
         if value is None:
-            self._eos = None
+            self._eos = BaseEOS(molar_mass=self.molar_mass)
         elif isinstance(value, (BaseEOS, PengRobinsonEOS)):
             self._eos = value
         elif isinstance(value, dict):
@@ -197,6 +211,21 @@ class Adsorbate:
                 "EOS must be a BaseEOS or PengRobinsonEOS object, a dictionary of EOS parameters, or None."
             )
 
+    @property
+    def rnd_generator(self) -> np.random.Generator:
+        """np.random.Generator: The random number generator used for stochastic processes."""
+        return self._rnd_generator
+
+    @rnd_generator.setter
+    def rnd_generator(self, value: np.random.Generator) -> None:
+        """
+        Sets the random number generator for the adsorbate.
+
+        Args:
+            value (np.random.Generator): A NumPy random number generator instance.
+        """
+        self._rnd_generator = value
+
     def get_molar_mass(self) -> float:
         """
         Calculates the molar mass of the adsorbate based on its structure.
@@ -207,10 +236,50 @@ class Adsorbate:
         Raises:
             TypeError: If the structure is not set or is empty.
         """
-        if self.structure:
-            return self.structure.get_masses().sum()  # type: ignore
-        else:
-            raise TypeError("Structure is not set. Cannot calculate molar mass.")
+        return self.structure.get_masses().sum()  # type: ignore
+
+    def set_cell(self, cell: np.ndarray) -> None:
+        """
+        Sets the simulation cell for all structures of the adsorbate.
+
+        Args:
+            cell (np.ndarray): A 3x3 array representing the simulation cell vectors.
+        """
+        for structure in self._structure:
+            structure.set_cell(cell)  # type: ignore
+
+    def set_pbc(self, pbc: bool | list[bool]) -> None:
+        """
+        Sets the periodic boundary conditions for all structures of the adsorbate.
+
+        Args:
+            pbc (bool | list[bool]): A boolean or list of booleans indicating periodicity in each dimension.
+        """
+        for structure in self._structure:
+            structure.set_pbc(pbc)  # type: ignore
+
+    def set_calculator(self, calculator: Any, overwrite: bool = True) -> None:
+        """
+        Assigns a calculator to all structures of the adsorbate.
+
+        Args:
+            calculator (Any):
+                An ASE calculator instance.
+        overwrite (bool):
+            If True, existing calculators will be overwritten. If False, a warning is issued instead.
+        """
+        for structure in self._structure:
+            if structure.calc is None:
+                structure.calc = calculator  # type: ignore
+            elif structure.calc is not None and overwrite:
+                structure.calc = calculator  # type: ignore
+                warnings.warn(
+                    f"Structure {structure} already has a calculator assigned. Overwriting it."
+                )
+            else:
+                warnings.warn(
+                    f"Structure {structure} already has a calculator assigned. Use overwrite=True to replace it."
+                )
 
     def pick_random_move(self, generator: np.random.Generator | None = None) -> str:
         """

@@ -201,27 +201,30 @@
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing FLAMES</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../overview.html">Overview</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Basic</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/widom.html">Widom insertion</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/gcmc.html">GCMC Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/restart.html">Restarting Simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/isotherm.html">GCMC Adsorption Isotherm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic/multiple_ads.html">Multi-component GCMC Simulation</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/basic/index.html">Basic</a><input aria-label="Toggle navigation of Basic" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/basic/widom.html">Widom insertion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/basic/gcmc.html">GCMC Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/basic/restart.html">Restarting Simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/basic/isotherm.html">GCMC Adsorption Isotherm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/basic/multiple_ads.html">Multi-component GCMC Simulation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Intermediate</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/intermediate/hybrid_gcmc_md.html">Hybrid GCMC/MD Simulation</a></li>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/intermediate/index.html">Intermediate</a><input aria-label="Toggle navigation of Intermediate" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/intermediate/hybrid_gcmc_md.html">Hybrid GCMC/MD Simulation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Calculators</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/calculators/lennard_jones.html">Lennard-Jones Potential</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/calculators/ewald.html">Ewald Sum for Electrostatic Interactions</a></li>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/advanced/index.html">Advanced</a><input aria-label="Toggle navigation of Advanced" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/hybrid_gcmc_md_mixed_calc.html">Mixed calculators for GCMC/MD simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/hybrid_tmmc_md.html">Hybrid TMMC/MD Simulation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Advanced</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/advanced/hybrid_gcmc_md_mixed_calc.html">Mixed calculators for GCMC/MD simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/advanced/hybrid_tmmc_md.html">Hybrid TMMC/MD Simulation</a></li>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/calculators/index.html">Calculators</a><input aria-label="Toggle navigation of Calculators" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/calculators/lennard_jones.html">Lennard-Jones Potential</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/calculators/ewald.html">Ewald Sum for Electrostatic Interactions</a></li>
+</ul>
+</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Theoretical Background</span></p>
 <ul>
@@ -316,9 +319,15 @@
 <span class="sd">        Temperature of the ideal reservoir in Kelvin.</span>
 <span class="sd">    :type temperature: float</span>
 
-<span class="sd">    :param model:</span>
-<span class="sd">        ASE-compatible calculator for energy calculations.</span>
-<span class="sd">    :type model: ase.calculators.calculator.Calculator</span>
+<span class="sd">    :param calculator:</span>
+<span class="sd">        The calculator to use for energy calculations. Can be any ASE-compatible calculator.</span>
+<span class="sd">        The output of the calculator should be in eV.</span>
+<span class="sd">    :type calculator: ase.calculators.calculator.Calculator</span>
+
+<span class="sd">    :param adsorbate_calculator:</span>
+<span class="sd">        The calculator to use for adsorbate energy calculations. Can be any ASE-compatible calculator.</span>
+<span class="sd">        The output of the calculator should be in eV.</span>
+<span class="sd">    :type adsorbate_calculator: ase.calculators.calculator.Calculator | None</span>
 
 <span class="sd">    :param vdw_radii:</span>
 <span class="sd">        Van der Waals radii of the atoms in the framework and adsorbate.</span>
@@ -387,8 +396,9 @@
         <span class="n">framework_atoms</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">,</span>
         <span class="n">adsorbate_atoms</span><span class="p">:</span> <span class="n">Adsorbate</span><span class="p">,</span>
         <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">model</span><span class="p">:</span> <span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span><span class="p">,</span>
+        <span class="n">calculator</span><span class="p">:</span> <span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span><span class="p">,</span>
         <span class="n">vdw_radii</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">adsorbate_calculator</span><span class="p">:</span> <span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">framework_energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">adsorbate_energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">vdw_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.6</span><span class="p">,</span>
@@ -409,7 +419,8 @@
 <span class="sd">        """</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+            <span class="n">calculator</span><span class="o">=</span><span class="n">calculator</span><span class="p">,</span>
+            <span class="n">adsorbate_calculator</span><span class="o">=</span><span class="n">adsorbate_calculator</span><span class="p">,</span>
             <span class="n">framework_atoms</span><span class="o">=</span><span class="n">framework_atoms</span><span class="p">,</span>
             <span class="n">adsorbates</span><span class="o">=</span><span class="n">adsorbate_atoms</span><span class="p">,</span>
             <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">,</span>
@@ -430,7 +441,7 @@
             <span class="n">automatic_supercell</span><span class="o">=</span><span class="n">automatic_supercell</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">WidomLogger</span><span class="p">(</span><span class="n">simulation</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">out_file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">:</span> <span class="n">WidomLogger</span> <span class="o">=</span> <span class="n">WidomLogger</span><span class="p">(</span><span class="n">simulation</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">out_file</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
 
@@ -439,7 +450,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">minimum_configuration</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">minimum_energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">base_iteration</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbates</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_adsorbates</span> <span class="o">=</span> <span class="p">{</span><span class="n">adsorbate_atoms</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">int_energy_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">boltz_fac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">int_energy_list</span><span class="p">)</span>
@@ -727,7 +738,7 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">MAX_ENERGY_ERROR</span><span class="p">,</span> <span class="n">atoms_trial</span>
 
         <span class="c1"># Set the same calculator to the trial atoms</span>
-        <span class="n">atoms_trial</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+        <span class="n">atoms_trial</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span>
 
         <span class="c1"># Calculate the interaction energy of the trial configuration</span>
         <span class="n">deltaE</span> <span class="o">=</span> <span class="p">(</span>

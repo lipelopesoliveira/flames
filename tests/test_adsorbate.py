@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 import pytest
@@ -126,9 +127,10 @@ def test_eos_dict_initialization(dummy_water):
 
 def test_set_structure_raises_error(dummy_water):
     """Test that EOS dict fails if there is no structure to get the molar mass from."""
-    adsorbate = Adsorbate("H2O", structure=dummy_water)
+    adsorbate = Adsorbate(2, structure=dummy_water)  # type: ignore
 
-    with pytest.raises(TypeError, match="Structure must be an ASE Atoms object"):
+    expected_msg = "Structure must be a string (file path), an ASE Atoms object, or a list of ASE Atoms objects."
+    with pytest.raises(TypeError, match=re.escape(expected_msg)):
         adsorbate.structure = None  # type: ignore
 
 

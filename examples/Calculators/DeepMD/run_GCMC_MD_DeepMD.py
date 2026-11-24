@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import os
 
 # Hide UserWarning and RuntimeWarning messages
@@ -55,7 +53,7 @@ print(
 )
 
 gcmc = GCMC(
-    model=model,
+    calculator=model,
     framework_atoms=framework,
     adsorbates=adsorbate,
     temperature=Temperature,

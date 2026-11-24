@@ -150,11 +150,11 @@ class CustomEwald(Calculator):
         self.implemented_properties = ["energy", "electrostatic_energy"]
 
         # Cache the tuning parameters so it only recalculate it if the cell volume/shape changes
-        self._cached_cell = None
-        self.alpha = None
-        self.grid_limits = (1, 1, 1)
-        self.recip_cell = None
-        self.volume = None
+        self._cached_cell: np.ndarray | None = None
+        self.alpha: float = np.sqrt(-np.log(self.precision)) / self.cutoff
+        self.grid_limits: tuple[int, int, int] = (1, 1, 1)
+        self.recip_cell: np.ndarray | None = None
+        self.volume: float | None = None
 
         # Initialize Vesin once, update cell/positions during compute
         self.neighbor_calculator = NeighborList(cutoff=self.cutoff, full_list=False)
@@ -169,7 +169,6 @@ class CustomEwald(Calculator):
             The 3x3 cell matrix.
         """
         self.volume = np.abs(np.linalg.det(cell))
-        self.alpha = np.sqrt(-np.log(self.precision)) / self.cutoff
         k_max = 2.0 * self.alpha * np.sqrt(-np.log(self.precision))
 
         self.recip_cell = 2.0 * np.pi * np.linalg.inv(cell).T

@@ -202,27 +202,30 @@
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing FLAMES</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Basic</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/basic/widom.html">Widom insertion</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/basic/gcmc.html">GCMC Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/basic/restart.html">Restarting Simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/basic/isotherm.html">GCMC Adsorption Isotherm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/basic/multiple_ads.html">Multi-component GCMC Simulation</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../tutorials/basic/index.html">Basic</a><input aria-label="Toggle navigation of Basic" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/basic/widom.html">Widom insertion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/basic/gcmc.html">GCMC Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/basic/restart.html">Restarting Simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/basic/isotherm.html">GCMC Adsorption Isotherm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/basic/multiple_ads.html">Multi-component GCMC Simulation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Intermediate</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/intermediate/hybrid_gcmc_md.html">Hybrid GCMC/MD Simulation</a></li>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../tutorials/intermediate/index.html">Intermediate</a><input aria-label="Toggle navigation of Intermediate" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/intermediate/hybrid_gcmc_md.html">Hybrid GCMC/MD Simulation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Calculators</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/calculators/lennard_jones.html">Lennard-Jones Potential</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/calculators/ewald.html">Ewald Sum for Electrostatic Interactions</a></li>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../tutorials/advanced/index.html">Advanced</a><input aria-label="Toggle navigation of Advanced" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/advanced/hybrid_gcmc_md_mixed_calc.html">Mixed calculators for GCMC/MD simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/advanced/hybrid_tmmc_md.html">Hybrid TMMC/MD Simulation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Tutorials: Advanced</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/advanced/hybrid_gcmc_md_mixed_calc.html">Mixed calculators for GCMC/MD simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/advanced/hybrid_tmmc_md.html">Hybrid TMMC/MD Simulation</a></li>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../tutorials/calculators/index.html">Calculators</a><input aria-label="Toggle navigation of Calculators" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/calculators/lennard_jones.html">Lennard-Jones Potential</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/calculators/ewald.html">Ewald Sum for Electrostatic Interactions</a></li>
+</ul>
+</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Theoretical Background</span></p>
 <ul>
@@ -284,7 +287,7 @@
 <p>The <code class="docutils literal notranslate"><span class="pre">TMMC</span></code> class serves as the main interface for handling TMMC simulation logic.</p>
 <dl class="py class">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flames.tmmc.</span></span><span class="sig-name descname"><span class="pre">TMMC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framework_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adsorbates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pressure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vdw_radii</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vdw_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framework_energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adsorbate_energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_translation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.float64(1.5707963267948966)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_deltaE</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.555</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_frequency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_to_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">automatic_supercell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flames.tmmc.</span></span><span class="sig-name descname"><span class="pre">TMMC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">calculator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framework_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adsorbates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pressure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vdw_radii</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adsorbate_calculator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vdw_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framework_energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adsorbate_energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_deltaE</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.555</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_frequency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_to_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">automatic_supercell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseSimulator</span></code></p>
 <p>Base class for transition matrix Monte Carlo (TMMC) simulations using ASE.</p>
 <p>This class implements TMMC deletion/insertion moves, recording the
@@ -292,7 +295,9 @@ deletion/insertion energies of the adsorbate.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>model</strong> (<em>ase.calculators.calculator.Calculator</em>) – The calculator to use for energy calculations. Can be any ASE-compatible calculator.
+<li><p><strong>calculator</strong> (<em>ase.calculators.calculator.Calculator</em>) – The calculator to use for energy calculations. Can be any ASE-compatible calculator.
+The output of the calculator should be in eV.</p></li>
+<li><p><strong>adsorbate_calculator</strong> (<em>ase.calculators.calculator.Calculator</em><em> | </em><em>None</em>) – The calculator to use for adsorbate energy calculations. Can be any ASE-compatible calculator.
 The output of the calculator should be in eV.</p></li>
 <li><p><strong>framework_atoms</strong> (<em>ase.Atoms</em>) – The framework structure as an ASE Atoms object.</p></li>
 <li><p><strong>adsorbates</strong> (<em>Adsorbate</em><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><em>Adsorbate</em><em>]</em>) – The adsorbate structure(s) as an Adsorbate object or list of Adsorbate objects.</p></li>
@@ -311,6 +316,23 @@ Should be an array of the same length as the number of atomic numbers in ASE.</p
 </ul>
 </dd>
 </dl>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">adsorbate_by_tag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tag</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Get the adsorbate object corresponding to a given tag.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>tag</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – The tag of the adsorbate.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The adsorbate object corresponding to the given tag.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Adsorbate</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">check_tmmc_files_exist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_loading</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replicas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">range(1,</span> <span class="pre">5)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.check_tmmc_files_exist"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
@@ -360,6 +382,49 @@ Should be an array of the same length as the number of atomic numbers in ASE.</p
 
 <dl class="py method">
 <dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">compute_isotherm_interpolated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fugacities_Pa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loadings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation_space</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'log'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uptake_units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'nmol'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.compute_isotherm_interpolated"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Computes replica-averaged adsorption uptakes and interpolated Macrostate
+Probability Distributions (MPD) across a list of fugacities from a reduced
+set of macrostates.</p>
+<p>Supports two workflows:
+1. <strong>Direct sparse workflow</strong>: Call <code class="docutils literal notranslate"><span class="pre">load_tmmc_weights_interpolated</span></code> first,
+then call this method with <code class="docutils literal notranslate"><span class="pre">loadings=None</span></code> to use the loaded subset weights.
+2. <strong>Subsampling/benchmarking workflow</strong>: If full-macrostate weights were
+already loaded via <code class="docutils literal notranslate"><span class="pre">load_tmmc_weights</span></code>, pass a <code class="docutils literal notranslate"><span class="pre">loadings</span></code> subset here
+to slice those weights in memory and benchmark interpolation accuracy
+without reloading from disk.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fugacities_Pa</strong> (<em>np.ndarray</em>) – Array of fugacities in Pascal for which to compute the isotherm.</p></li>
+<li><p><strong>loadings</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>] </em><em>| </em><em>np.ndarray</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Optional subset of macrostates to slice from full weights loaded via
+<code class="docutils literal notranslate"><span class="pre">load_tmmc_weights</span></code> (or to further subsample already-loaded interpolated
+weights). If <code class="docutils literal notranslate"><span class="pre">None</span></code>, uses all macrostates loaded by
+<code class="docutils literal notranslate"><span class="pre">load_tmmc_weights_interpolated</span></code>. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>interpolation_space</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Space in which transition probabilities are interpolated: <code class="docutils literal notranslate"><span class="pre">&quot;log&quot;</span></code>
+(interpolates ln P, default) or <code class="docutils literal notranslate"><span class="pre">&quot;linear&quot;</span></code> (interpolates P directly).</p></li>
+<li><p><strong>uptake_units</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Units in which to report the uptake (must be a key in <code class="docutils literal notranslate"><span class="pre">self.conv_factors</span></code>).
+Default is <code class="docutils literal notranslate"><span class="pre">&quot;nmol&quot;</span></code>.</p></li>
+<li><p><strong>show_progress</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, shows a progress bar during computation. Default is True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>uptakes_average</strong> (<em>np.ndarray</em>) – Expected uptake (in <code class="docutils literal notranslate"><span class="pre">uptake_units</span></code>) averaged across replicas for each fugacity.</p></li>
+<li><p><strong>uptakes_sd</strong> (<em>np.ndarray</em>) – Standard error of the mean (SEM) for the uptake across replicas.</p></li>
+<li><p><strong>pi_average</strong> (<em>np.ndarray</em>) – 2D array of the interpolated MPD averaged across replicas.
+Shape: <code class="docutils literal notranslate"><span class="pre">(n_press,</span> <span class="pre">N_max</span> <span class="pre">+</span> <span class="pre">1)</span></code>.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">compute_isotherm_replica</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ins_weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">del_weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fugacities_Pa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.compute_isotherm_replica"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Computes uptakes and macrostate probability distributions (pi) for a given
 set of fugacities using pre-computed insertion and deletion weights.</p>
@@ -367,6 +432,39 @@ set of fugacities using pre-computed insertion and deletion weights.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">compute_isotherm_replica_interpolated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ins_weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">del_weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fugacities_Pa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation_space</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'log'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.compute_isotherm_replica_interpolated"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Computes the adsorption isotherm (expected uptake) and interpolated Macrostate
+Probability Distribution (MPD) for a single replica from a sparse subset of
+pre-computed insertion and deletion weights.</p>
+<p>Convenience wrapper combining <code class="docutils literal notranslate"><span class="pre">compute_mpd_interpolated</span></code> and
+<code class="docutils literal notranslate"><span class="pre">compute_uptake_from_mpd</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ins_weights</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>np.ndarray</em><em>]</em>) – Dictionary mapping simulated macrostate <code class="docutils literal notranslate"><span class="pre">n_mol</span></code> to its insertion weight array.</p></li>
+<li><p><strong>del_weights</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>np.ndarray</em><em>]</em>) – Dictionary mapping simulated macrostate <code class="docutils literal notranslate"><span class="pre">n_mol</span></code> to its deletion weight array.</p></li>
+<li><p><strong>fugacities_Pa</strong> (<em>np.ndarray</em>) – 1D array of fugacities in Pascal.</p></li>
+<li><p><strong>interpolation_space</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Space in which transition probabilities are interpolated: <code class="docutils literal notranslate"><span class="pre">&quot;log&quot;</span></code>
+(default) or <code class="docutils literal notranslate"><span class="pre">&quot;linear&quot;</span></code>.</p></li>
+<li><p><strong>show_progress</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, shows a progress bar. Default is True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>uptakes</strong> (<em>np.ndarray</em>) – 1D array of expected uptake (molecules per simulation cell) for each fugacity.
+Shape: <code class="docutils literal notranslate"><span class="pre">(n_press,)</span></code>.</p></li>
+<li><p><strong>pi_T</strong> (<em>np.ndarray</em>) – 2D array of the interpolated MPD, transposed to shape <code class="docutils literal notranslate"><span class="pre">(n_press,</span> <span class="pre">N_max</span> <span class="pre">+</span> <span class="pre">1)</span></code>.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
@@ -404,6 +502,74 @@ during normalization to guarantee numerical stability.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">compute_mpd_interpolated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ins_weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">del_weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fugacities_Pa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation_space</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'log'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.compute_mpd_interpolated"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Computes the full Macrostate Probability Distribution (MPD or Π) across all
+integer loadings N ∈ [0, N_max] from a sparse subset of simulated macrostates
+by interpolating the transition probabilities.</p>
+<p>In single-macrostate (NVT + ghost swap) GC-TMMC, each independent canonical
+simulation at fixed loading N yields the unbiased transition probabilities for
+trial insertion and deletion:</p>
+<p>P(N -&gt; N + 1; f) = ⟨ min(1, w_ins(N) * f) ⟩_NVT
+P(N -&gt; N - 1; f) = ⟨ min(1, w_del(N) / f) ⟩_NVT</p>
+<p>Instead of simulating every integer N ∈ [0, N_max], transition probabilities
+are evaluated only at a few sampled macrostates and reconstructed across all
+unsampled integers N lying between adjacent sampled states N_a &lt; N &lt; N_b
+with α = (N - N_a) / (N_b - N_a):</p>
+<p>1. <strong>Log-space interpolation</strong> (<code class="docutils literal notranslate"><span class="pre">interpolation_space=&quot;log&quot;</span></code>, default):
+Linearly interpolates the natural logarithms of the transition probabilities
+directly:</p>
+<p>ln P(N -&gt; N + 1; f) = (1 - α) ln P(N_a -&gt; N_a + 1; f) + α ln P(N_b -&gt; N_b + 1; f)</p>
+<p>ln P(N -&gt; N - 1; f) = (1 - α) ln P(N_a -&gt; N_a - 1; f) + α ln P(N_b -&gt; N_b - 1; f)</p>
+<p>Because detailed balance integrates the <em>logarithm</em> of the transition probability
+ratio—corresponding to the discrete derivative of the free energy landscape
+∂(ln Π)/∂N—interpolating in log-space is exact when P(N) varies exponentially
+with N (e.g., near pore saturation or across free-energy barriers), prevents
+overestimation across steep probability drops, and strictly guarantees P &gt; 0 everywhere.</p>
+<p>2. <strong>Linear-space interpolation</strong> (<code class="docutils literal notranslate"><span class="pre">interpolation_space=&quot;linear&quot;</span></code>):
+Linearly interpolates P(N -&gt; N ± 1; f) directly before taking the logarithm,
+following Mazur et al. (ACS Appl. Mater. Interfaces 2024, 16, 25559-25567).</p>
+<p>Once the complete transition probability profiles are obtained for all
+N ∈ [0, N_max], equilibrium detailed balance between adjacent macrostates:</p>
+<p>Π(N) * P(N -&gt; N + 1) = Π(N + 1) * P(N + 1 -&gt; N)</p>
+<p>is integrated sequentially starting from an arbitrary reference ln Π(0) = 0:</p>
+<p>ln Π(N + 1) = ln Π(N) + ln P(N -&gt; N + 1) - ln P(N + 1 -&gt; N)</p>
+<p>Finally, Π(N) is normalized at each fugacity using the Log-Sum-Exp (LSE)
+trick to prevent numerical overflow or underflow.</p>
+<p class="rubric">Notes</p>
+<p>At N = 0, deletion is impossible so P(0 -&gt; -1) = 0 and ln P(0 -&gt; -1) = -∞.
+In log-space mode, N = 0 is therefore excluded from the deletion anchors and
+ln P(N -&gt; N - 1) is interpolated using only sampled macrostates with N ≥ 1.
+<strong>Including N = 1 in the sampled subset is strongly recommended</strong> so that
+all deletion probabilities on N ∈ [1, N_max] are purely interpolated. If
+N = 1 is absent, ln P(N -&gt; N - 1) is linearly extrapolated backward from
+the first two non-zero sampled macrostates and clipped to [ln(1e-300), 0].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ins_weights</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>np.ndarray</em><em>]</em>) – Dictionary mapping simulated macrostate <code class="docutils literal notranslate"><span class="pre">n_mol</span></code> to its pre-computed
+insertion weight array.</p></li>
+<li><p><strong>del_weights</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>np.ndarray</em><em>]</em>) – Dictionary mapping simulated macrostate <code class="docutils literal notranslate"><span class="pre">n_mol</span></code> to its pre-computed
+deletion weight array.</p></li>
+<li><p><strong>fugacities_Pa</strong> (<em>np.ndarray</em>) – 1D array of fugacities in Pascal.</p></li>
+<li><p><strong>interpolation_space</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Space in which piecewise linear interpolation is performed:
+<code class="docutils literal notranslate"><span class="pre">&quot;log&quot;</span></code> (interpolates ln P) or <code class="docutils literal notranslate"><span class="pre">&quot;linear&quot;</span></code> (interpolates P).
+Default is <code class="docutils literal notranslate"><span class="pre">&quot;log&quot;</span></code>.</p></li>
+<li><p><strong>show_progress</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, shows a progress bar over the simulated macrostates.
+Default is True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>pi</strong> – 2D array of the normalized MPD for every integer loading N ∈ [0, N_max]
+and each fugacity. Shape: <code class="docutils literal notranslate"><span class="pre">(N_max</span> <span class="pre">+</span> <span class="pre">1,</span> <span class="pre">n_press)</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">compute_uptake_from_mpd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pi</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.compute_uptake_from_mpd"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Calculates the expected number of molecules (uptake) from the Macrostate
 Probability Distribution (MPD).</p>
@@ -431,11 +597,18 @@ Shape: (n_press,).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">get_adsorbates_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.get_adsorbates_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
-<dd><p>Get a list of indices of the adsorbate molecules in the current system.</p>
+<span class="sig-name descname"><span class="pre">get_adsorbates_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tag</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Get a list of index of the adsorbate molecules in the current system.
+If a tag is provided, only returns the indices for adsorbates matching that tag.</p>
 <dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>tag</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – The tag of the adsorbate to look for.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of lists containing the indices of the adsorbate molecules.</p>
+</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>]</span></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)">list</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)">list</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -480,7 +653,7 @@ It considers the possibility of having multiple adsorbate species in the simulat
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">load_tmmc_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_loading</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replicas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">range(1,</span> <span class="pre">5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.load_tmmc_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-name descname"><span class="pre">load_tmmc_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_loading</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replicas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">range(1,</span> <span class="pre">5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tmmc_weights'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.load_tmmc_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Loads TMMC simulation data and pre-computes the fugacity-independent Boltzmann weights
 for a given temperature, returning them separated by replica.</p>
 <dl class="field-list simple">
@@ -491,6 +664,7 @@ for a given temperature, returning them separated by replica.</p>
 <li><p><strong>temperature_K</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Temperature in Kelvin for which to compute the Boltzmann weights.</p></li>
 <li><p><strong>replicas</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#range" title="(in Python v3.15)"><em>range</em></a><em>, </em><em>optional</em>) – List or range of replica indices to load. Default is range(1, 5).</p></li>
 <li><p><strong>show_progress</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, shows a progress bar during the loading of weights. Default is True.</p></li>
+<li><p><strong>folder_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Name of the folder to save the pre-computed weights. Default is “tmmc_weights”.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -511,6 +685,62 @@ for a given temperature, returning them separated by replica.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">load_tmmc_weights_interpolated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loadings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replicas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">range(1,</span> <span class="pre">5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tmmc_weights'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.load_tmmc_weights_interpolated"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Loads TMMC simulation data ONLY for a specified subset of macrostates (loadings)
+and pre-computes the fugacity-independent Boltzmann weights for each replica.</p>
+<p>In the interpolated single-macrostate (NVT + ghost swap) GC-TMMC approach
+(Mazur et al., ACS Appl. Mater. Interfaces 2024, 16, 25559-25567), direct
+simulations are performed only for a sparse subset of particle numbers N
+spanning [0, N_max], reducing computational cost by up to 1-2 orders of
+magnitude. For each explicitly simulated macrostate N, the fugacity-independent
+insertion and deletion weights are pre-computed as:</p>
+<blockquote>
+<div><p>w_ins(N) = (V * beta / (N + 1)) * exp(-beta * deltaE_ins)
+w_del(N) = (N / (V * beta))     * exp(-beta * deltaE_del)</p>
+</div></blockquote>
+<p>such that at any fugacity f, the unbiased Metropolis acceptance probabilities
+are evaluated as:</p>
+<blockquote>
+<div><p>p_acc(N -&gt; N + 1) = min(1, w_ins(N) * f)
+p_acc(N -&gt; N - 1) = min(1, w_del(N) / f)</p>
+</div></blockquote>
+<p>The resulting weights are stored as nested dictionaries mapping
+<code class="docutils literal notranslate"><span class="pre">replica</span> <span class="pre">-&gt;</span> <span class="pre">{n_mol:</span> <span class="pre">weight_array}</span></code> so that the exact simulated macrostate
+indices are preserved for subsequent interpolation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Path prefix to the directories containing the TMMC simulation data
+(expects <code class="docutils literal notranslate"><span class="pre">{file_path}_{replica}/</span></code>).</p></li>
+<li><p><strong>loadings</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>] </em><em>| </em><em>np.ndarray</em>) – Subset of macrostate loadings (number of adsorbate molecules N) to load.
+Must include <code class="docutils literal notranslate"><span class="pre">0</span></code> and at least one non-zero loading (typically <code class="docutils literal notranslate"><span class="pre">N_max</span></code>).
+Including <code class="docutils literal notranslate"><span class="pre">1</span></code> in the subset is recommended to avoid interpolation error
+in the deletion probability near the empty-pore limit.</p></li>
+<li><p><strong>replicas</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#range" title="(in Python v3.15)"><em>range</em></a><em>, </em><em>optional</em>) – List or range of replica indices to load. Default is <code class="docutils literal notranslate"><span class="pre">range(1,</span> <span class="pre">5)</span></code>.</p></li>
+<li><p><strong>show_progress</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, shows a progress bar during weight loading. Default is True.</p></li>
+<li><p><strong>folder_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Directory where compressed pre-computed weight caches (<code class="docutils literal notranslate"><span class="pre">.npz</span></code>) are
+stored and reused. Default is <code class="docutils literal notranslate"><span class="pre">&quot;tmmc_weights&quot;</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]], <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]]]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>ins_weights</strong> (<em>dict[int, dict[int, np.ndarray]]</em>) – Pre-computed insertion weights mapped as <code class="docutils literal notranslate"><span class="pre">ins_weights[replica][n_mol]</span></code>.</p></li>
+<li><p><strong>del_weights</strong> (<em>dict[int, dict[int, np.ndarray]]</em>) – Pre-computed deletion weights mapped as <code class="docutils literal notranslate"><span class="pre">del_weights[replica][n_mol]</span></code>.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">loadings</span></code> contains fewer than two unique macrostates or does not
+    include <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">md</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nsteps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensemble</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'NVT'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thermostat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'NoseHoover'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">movie_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calculator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trajectory_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_momenta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Run a molecular dynamics simulation using the specified ensemble and thermostat.</p>
 <dl class="field-list simple">
@@ -525,7 +755,7 @@ For NVT, can be one of “Berendsen”, “NoseHoover”, or “Langevin”.
 For NPT, can be one of “Berendsen”, “NoseHoover”, or “MTKNPT”.</p></li>
 <li><p><strong>output_interval</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – The interval for logging output (default is 100 steps).</p></li>
 <li><p><strong>movie_interval</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – The interval for saving trajectory frames (default is 100 steps).</p></li>
-<li><p><strong>calculator</strong> (<em>ase.calculators.calculator.Calculator</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – The calculator to use for energy calculations. If None, the default model will be used.</p></li>
+<li><p><strong>calculator</strong> (<em>ase.calculators.calculator.Calculator</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – The calculator to use for energy calculations. If None, the default calculator will be used.</p></li>
 <li><p><strong>update_state</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, updates the current state of the simulation with the final state after MD.
 If False, returns the final state without updating. This difference is important for using
 the same method in the GCMC simulations when a MD step is used as a move. Default is True.</p></li>
@@ -652,7 +882,7 @@ cell fluctuations while keeping the cell volume fixed (default is False).</p>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> | <code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -673,7 +903,7 @@ Can be Berendsen, NoseHoover or MTKNPT (default is “MTKNPT”).</p></li>
 <li><p><strong>set_momenta</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to set the atomic momenta to a Maxwell-Boltzmann distribution of the simulation temperature.</p></li>
 <li><p><strong>output_interval</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – The interval for logging output (default is 100 steps).</p></li>
 <li><p><strong>movie_interval</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – The interval for saving trajectory frames (default is 100 step).</p></li>
-<li><p><strong>calculator</strong> (<em>ase.calculators.calculator.Calculator</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – The calculator to use for energy calculations. If None, the default model will be used.</p></li>
+<li><p><strong>calculator</strong> (<em>ase.calculators.calculator.Calculator</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – The calculator to use for energy calculations. If None, the default calculator will be used.</p></li>
 <li><p><strong>kwargs</strong> (<em>optional</em>) – Arguments passed to the ase molecular dynamics class.</p></li>
 </ul>
 </dd>
@@ -696,7 +926,7 @@ Can be Berendsen, NoseHoover or MTKNPT (default is “MTKNPT”).</p></li>
 <li><p><strong>driver</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – The driver to use for the NVT simulation. Can be “NoseHoover” (default), Langevin, or “Berendsen” (Not recommended, for testing purposes only).</p></li>
 <li><p><strong>output_interval</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – The interval for logging output (default is 100 steps).</p></li>
 <li><p><strong>movie_interval</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – The interval for saving trajectory frames (default is 100 step).</p></li>
-<li><p><strong>calculator</strong> (<em>ase.calculators.calculator.Calculator</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – The calculator to use for energy calculations. If None, the default model will be used.</p></li>
+<li><p><strong>calculator</strong> (<em>ase.calculators.calculator.Calculator</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – The calculator to use for energy calculations. If None, the default calculator will be used.</p></li>
 <li><p><strong>kwargs</strong> (<em>optional</em>) – Arguments passed to the ase molecular dynamics class.</p></li>
 <li><p><strong>NoseHoover</strong> (<em>For</em>)</p></li>
 <li><p><strong>tdamp</strong> (<em>-</em>) – Time constant for the thermostat in fs (default is 50.0 fs).</p></li>
@@ -797,7 +1027,7 @@ energies and the unit cell volume are recorded.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>adsorbates</strong> (<em>Adsorbate</em>) – The list of adsorbate structure(s) as an Adsorbate object.</p></li>
-<li><p><strong>adsorbate_energy</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – The energy of the adsorbate in eV. If None, the energy will be calculated using the provided model.</p></li>
+<li><p><strong>adsorbate_energy</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – The energy of the adsorbate in eV. If None, the energy will be calculated using the provided calculator.</p></li>
 <li><p><strong>n_adsorbates</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Number of adsorbate molecules in the framework.</p></li>
 </ul>
 </dd>
@@ -815,7 +1045,7 @@ energies and the unit cell volume are recorded.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>framework_atoms</strong> (<em>ase.Atoms</em>) – The new framework structure as an ASE Atoms object.</p></li>
-<li><p><strong>framework_energy</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – The energy of the framework in eV. If None, the energy will be calculated using the provided model.</p></li>
+<li><p><strong>framework_energy</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – The energy of the framework in eV. If None, the energy will be calculated using the provided calculator.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -848,11 +1078,15 @@ This method randomly selects an adsorbate molecule and attempts deletion.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>adsorbate_tag</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – The tag of the adsorbate molecule being deleted.</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Deletion energy.</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</span></p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>deltaE</p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><em>deltaE</em> – Deletion energy.</p></li>
+<li><p><em>e_new</em> – New total energy.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
@@ -868,11 +1102,15 @@ based on the acceptance criteria.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>adsorbate_tag</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – The tag of the adsorbate molecule being inserted.</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>deltaE</strong> – Insertion energy.</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</span></p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)">float</a></p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>deltaE</strong> (<em>float</em>) – Insertion energy.</p></li>
+<li><p><strong>e_new</strong> (<em>float</em>) – New total energy.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
@@ -887,6 +1125,20 @@ based on the acceptance criteria.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">conv_factors</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em></dt>
+<dd><p>Get the conversion factors for different units.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dictionary containing conversion factors for different units.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)">float</a>]]</p>
 </dd>
 </dl>
 </dd></dl>

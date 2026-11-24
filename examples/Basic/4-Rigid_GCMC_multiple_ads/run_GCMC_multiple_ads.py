@@ -1,6 +1,7 @@
-#!/usr/bin/env python
-
 import os
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
 
 # Hide UserWarning and RuntimeWarning messages
 import warnings
@@ -27,6 +28,13 @@ framework: ase.Atoms = read("mg-mof-74.cif")  # type: ignore
 adsorbate_1 = Adsorbate(
     name="CO2",
     structure="co2.xyz",
+    move_weights={
+        "insertion": 1.0,
+        "deletion": 1.0,
+        "translation": 1.0,
+        "rotation": 1.0,
+        "identity_swap": 1.0,
+    },
     eos={"criticalTemperature": 304.1282, "criticalPressure": 7377300.0, "acentricFactor": 0.22394},
     mol_fraction=0.7,
 )
@@ -34,6 +42,13 @@ adsorbate_1 = Adsorbate(
 adsorbate_2 = Adsorbate(
     name="H2O",
     structure="H2O.xyz",
+    move_weights={
+        "insertion": 1.0,
+        "deletion": 1.0,
+        "translation": 1.0,
+        "rotation": 1.0,
+        "identity_swap": 1.0,
+    },
     eos={"criticalTemperature": 628.0, "criticalPressure": 14100000.0, "acentricFactor": 0.5293},
     mol_fraction=0.3,
 )
@@ -57,7 +72,7 @@ print(
 )
 
 gcmc = GCMC(
-    model=model,
+    calculator=model,
     framework_atoms=framework,
     adsorbates=[adsorbate_1, adsorbate_2],
     temperature=Temperature,
