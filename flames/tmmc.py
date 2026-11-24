@@ -894,8 +894,8 @@ class TMMC(BaseSimulator):
         simulation at fixed loading N yields the unbiased transition probabilities for
         trial insertion and deletion:
 
-            P(N -> N + 1; f) = ⟨ min(1, w_ins(N) * f) ⟩_NVT
-            P(N -> N - 1; f) = ⟨ min(1, w_del(N) / f) ⟩_NVT
+        P(N -> N + 1; f) = ⟨ min(1, w_ins(N) * f) ⟩_NVT
+        P(N -> N - 1; f) = ⟨ min(1, w_del(N) / f) ⟩_NVT
 
         Rather than simulating every integer N ∈ [0, N_max] or interpolating ln Π(N)
         directly, this method exploits the smooth variation of P(N -> N + 1) and
@@ -904,18 +904,18 @@ class TMMC(BaseSimulator):
         simulated macrostates N_a < N < N_b, both transition probabilities are estimated
         independently by linear interpolation at each fugacity f:
 
-            P(N -> N ± 1; f) = (1 - α) * P(N_a -> N_a ± 1; f) + α * P(N_b -> N_b ± 1; f)
+        P(N -> N ± 1; f) = (1 - α) * P(N_a -> N_a ± 1; f) + α * P(N_b -> N_b ± 1; f)
 
         where α = (N - N_a) / (N_b - N_a).
 
         Once the complete transition probability arrays are reconstructed for every
         integer N ∈ [0, N_max], detailed balance between adjacent macrostates:
 
-            Π(N) * P(N -> N + 1) = Π(N + 1) * P(N + 1 -> N)
+        Π(N) * P(N -> N + 1) = Π(N + 1) * P(N + 1 -> N)
 
         is integrated sequentially starting from an arbitrary reference ln Π(0) = 0:
 
-            ln Π(N + 1) = ln Π(N) + ln[ P(N -> N + 1) / P(N + 1 -> N) ]
+        ln Π(N + 1) = ln Π(N) + ln[ P(N -> N + 1) / P(N + 1 -> N) ]
 
         Finally, the distribution is normalized at each fugacity using the Log-Sum-Exp
         (LSE) trick to prevent numerical overflow or underflow.
@@ -1074,11 +1074,12 @@ class TMMC(BaseSimulator):
 
         Supports two workflows:
         1. **Direct sparse workflow**: Call ``load_tmmc_weights_interpolated`` first,
-           then call this method with ``loadings=None`` to use the loaded subset weights.
+        then call this method with ``loadings=None`` to use the loaded subset weights.
+
         2. **Subsampling/benchmarking workflow**: If full-macrostate weights were
-           already loaded via ``load_tmmc_weights``, pass a ``loadings`` subset here
-           to slice those weights in memory and test interpolation accuracy without
-           reloading from disk.
+        already loaded via ``load_tmmc_weights``, pass a ``loadings`` subset here
+        to slice those weights in memory and test interpolation accuracy without
+        reloading from disk.
 
         Parameters
         ----------

@@ -382,6 +382,47 @@ Should be an array of the same length as the number of atomic numbers in ASE.</p
 
 <dl class="py method">
 <dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">compute_isotherm_interpolated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fugacities_Pa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loadings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uptake_units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'nmol'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.compute_isotherm_interpolated"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Computes replica-averaged adsorption uptakes and interpolated Macrostate
+Probability Distributions (MPD) across a list of fugacities from a reduced
+set of macrostates.</p>
+<p>Supports two workflows:
+1. <strong>Direct sparse workflow</strong>: Call <code class="docutils literal notranslate"><span class="pre">load_tmmc_weights_interpolated</span></code> first,
+then call this method with <code class="docutils literal notranslate"><span class="pre">loadings=None</span></code> to use the loaded subset weights.</p>
+<p>2. <strong>Subsampling/benchmarking workflow</strong>: If full-macrostate weights were
+already loaded via <code class="docutils literal notranslate"><span class="pre">load_tmmc_weights</span></code>, pass a <code class="docutils literal notranslate"><span class="pre">loadings</span></code> subset here
+to slice those weights in memory and test interpolation accuracy without
+reloading from disk.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fugacities_Pa</strong> (<em>np.ndarray</em>) – Array of fugacities in Pascal for which to compute the isotherm.</p></li>
+<li><p><strong>loadings</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>] </em><em>| </em><em>np.ndarray</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Optional subset of macrostates to slice from full weights loaded via
+<code class="docutils literal notranslate"><span class="pre">load_tmmc_weights</span></code> (or to further subsample already-loaded interpolated
+weights). If <code class="docutils literal notranslate"><span class="pre">None</span></code>, uses all macrostates loaded by
+<code class="docutils literal notranslate"><span class="pre">load_tmmc_weights_interpolated</span></code>. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>uptake_units</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Units in which to report the uptake (must be a key in <code class="docutils literal notranslate"><span class="pre">self.conv_factors</span></code>).
+Default is <code class="docutils literal notranslate"><span class="pre">&quot;nmol&quot;</span></code>.</p></li>
+<li><p><strong>show_progress</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, shows a progress bar during computation. Default is True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>uptakes_average</strong> (<em>np.ndarray</em>) – Expected uptake (in <code class="docutils literal notranslate"><span class="pre">uptake_units</span></code>) averaged across replicas for each fugacity.</p></li>
+<li><p><strong>uptakes_sd</strong> (<em>np.ndarray</em>) – Standard error of the mean (SEM) for the uptake across replicas.</p></li>
+<li><p><strong>pi_average</strong> (<em>np.ndarray</em>) – 2D array of the interpolated MPD averaged across replicas.
+Shape: <code class="docutils literal notranslate"><span class="pre">(n_press,</span> <span class="pre">N_max</span> <span class="pre">+</span> <span class="pre">1)</span></code>.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">compute_isotherm_replica</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ins_weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">del_weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fugacities_Pa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.compute_isotherm_replica"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Computes uptakes and macrostate probability distributions (pi) for a given
 set of fugacities using pre-computed insertion and deletion weights.</p>
@@ -389,6 +430,40 @@ set of fugacities using pre-computed insertion and deletion weights.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">compute_isotherm_replica_interpolated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ins_weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">del_weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fugacities_Pa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.compute_isotherm_replica_interpolated"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Computes the adsorption isotherm (expected uptake) and interpolated Macrostate
+Probability Distribution (MPD) for a single replica from a sparse subset of
+pre-computed insertion and deletion weights.</p>
+<p>This is a convenience wrapper combining <code class="docutils literal notranslate"><span class="pre">compute_mpd_interpolated</span></code> (which
+reconstructs Π(N) over all integer loadings N ∈ [0, N_max] via linear
+interpolation of transition probabilities) and <code class="docutils literal notranslate"><span class="pre">compute_uptake_from_mpd</span></code>
+(which computes the grand canonical ensemble average ⟨N⟩ = Σ_N N * Π(N)).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ins_weights</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>np.ndarray</em><em>]</em>) – Dictionary mapping simulated macrostate <code class="docutils literal notranslate"><span class="pre">n_mol</span></code> to its insertion weight array.</p></li>
+<li><p><strong>del_weights</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>np.ndarray</em><em>]</em>) – Dictionary mapping simulated macrostate <code class="docutils literal notranslate"><span class="pre">n_mol</span></code> to its deletion weight array.</p></li>
+<li><p><strong>fugacities_Pa</strong> (<em>np.ndarray</em>) – 1D array of fugacities in Pascal.</p></li>
+<li><p><strong>show_progress</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, shows a progress bar. Default is True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>uptakes</strong> (<em>np.ndarray</em>) – 1D array of expected uptake (molecules per simulation cell) for each fugacity.
+Shape: <code class="docutils literal notranslate"><span class="pre">(n_press,)</span></code>.</p></li>
+<li><p><strong>pi_T</strong> (<em>np.ndarray</em>) – 2D array of the interpolated MPD, transposed to shape <code class="docutils literal notranslate"><span class="pre">(n_press,</span> <span class="pre">N_max</span> <span class="pre">+</span> <span class="pre">1)</span></code>
+to match <code class="docutils literal notranslate"><span class="pre">compute_isotherm_replica</span></code>.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
@@ -426,6 +501,90 @@ during normalization to guarantee numerical stability.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">compute_mpd_interpolated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ins_weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">del_weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fugacities_Pa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.compute_mpd_interpolated"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Computes the full Macrostate Probability Distribution (MPD or Π) across all
+integer loadings N ∈ [0, N_max] from a sparse subset of simulated macrostates
+using linear interpolation of transition probabilities.</p>
+<section id="theoretical-background">
+<h2>Theoretical Background<a class="headerlink" href="#theoretical-background" title="Link to this heading">¶</a></h2>
+<p>In single-macrostate (NVT + ghost swap) GC-TMMC, each independent canonical
+simulation at fixed loading N yields the unbiased transition probabilities for
+trial insertion and deletion:</p>
+<p>P(N -&gt; N + 1; f) = ⟨ min(1, w_ins(N) * f) ⟩_NVT
+P(N -&gt; N - 1; f) = ⟨ min(1, w_del(N) / f) ⟩_NVT</p>
+<p>Rather than simulating every integer N ∈ [0, N_max] or interpolating ln Π(N)
+directly, this method exploits the smooth variation of P(N -&gt; N + 1) and
+P(N -&gt; N - 1) with N (Mazur et al., ACS Appl. Mater. Interfaces 2024, 16,
+25559-25567). For any unsampled integer macrostate N lying between two adjacent
+simulated macrostates N_a &lt; N &lt; N_b, both transition probabilities are estimated
+independently by linear interpolation at each fugacity f:</p>
+<p>P(N -&gt; N ± 1; f) = (1 - α) * P(N_a -&gt; N_a ± 1; f) + α * P(N_b -&gt; N_b ± 1; f)</p>
+<p>where α = (N - N_a) / (N_b - N_a).</p>
+<p>Once the complete transition probability arrays are reconstructed for every
+integer N ∈ [0, N_max], detailed balance between adjacent macrostates:</p>
+<p>Π(N) * P(N -&gt; N + 1) = Π(N + 1) * P(N + 1 -&gt; N)</p>
+<p>is integrated sequentially starting from an arbitrary reference ln Π(0) = 0:</p>
+<p>ln Π(N + 1) = ln Π(N) + ln[ P(N -&gt; N + 1) / P(N + 1 -&gt; N) ]</p>
+<p>Finally, the distribution is normalized at each fugacity using the Log-Sum-Exp
+(LSE) trick to prevent numerical overflow or underflow.</p>
+<p class="rubric">Notes</p>
+<p>At N = 0, P(0 -&gt; -1) = 0 because no molecules can be deleted, whereas the first
+integration step requires P(1 -&gt; 0). If N = 1 is omitted from the simulated subset,
+P(1 -&gt; 0) is linearly interpolated from 0, which may introduce small errors at very
+low pressures. Including N = 1 in the simulated subset avoids this artifact.</p>
+<dl class="field-list simple">
+<dt class="field-odd">type ins_weights<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</span></p>
+</dd>
+<dt class="field-even">param ins_weights<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary mapping simulated macrostate <code class="docutils literal notranslate"><span class="pre">n_mol</span></code> to its pre-computed
+insertion weight array.</p>
+</dd>
+<dt class="field-odd">type ins_weights<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict[int, np.ndarray]</p>
+</dd>
+<dt class="field-even">type del_weights<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</span></p>
+</dd>
+<dt class="field-odd">param del_weights<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary mapping simulated macrostate <code class="docutils literal notranslate"><span class="pre">n_mol</span></code> to its pre-computed
+deletion weight array.</p>
+</dd>
+<dt class="field-even">type del_weights<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict[int, np.ndarray]</p>
+</dd>
+<dt class="field-odd">type fugacities_Pa<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span></p>
+</dd>
+<dt class="field-even">param fugacities_Pa<span class="colon">:</span></dt>
+<dd class="field-even"><p>1D array of fugacities in Pascal.</p>
+</dd>
+<dt class="field-odd">type fugacities_Pa<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+<dt class="field-even">type show_progress<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>, default: <code class="docutils literal notranslate"><span class="pre">True</span></code></p>
+</dd>
+<dt class="field-odd">param show_progress<span class="colon">:</span></dt>
+<dd class="field-odd"><p>If True, shows a progress bar over the simulated macrostates.
+Default is True.</p>
+</dd>
+<dt class="field-even">type show_progress<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool, optional</p>
+</dd>
+<dt class="field-odd">returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pi</strong> – 2D array of the normalized MPD for every integer loading N ∈ [0, N_max]
+and each fugacity. Shape: <code class="docutils literal notranslate"><span class="pre">(N_max</span> <span class="pre">+</span> <span class="pre">1,</span> <span class="pre">n_press)</span></code>.</p>
+</dd>
+<dt class="field-even">rtype<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.ndarray</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">compute_uptake_from_mpd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pi</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.compute_uptake_from_mpd"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Calculates the expected number of molecules (uptake) from the Macrostate
 Probability Distribution (MPD).</p>
@@ -453,11 +612,18 @@ Shape: (n_press,).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">get_adsorbates_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.get_adsorbates_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
-<dd><p>Get a list of indices of the adsorbate molecules in the current system.</p>
+<span class="sig-name descname"><span class="pre">get_adsorbates_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tag</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Get a list of index of the adsorbate molecules in the current system.
+If a tag is provided, only returns the indices for adsorbates matching that tag.</p>
 <dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>tag</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – The tag of the adsorbate to look for.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of lists containing the indices of the adsorbate molecules.</p>
+</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>]</span></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)">list</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)">list</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -528,6 +694,62 @@ for a given temperature, returning them separated by replica.</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#FileNotFoundError" title="(in Python v3.15)"><strong>FileNotFoundError</strong></a> – If the specified directory or any required files do not exist.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">load_tmmc_weights_interpolated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loadings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replicas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">range(1,</span> <span class="pre">5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tmmc_weights'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/tmmc.html#TMMC.load_tmmc_weights_interpolated"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Loads TMMC simulation data ONLY for a specified subset of macrostates (loadings)
+and pre-computes the fugacity-independent Boltzmann weights for each replica.</p>
+<p>In the interpolated single-macrostate (NVT + ghost swap) GC-TMMC approach
+(Mazur et al., ACS Appl. Mater. Interfaces 2024, 16, 25559-25567), direct
+simulations are performed only for a sparse subset of particle numbers N
+spanning [0, N_max], reducing computational cost by up to 1-2 orders of
+magnitude. For each explicitly simulated macrostate N, the fugacity-independent
+insertion and deletion weights are pre-computed as:</p>
+<blockquote>
+<div><p>w_ins(N) = (V * beta / (N + 1)) * exp(-beta * deltaE_ins)
+w_del(N) = (N / (V * beta))     * exp(-beta * deltaE_del)</p>
+</div></blockquote>
+<p>such that at any fugacity f, the unbiased Metropolis acceptance probabilities
+are evaluated as:</p>
+<blockquote>
+<div><p>p_acc(N -&gt; N + 1) = min(1, w_ins(N) * f)
+p_acc(N -&gt; N - 1) = min(1, w_del(N) / f)</p>
+</div></blockquote>
+<p>The resulting weights are stored as nested dictionaries mapping
+<code class="docutils literal notranslate"><span class="pre">replica</span> <span class="pre">-&gt;</span> <span class="pre">{n_mol:</span> <span class="pre">weight_array}</span></code> so that the exact simulated macrostate
+indices are preserved for subsequent linear interpolation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Path prefix to the directories containing the TMMC simulation data
+(expects <code class="docutils literal notranslate"><span class="pre">{file_path}_{replica}/</span></code>).</p></li>
+<li><p><strong>loadings</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>] </em><em>| </em><em>np.ndarray</em>) – Subset of macrostate loadings (number of adsorbate molecules N) to load.
+Must include <code class="docutils literal notranslate"><span class="pre">0</span></code> and at least one non-zero loading (typically <code class="docutils literal notranslate"><span class="pre">N_max</span></code>).
+Including <code class="docutils literal notranslate"><span class="pre">1</span></code> in the subset is recommended to avoid interpolation error
+in the deletion probability near the empty-pore limit.</p></li>
+<li><p><strong>replicas</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#range" title="(in Python v3.15)"><em>range</em></a><em>, </em><em>optional</em>) – List or range of replica indices to load. Default is <code class="docutils literal notranslate"><span class="pre">range(1,</span> <span class="pre">5)</span></code>.</p></li>
+<li><p><strong>show_progress</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, shows a progress bar during weight loading. Default is True.</p></li>
+<li><p><strong>folder_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Directory where compressed pre-computed weight caches (<code class="docutils literal notranslate"><span class="pre">.npz</span></code>) are
+stored and reused. Default is <code class="docutils literal notranslate"><span class="pre">&quot;tmmc_weights&quot;</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]], <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]]]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>ins_weights</strong> (<em>dict[int, dict[int, np.ndarray]]</em>) – Pre-computed insertion weights mapped as <code class="docutils literal notranslate"><span class="pre">ins_weights[replica][n_mol]</span></code>.</p></li>
+<li><p><strong>del_weights</strong> (<em>dict[int, dict[int, np.ndarray]]</em>) – Pre-computed deletion weights mapped as <code class="docutils literal notranslate"><span class="pre">del_weights[replica][n_mol]</span></code>.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">loadings</span></code> contains fewer than two unique macrostates or does not
+    include <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -675,7 +897,7 @@ cell fluctuations while keeping the cell volume fixed (default is False).</p>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> | <code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>

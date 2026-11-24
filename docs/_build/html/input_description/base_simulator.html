@@ -342,6 +342,24 @@ Only used if <code class="docutils literal notranslate"><span class="pre">critic
 
 <dl class="py method">
 <dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">get_adsorbates_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tag</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/base_simulator.html#BaseSimulator.get_adsorbates_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Get a list of index of the adsorbate molecules in the current system.
+If a tag is provided, only returns the indices for adsorbates matching that tag.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>tag</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – The tag of the adsorbate to look for.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of lists containing the indices of the adsorbate molecules.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)">list</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)">list</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">get_framework_mass</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flames/base_simulator.html#BaseSimulator.get_framework_mass"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Calculate the mass of the framework in kg.</p>
 <dl class="field-list simple">
@@ -497,7 +515,7 @@ cell fluctuations while keeping the cell volume fixed (default is False).</p>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> | <code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
